@@ -1,0 +1,82 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/Acorn/Acorn.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "publish",
+        "${workspaceFolder}/src/Acorn/Acorn.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "watch",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/src/Acorn/Acorn.csproj"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "test",
+      "type": "process",
+      "options": {
+        "cwd": "${workspaceFolder}/src"
+      },
+      "command": "dotnet",
+      "args": [
+        "test"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile",
+    },
+    {
+      "label": "test-specific",
+      "type": "process",
+      "options": {
+        "cwd": "${workspaceFolder}/src"
+      },
+      "command": "dotnet",
+      "args": [
+        "test",
+        "--ignore-exit-code", "8",
+        "--treenode-filter", "${input:testTreenodeFilter}"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "problemMatcher": "$msCompile",
+    }
+  ],
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "testTreenodeFilter",
+      "description": "Treenode filter to use to select tests to execute"
+    }
+  ]
+}

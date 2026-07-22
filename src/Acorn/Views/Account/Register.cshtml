@@ -1,0 +1,23 @@
+﻿@model RegisterViewModel
+@{
+  ViewData["Title"] = "Register";
+}
+
+<div class="container-narrow mt-5">
+  <h2>Register</h2>
+  <form class="f-column g-3 mt-3" asp-route="@Routes.AccountRegisterPostRoute" asp-route-returnurl="@ViewData[Acorn.Controllers.AccountController.ViewDataReturnUrl]" method="POST">
+
+    <partial name="_ValidationSummary" />
+
+    <fieldset>
+      <label asp-for="Email"></label>
+      <input asp-for="Email" autocomplete="email" placeholder="you@example.com" required aria-validation />
+    </fieldset>
+
+    <button type="submit">Register</button>
+  </form>
+</div>
+
+@section Scripts {
+  <script src="~/js/pages/account-register.js" defer asp-append-version="true"></script>
+}

@@ -1,0 +1,6 @@
+@layer base {
+  body {
+    background-color: #333;
+    color: #ccc;
+  }
+}

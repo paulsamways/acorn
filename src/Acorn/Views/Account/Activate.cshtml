@@ -1,0 +1,28 @@
+@model ActivateViewModel
+@{
+  ViewData["Title"] = "Activate";
+}
+
+<div class="container-narrow mt-5">
+  <h2>Activate account</h2>
+
+  <form class="f-column g-3" asp-route="@Routes.AccountActivatePostRoute" asp-route-returnurl="@ViewData[Acorn.Controllers.AccountController.ViewDataReturnUrl]" method="POST">
+
+    <partial name="_ValidationSummary" />
+
+    <input type="hidden" asp-for="Code" />
+
+    <fieldset>
+      <label asp-for="Email"></label>
+      <input asp-for="Email" type="email" readonly required />
+
+      <label asp-for="Password"></label>
+      <input asp-for="Password" type="password" autocomplete="new-password" autofocus required aria-validation />
+
+      <label asp-for="ConfirmPassword">Confirm password</label>
+      <input asp-for="ConfirmPassword" type="password" autocomplete="new-password" required aria-validation />
+    </fieldset>
+
+    <button type="submit">Submit</button>
+  </form>
+</div>

@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Acorn.Core.Tests/Acorn.Core.Tests.csproj" />
+  <Project Path="Acorn.Core/Acorn.Core.csproj" />
+  <Project Path="Acorn/Acorn.csproj" />
+</Solution>

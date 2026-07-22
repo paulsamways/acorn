@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>@(ViewData["Title"] is null ? Constants.Name : ViewData["Title"] + " | " + Constants.Name)</title>
+
+  <script type="importmap"></script>
+
+  <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<body>
+  <header>
+
+  </header>
+
+  <main role="main">
+    @RenderBody()
+  </main>
+
+  <footer class="p-3 b-t">
+    &copy; Copyright @DateTime.Now.Year, Paul Samways
+  </footer>
+
+  <!-- <script src="~/js/pages/all.js" defer asp-append-version="true"></script> -->
+
+  @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

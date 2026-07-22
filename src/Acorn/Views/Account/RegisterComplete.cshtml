@@ -1,0 +1,12 @@
+@model RegisterCompleteViewModel
+@{
+  ViewData["Title"] = "Register";
+}
+
+<div class="container-narrow mt-5">
+  <h2>Register</h2>
+  <p>
+    An email has been sent to <a href="mailto:@Model.Email">@Model.Email</a>
+    with instructions on how to activate your account.
+  </p>
+</div>

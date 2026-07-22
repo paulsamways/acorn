@@ -1,0 +1,15 @@
+@if (!ViewData.ModelState.IsValid)
+{
+  var errors = ViewData.ModelState.GetValueOrDefault(string.Empty)?.Errors;
+
+  @if (errors is not null && errors.Count > 0)
+  {
+    <div class="f-column g-2">
+      @foreach (var error in errors) {
+        <div class="alert alert-danger" role="alert">
+          @error.ErrorMessage
+        </div>
+      }
+    </div>
+  }
+}
