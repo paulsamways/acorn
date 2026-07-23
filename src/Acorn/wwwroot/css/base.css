@@ -1,6 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap');
+
 @layer base {
+  body, html {
+    min-height: 100vh;
+  }
   body {
-    background-color: #333;
-    color: #ccc;
+    font-family: "Fira Mono", monospace;
+    font-weight: 500;
+    font-style: normal;
+
+    background-color: oklch(21.8% 0.008 223.9);
+    color: var(--text-color-primary);
+
+    display: flex;
+    flex-direction: column;
+  }
+  body > main {
+    flex-grow: 1;
+  }
+  body > header, body > footer {
+    flex-shrink: 0;
+  }
+
+  h1 {
+    color: var(--text-color-highlight);
+  }
+
+  a {
+    color: var(--text-color-highlight);
+  }
+  a:hover {
+
   }
 }

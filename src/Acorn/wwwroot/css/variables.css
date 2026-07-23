@@ -1,0 +1,9 @@
+@layer variables {
+  :root {
+    --text-color-primary: oklch(87.2% 0.007 219.6);
+    --text-color-muted: oklch(56% 0.021 213.5);
+    --text-color-highlight: oklch(69.6% 0.17 162.48);
+
+    --spacing: 16px;
+  }
+}

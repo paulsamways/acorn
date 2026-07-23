@@ -254,6 +254,10 @@
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
+  .text-center {
+    text-align: center;
+  }
+
   .float-left {
     float: left;
   }
@@ -271,7 +275,7 @@
   }
 
   .muted {
-    color: oklch(from var(--fg-color) calc(l + 0.2) c h);
+    color: var(--text-color-muted);
   }
   .bg-raised {
     background-color: var(--bg-color-z2);

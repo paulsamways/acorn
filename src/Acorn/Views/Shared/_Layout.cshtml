@@ -12,7 +12,18 @@
 </head>
 
 <body>
-  <header>
+  <header class="p-4 f-row f-justify-space-between">
+
+    <div>
+      <h1>an undulating journey</h1>
+      <p class="muted">
+        /// the pursuit of staying the course when the maps run out
+      </p>
+    </div>
+    <nav>
+      <a asp-route="@Routes.HomeIndexGetRoute">/home</a>
+      <a asp-route="@Routes.AccountSignInGetRoute">/sign-in</a>
+    </nav>
 
   </header>
 
@@ -20,8 +31,13 @@
     @RenderBody()
   </main>
 
-  <footer class="p-3 b-t">
-    &copy; Copyright @DateTime.Now.Year, Paul Samways
+  <footer class="p-3 f-row">
+    <div class="text-center f-grow-1 muted">
+      &copy; Copyright @DateTime.Now.Year, Paul Samways
+    </div>
+    <div>
+      <a onclick="if (!(event.ctrlKey && event.shiftKey)) { event.preventDefault(); }" class="muted" asp-route="@Routes.AccountSignInGetRoute">&pi;</a>
+    </div>
   </footer>
 
   <!-- <script src="~/js/pages/all.js" defer asp-append-version="true"></script> -->
