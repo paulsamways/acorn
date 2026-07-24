@@ -250,12 +250,19 @@
     border-right: 1px solid var(--border-color);
   }
 
+  .w-480 {
+    width: 480px;
+  }
+
   .shadow {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
   .text-center {
     text-align: center;
+  }
+  .text-danger {
+    color: var(--text-color-danger);
   }
 
   .float-left {

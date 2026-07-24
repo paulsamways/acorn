@@ -9,7 +9,7 @@
     font-weight: 500;
     font-style: normal;
 
-    background-color: oklch(21.8% 0.008 223.9);
+    background-color: var(--background-color);
     color: var(--text-color-primary);
 
     display: flex;
@@ -29,7 +29,59 @@
   a {
     color: var(--text-color-highlight);
   }
-  a:hover {
 
+  *:focus {
+    outline: 1px solid var(--text-color-highlight);
+  }
+  input::placeholder {
+    color: var(--text-color-muted);
+  }
+
+  button {
+    cursor: pointer;
+  }
+  input[type=text], input[type=email], input[type=password], textarea {
+    display: block;
+    width: 100%;
+    color: var(--text-color-primary);
+    background-color: var(--input-background-color);
+    border: 1px solid var(--border-color);
+
+    border-radius: var(--border-radius);
+    padding: .5rem 1rem;
+  }
+  textarea:read-only, input:read-only {
+    cursor: default;
+    color: var(--text-color-muted);
+  }
+  label > input[type=checkbox] {
+    vertical-align: text-top;
+  }
+  input[type=checkbox] {
+    background-color: var(--input-background-color);
+    accent-color: var(--text-color-highlight);
+    width: 1rem;
+    height: 1rem;
+    border-radius: var(--border-radius);
+  }
+  button, input[type=submit], a[role=button] {
+    display: flex;
+    flex-direction: row;
+    gap: .75rem;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--input-background-color);
+    color: var(--text-color-highlight);
+    padding: .5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease; /* Smooth transition for interaction */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    outline: 1px solid transparent;
+  }
+  button:hover, input[type=submit]:hover, a[role=button]:hover {
+    background-color: var(--input-background-color-z1);
   }
 }

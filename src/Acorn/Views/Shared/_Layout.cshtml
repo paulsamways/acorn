@@ -22,22 +22,32 @@
     </div>
     <nav>
       <a asp-route="@Routes.HomeIndexGetRoute">/home</a>
-      <a asp-route="@Routes.AccountSignInGetRoute">/sign-in</a>
+      @if (User.Identity?.IsAuthenticated == true)
+      {
+        <a asp-route="@Routes.HomeIndexGetRoute">/admin</a>
+      }
     </nav>
 
   </header>
 
-  <main role="main">
-    @RenderBody()
-  </main>
+  @RenderBody()
 
   <footer class="p-3 f-row">
     <div class="text-center f-grow-1 muted">
       &copy; Copyright @DateTime.Now.Year, Paul Samways
     </div>
-    <div>
-      <a onclick="if (!(event.ctrlKey && event.shiftKey)) { event.preventDefault(); }" class="muted" asp-route="@Routes.AccountSignInGetRoute">&pi;</a>
-    </div>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+      <form asp-action="@Url.RouteUrl(Routes.AccountSignOutPostRoute)" method="POST">
+        <button type="submit">Sign-out</button>
+      </form>
+    }
+    else
+    {
+      <div>
+        <a class="muted" asp-route="@Routes.AccountSignInGetRoute" target="_self">&pi;</a>
+      </div>
+    }
   </footer>
 
   <!-- <script src="~/js/pages/all.js" defer asp-append-version="true"></script> -->

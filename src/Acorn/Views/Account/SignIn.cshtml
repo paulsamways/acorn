@@ -4,25 +4,29 @@
   ViewData["Title"] = "Sign in";
 }
 
-<div class="container-narrow mt-5">
-  <h2>Sign in</h2>
+<main class="f-grow-1 f-column f-align-center">
 
-  <form class="f-column g-3 mt-3" asp-route="@Routes.AccountSignInPostRoute" asp-route-returnurl="@ViewData[Acorn.Controllers.AccountController.ViewDataReturnUrl]" method="POST">
+  <form class="w-480 f-column g-3" asp-route="@Routes.AccountSignInPostRoute"
+        asp-route-returnurl="@ViewData[Acorn.Controllers.AccountController.ViewDataReturnUrl]" method="POST">
 
     <partial name="_ValidationSummary" />
 
-    <fieldset>
+    <div class="f-column">
       <label asp-for="Email"></label>
-      <input asp-for="Email" autocomplete="email" placeholder="you@example.com" required autofocus="@string.IsNullOrWhiteSpace(Model.Email)" aria-validation />
+      <input asp-for="Email" autocomplete="email" placeholder="you@example.com" required
+             autofocus="@string.IsNullOrWhiteSpace(Model.Email)" aria-validation />
+    </div>
 
+    <div class="f-column">
       <label asp-for="Password"></label>
-      <input asp-for="Password" autocomplete="current-password" required autofocus="@(!string.IsNullOrWhiteSpace(Model.Email))" aria-validation />
+      <input asp-for="Password" autocomplete="current-password" required
+             autofocus="@(!string.IsNullOrWhiteSpace(Model.Email))" aria-validation />
+    </div>
 
-      <label>
-        <input type="checkbox" asp-for="RememberMe">
-        @Html.DisplayNameFor(m => m.RememberMe)
-      </label>
-    </fieldset>
+    <label>
+      <input type="checkbox" asp-for="RememberMe">
+      @Html.DisplayNameFor(m => m.RememberMe)
+    </label>
 
     <button type="submit">Sign in</button>
 
@@ -31,8 +35,5 @@
         Forgot your password?
       </a>
     </p>
-    <p>
-      Don't have an account, <a asp-route="@Routes.AccountRegisterGetRoute">register now</a>.
-    </p>
   </form>
-</div>
+</main>

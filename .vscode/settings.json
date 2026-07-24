@@ -1,5 +1,6 @@
 {
-    "terminal.integrated.tabs.title": "${process}${separator}${sequence}",
-    "dotnet.testWindow.useTestingPlatformProtocol": true,
-    "editor.tabSize": 2
+  "terminal.integrated.tabs.title": "${process}${separator}${sequence}",
+  "dotnet.testWindow.useTestingPlatformProtocol": true,
+  "editor.tabSize": 2,
+  "css.styleSheets": ["src/Acorn/wwwroot/**/*.css"]
 }

@@ -132,7 +132,7 @@ public class AccountController : Controller
       if (result.Succeeded)
       {
         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var callbackUrl = Url.RouteUrl(Routes.AccountActivateGetRoute, new { email = model.Email, code }, "https");
+        var callbackUrl = Url.RouteUrl(Routes.AccountActivateGetRoute, new { email = model.Email, code });
 
         await _emailService.SendAsync(model.Email, null, new AccountActivationEmailMessage(callbackUrl!), cancellationToken);
 

@@ -3,7 +3,16 @@
     --text-color-primary: oklch(87.2% 0.007 219.6);
     --text-color-muted: oklch(56% 0.021 213.5);
     --text-color-highlight: oklch(69.6% 0.17 162.48);
+    --text-color-danger: oklch(70.5% 0.213 47.604);
 
-    --spacing: 16px;
+    --background-color: oklch(21.8% 0.008 223.9);
+    --background-color-z1: oklch(27.5% 0.011 216.9);
+    --background-color-z2: oklch(37.8% 0.015 216);
+
+    --input-background-color: var(--background-color-z1);
+    --input-background-color-z1: var(--background-color-z2);
+    --border-color: oklch(45% 0.017 213.2);
+
+    --border-radius: .25rem;
   }
 }
