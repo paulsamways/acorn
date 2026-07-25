@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>@(ViewData["Title"] is null ? Constants.Name : ViewData["Title"] + " | " + Constants.Name)</title>
+  <title>@(ViewData["Title"] is null ? Constants.SiteName : ViewData["Title"] + " | " + Constants.SiteName)</title>
 
   <script type="importmap"></script>
 
@@ -15,7 +15,7 @@
   <header class="p-4 f-row f-justify-space-between">
 
     <div>
-      <h1>an undulating journey</h1>
+      <h1>@Constants.SiteName</h1>
       <p class="muted">
         /// the pursuit of staying the course when the maps run out
       </p>

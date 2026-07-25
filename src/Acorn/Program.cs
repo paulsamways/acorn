@@ -3,6 +3,9 @@ using Acorn;
 using Acorn.Core;
 using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
+using Acorn.Core.Extensions;
+using Acorn.Core.Security;
+using Acorn.Services;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +42,10 @@ internal class Program
       .AddSignInManager()
       .AddDefaultTokenProviders();
 
+    builder.Services.AddHttpContextAccessor();
+    builder.Services.AddScoped<IUserContextService, UserContextService>();
+    builder.Services.AddContentManagement();
+
     builder.Services.AddControllersWithViews()
       .AddMvcOptions(static (options) =>
       {
@@ -62,7 +69,6 @@ internal class Program
       options.Cookie.IsEssential = true;
       options.Cookie.Name = Constants.AntiforgeryCookie;
     });
-
 
     builder.Services.Configure<IdentityOptions>(options =>
     {

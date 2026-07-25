@@ -29,5 +29,16 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
     builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
   }
 
+  protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+  {
+    base.OnConfiguring(optionsBuilder);
+
+    _ = optionsBuilder.AddInterceptors(new AuditableSaveChangesInterceptor());
+  }
+
+  public DbSet<Content> Content => Set<Content>();
+
+  public DbSet<NoteContent> Notes => Set<NoteContent>();
+
   public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 }
