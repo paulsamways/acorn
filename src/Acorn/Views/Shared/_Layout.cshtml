@@ -24,7 +24,7 @@
       <a asp-route="@Routes.HomeIndexGetRoute">/home</a>
       @if (User.Identity?.IsAuthenticated == true)
       {
-        <a asp-route="@Routes.HomeIndexGetRoute">/admin</a>
+        <a asp-route="@Routes.Admin.NotesIndexGetRoute">/admin</a>
       }
     </nav>
 

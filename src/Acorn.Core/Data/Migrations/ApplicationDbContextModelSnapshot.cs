@@ -21,23 +21,24 @@ namespace Acorn.Core.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("content_id");
 
                     b.Property<Guid>("AuthorId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("author_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
 
                     b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Slug")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("published_at");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("content_type")
                         .IsRequired()
@@ -47,9 +48,6 @@ namespace Acorn.Core.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
-
-                    b.HasIndex("Slug")
-                        .IsUnique();
 
                     b.ToTable("content", (string)null);
 
@@ -275,9 +273,10 @@ namespace Acorn.Core.Data.Migrations
                 {
                     b.HasBaseType("Acorn.Core.Data.Entities.Content");
 
-                    b.Property<string>("Note")
+                    b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("value");
 
                     b.ToTable("content", (string)null);
 

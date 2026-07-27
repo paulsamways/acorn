@@ -115,9 +115,14 @@ internal class Program
     app.MapOpenApi().CacheOutput();
 
     app.MapControllerRoute(
+      name: "admin",
+      pattern: "{area:exists}/{controller=Notes}/{action=Index}/{id?}");
+
+    app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Home}/{action=Index}/{id?}")
-        .WithStaticAssets();
+      .WithStaticAssets();
+
 
     app.Run();
   }

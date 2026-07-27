@@ -1,0 +1,23 @@
+@model IEnumerable<NoteContent>
+
+<main>
+  <form asp-route="@Routes.Admin.NotesIndexPostRoute" method="POST">
+    <button type="submit">New Note</button>
+  </form>
+
+  <div class="f-column f-align-center">
+      @foreach (var note in Model)
+      {
+        <div>
+          <div>
+            @note.Value
+          </div>
+          <div>
+            @note.CreatedAt
+          </div>
+        </div>
+      }
+  </div>
+
+
+</main>

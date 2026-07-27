@@ -12,7 +12,8 @@ public sealed class NoteContentEntityTypeConfiguration : IEntityTypeConfiguratio
     builder.ToTable("content");
 
     builder
-      .Property(x => x.Note)
+      .Property(x => x.Value)
+      .HasColumnName("value")
       .IsRequired();
   }
 }

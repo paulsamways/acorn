@@ -20,25 +20,26 @@ public sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<Co
 
     builder
       .Property(x => x.Id)
-      .IsRequired();
-
-    builder
-      .Property(x => x.Slug)
+      .HasColumnName("content_id")
       .IsRequired();
 
     builder
       .Property(x => x.CreatedAt)
+      .HasColumnName("created_at")
       .IsRequired();
 
     builder
       .Property(x => x.UpdatedAt)
+      .HasColumnName("updated_at")
       .IsRequired();
 
     builder
-      .Property(x => x.PublishedAt);
+      .Property(x => x.PublishedAt)
+      .HasColumnName("published_at");
 
     builder
       .Property(x => x.AuthorId)
+      .HasColumnName("author_id")
       .IsRequired();
 
     builder
@@ -46,9 +47,5 @@ public sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<Co
       .WithMany()
       .HasForeignKey(x => x.AuthorId)
       .OnDelete(DeleteBehavior.Cascade);
-
-    builder
-      .HasIndex(x => x.Slug)
-      .IsUnique();
   }
 }

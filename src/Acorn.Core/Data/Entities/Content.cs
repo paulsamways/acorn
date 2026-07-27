@@ -1,10 +1,8 @@
 namespace Acorn.Core.Data.Entities;
 
-public abstract class Content
+public abstract class Content : IAuditable
 {
   public int Id { get; set; }
-
-  public required string Slug { get; set; }
 
   public DateTime CreatedAt { get; set; }
 

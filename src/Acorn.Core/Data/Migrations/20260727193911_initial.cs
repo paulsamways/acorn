@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Acorn.Core.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -82,6 +82,30 @@ namespace Acorn.Core.Data.Migrations
                         name: "FK_role_claim_role_RoleId",
                         column: x => x.RoleId,
                         principalTable: "role",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "content",
+                columns: table => new
+                {
+                    content_id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    created_at = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    published_at = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    author_id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    content_type = table.Column<string>(type: "TEXT", maxLength: 8, nullable: false),
+                    value = table.Column<string>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_content", x => x.content_id);
+                    table.ForeignKey(
+                        name: "FK_content_user_author_id",
+                        column: x => x.author_id,
+                        principalTable: "user",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -172,6 +196,11 @@ namespace Acorn.Core.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_content_author_id",
+                table: "content",
+                column: "author_id");
+
+            migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
                 table: "role",
                 column: "NormalizedName",
@@ -212,6 +241,9 @@ namespace Acorn.Core.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "content");
+
             migrationBuilder.DropTable(
                 name: "data_protection_keys");
 

@@ -30,4 +30,19 @@ public static class Routes
   public const string AccountActivateUrlTemplate = "/account/activate";
   public const string AccountActivateGetRoute = nameof(AccountActivateGetRoute);
   public const string AccountActivatePostRoute = nameof(AccountActivatePostRoute);
+
+
+  public static class Admin
+  {
+    public const string AreaName = "admin";
+    private const string AreaUrlPrefix = "/admin";
+
+    public const string NotesIndexUrlTemplate = AreaUrlPrefix + "/notes";
+    public const string NotesIndexGetRoute = nameof(Admin) + nameof(NotesIndexGetRoute);
+    public const string NotesIndexPostRoute = nameof(Admin) + nameof(NotesIndexPostRoute);
+
+    public const string NotesEditUrlTemplate = AreaUrlPrefix + "/notes/{id}";
+    public const string NotesEditGetRoute = nameof(Admin) + nameof(NotesEditGetRoute);
+    public const string NotesEditPostRoute = nameof(Admin) + nameof(NotesEditPostRoute);
+  }
 }

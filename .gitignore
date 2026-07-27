@@ -4,7 +4,7 @@
 ## Get latest from `dotnet new gitignore`
 
 # Exported .NET developer certificate
-acorn.db
+acorn.db*
 
 var/
 

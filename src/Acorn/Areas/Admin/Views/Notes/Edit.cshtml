@@ -1,0 +1,13 @@
+@model NoteContent
+
+<main class="f-column f-align-center">
+
+  <form class="f-column g-4" asp-route="@Routes.Admin.NotesEditPostRoute" method="POST">
+    <textarea asp-for="Value" cols="120" rows="30"></textarea>
+
+    <div class="f-row f-justify-end">
+      <button type="submit">Save changes</button>
+    </div>
+  </form>
+
+</main>

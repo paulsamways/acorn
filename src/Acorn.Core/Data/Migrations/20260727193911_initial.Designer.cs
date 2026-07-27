@@ -11,14 +11,53 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Acorn.Core.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260326213142_Initial")]
-    partial class Initial
+    [Migration("20260727193911_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.10");
+
+            modelBuilder.Entity("Acorn.Core.Data.Entities.Content", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("content_id");
+
+                    b.Property<Guid>("AuthorId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("author_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("published_at");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("content_type")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("content", (string)null);
+
+                    b.HasDiscriminator<string>("content_type").HasValue("Content");
+
+                    b.UseTphMappingStrategy();
+                });
 
             modelBuilder.Entity("Acorn.Core.Data.Entities.Role", b =>
                 {
@@ -231,6 +270,31 @@ namespace Acorn.Core.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("user_token", (string)null);
+                });
+
+            modelBuilder.Entity("Acorn.Core.Data.Entities.NoteContent", b =>
+                {
+                    b.HasBaseType("Acorn.Core.Data.Entities.Content");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("value");
+
+                    b.ToTable("content", (string)null);
+
+                    b.HasDiscriminator().HasValue("note");
+                });
+
+            modelBuilder.Entity("Acorn.Core.Data.Entities.Content", b =>
+                {
+                    b.HasOne("Acorn.Core.Data.Entities.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
