@@ -6,6 +6,7 @@ using Acorn.Core.Data.Entities;
 using Acorn.Core.Extensions;
 using Acorn.Core.Security;
 using Acorn.Services;
+using Markdig;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -63,6 +64,14 @@ internal class Program
     // builder.Services
     //   .AddAuthentication(IdentityConstants.ApplicationScheme)
     //   .AddIdentityCookies();
+
+    builder.Services.AddSingleton(
+      new MarkdownPipelineBuilder()
+        .UseAdvancedExtensions()
+        .UseEmojiAndSmiley()
+        .DisableHtml()
+        .Build()
+    );
 
     builder.Services.AddAntiforgery((options) =>
     {

@@ -293,4 +293,11 @@
   .bg-raised {
     background-color: var(--bg-color-z2);
   }
+
+  .prose p, .prose ul, .prose ol, .prose table {
+    margin-top: 1em;
+  }
+  .prose *:first-child {
+    margin-top: 0;
+  }
 }
