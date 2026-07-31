@@ -43,9 +43,24 @@ public sealed class NotesController : Controller
   [HttpPost(Routes.Admin.NotesEditUrlTemplate, Name = Routes.Admin.NotesEditPostRoute)]
   public async Task<IActionResult> EditPostAsync(int id, [FromForm] string value, CancellationToken cancellationToken = default)
   {
-    var note = await _notesService.GetNoteAsync(id, cancellationToken);
-    note.Value = value;
+    _ = await _notesService.UpdateNoteAsync(id, value, cancellationToken);
 
-    return View("Edit", note);
+    return RedirectToRoute(Routes.Admin.NotesIndexGetRoute);
+  }
+
+  [HttpGet(Routes.Admin.NotesDeleteUrlTemplate, Name = Routes.Admin.NotesDeleteGetRoute)]
+  public async Task<IActionResult> DeleteGetAsync(int id, CancellationToken cancellationToken = default)
+  {
+    var note = await _notesService.GetNoteAsync(id, cancellationToken);
+
+    return View("Delete", note);
+  }
+
+  [HttpPost(Routes.Admin.NotesDeleteUrlTemplate, Name = Routes.Admin.NotesDeletePostRoute)]
+  public async Task<IActionResult> DeletePostAsync(int id, CancellationToken cancellationToken = default)
+  {
+    await _notesService.DeleteNoteAsync(id, cancellationToken);
+
+    return RedirectToRoute(Routes.Admin.NotesIndexGetRoute);
   }
 }

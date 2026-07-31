@@ -80,6 +80,7 @@
     transition: all 0.3s ease; /* Smooth transition for interaction */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     outline: 1px solid transparent;
+    text-decoration: none;
   }
   button:hover, input[type=submit]:hover, a[role=button]:hover {
     background-color: var(--input-background-color-z1);

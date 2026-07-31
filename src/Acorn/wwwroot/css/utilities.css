@@ -253,6 +253,9 @@
   .w-480 {
     width: 480px;
   }
+  .w-1024 {
+    width: 1024px;
+  }
 
   .shadow {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -283,6 +286,9 @@
 
   .muted {
     color: var(--text-color-muted);
+  }
+  .danger {
+    color: var(--text-color-danger);
   }
   .bg-raised {
     background-color: var(--bg-color-z2);

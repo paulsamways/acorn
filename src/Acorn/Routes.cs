@@ -41,8 +41,12 @@ public static class Routes
     public const string NotesIndexGetRoute = nameof(Admin) + nameof(NotesIndexGetRoute);
     public const string NotesIndexPostRoute = nameof(Admin) + nameof(NotesIndexPostRoute);
 
-    public const string NotesEditUrlTemplate = AreaUrlPrefix + "/notes/{id}";
+    public const string NotesEditUrlTemplate = AreaUrlPrefix + "/notes/edit/{id}";
     public const string NotesEditGetRoute = nameof(Admin) + nameof(NotesEditGetRoute);
     public const string NotesEditPostRoute = nameof(Admin) + nameof(NotesEditPostRoute);
+
+    public const string NotesDeleteUrlTemplate = AreaUrlPrefix + "/notes/delete/{id}";
+    public const string NotesDeleteGetRoute = nameof(Admin) + nameof(NotesDeleteGetRoute);
+    public const string NotesDeletePostRoute = nameof(Admin) + nameof(NotesDeletePostRoute);
   }
 }

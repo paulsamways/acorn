@@ -10,6 +10,8 @@ public abstract class Content : IAuditable
 
   public DateTime? PublishedAt { get; set; }
 
+  public DateTime? DeletedAt { get; set; }
+
   public required Guid AuthorId { get; set; }
 
   public User Author { get; set; } = null!;

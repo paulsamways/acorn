@@ -2,11 +2,16 @@
 
 <main class="f-column f-align-center">
 
-  <form class="f-column g-4" asp-route="@Routes.Admin.NotesEditPostRoute" method="POST">
-    <textarea asp-for="Value" cols="120" rows="30"></textarea>
+  <form class="f-column g-4 w-1024" asp-route="@Routes.Admin.NotesEditPostRoute" asp-route-id="@Model.Id" method="POST">
+    <textarea asp-for="Value" rows="30"></textarea>
 
-    <div class="f-row f-justify-end">
-      <button type="submit">Save changes</button>
+    <div class="f-row f-justify-space-between">
+      <div>
+        <a asp-route="@Routes.Admin.NotesDeleteGetRoute" asp-route-id="@Model.Id" role="button" class="danger">Delete</a>
+      </div>
+      <div>
+        <button type="submit">Save changes</button>
+      </div>
     </div>
   </form>
 

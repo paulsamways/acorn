@@ -1,0 +1,16 @@
+@model NoteContent
+
+<main class="f-column f-align-center">
+
+  <form class="f-column g-4 w-1024" asp-route="@Routes.Admin.NotesDeletePostRoute" asp-route-id="@Model.Id" method="POST">
+    <p>
+      Are you sure you want to delete this note?
+    </p>
+
+    <div class="f-row g-2">
+        <a asp-route="@Routes.Admin.NotesEditGetRoute" asp-route-id="@Model.Id" role="button">Go back</a>
+        <button class="danger" type="submit">Confirm</button>
+    </div>
+  </form>
+
+</main>

@@ -46,4 +46,21 @@ internal sealed class NotesService : INotesService
     var notes = await _dbContext.Notes.OrderByDescending(x => x.CreatedAt).ToArrayAsync(cancellationToken);
     return notes;
   }
+
+  public async Task<NoteContent> UpdateNoteAsync(int id, string value, CancellationToken cancellationToken = default)
+  {
+    var note = await GetNoteAsync(id, cancellationToken);
+    note.Value = value;
+
+    _ = await _dbContext.SaveChangesAsync(cancellationToken);
+    return note;
+  }
+
+  public async Task DeleteNoteAsync(int id, CancellationToken cancellationToken)
+  {
+    var note = await GetNoteAsync(id, cancellationToken);
+    note.DeletedAt = DateTime.UtcNow;
+
+    _ = await _dbContext.SaveChangesAsync(cancellationToken);
+  }
 }

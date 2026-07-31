@@ -38,6 +38,10 @@ public sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<Co
       .HasColumnName("published_at");
 
     builder
+      .Property(x => x.PublishedAt)
+      .HasColumnName("deleted_at");
+
+    builder
       .Property(x => x.AuthorId)
       .HasColumnName("author_id")
       .IsRequired();
@@ -47,5 +51,8 @@ public sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<Co
       .WithMany()
       .HasForeignKey(x => x.AuthorId)
       .OnDelete(DeleteBehavior.Cascade);
+
+    builder
+      .HasQueryFilter(x => x.DeletedAt == null);
   }
 }
