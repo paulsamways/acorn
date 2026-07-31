@@ -5,6 +5,7 @@ using Acorn.Core.Data.Entities;
 using Acorn.Core.Security;
 using Microsoft.EntityFrameworkCore;
 using Markdig;
+using Acorn.Core.Extensions;
 
 namespace Acorn.Core.ContentManagement.Services;
 
@@ -76,8 +77,12 @@ internal sealed class NotesService : INotesService
 
   private async Task<Note> MapNoteAsync(NoteContent noteContent, CancellationToken _ = default)
   {
-    var valueHtml = Markdown.ToHtml(noteContent.Value, _markdownPipeline);
+    var timeZone = await _userContextService.GetUserTimeZoneAsync();
 
-    return new Note(noteContent.Id, noteContent.Value, valueHtml, noteContent.CreatedAt);
+    return new Note(
+      noteContent.Id,
+      noteContent.Value,
+      Markdown.ToHtml(noteContent.Value, _markdownPipeline),
+      noteContent.CreatedAt.ConvertUtcToLocal(timeZone));
   }
 }
