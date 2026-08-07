@@ -32,6 +32,10 @@ public class MailKitEmailService : IEmailService
     using var client = new SmtpClient();
 
     await client.ConnectAsync(_options.SmtpServer, _options.SmtpPort, false, cancellationToken);
+
+    if (!string.IsNullOrEmpty(_options.SmtpUsername))
+      await client.AuthenticateAsync(_options.SmtpUsername, _options.SmtpPassword ?? string.Empty, cancellationToken);
+
     _ = await client.SendAsync(mimeMessage, cancellationToken);
     await client.DisconnectAsync(true, cancellationToken);
   }

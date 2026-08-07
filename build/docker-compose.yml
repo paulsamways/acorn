@@ -1,0 +1,40 @@
+services:
+  acorn:
+    build:
+      context: ..
+      dockerfile: build/acorn.Dockerfile
+    container_name: acorn
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Data Source=/app/data/acorn.db
+      SenderName: ${SENDER_NAME}
+      SenderEmailAddress: ${SENDER_EMAIL_ADDRESS}
+      SmtpServer: ${SMTP_SERVER}
+      SmtpPort: ${SMTP_PORT}
+      SmtpUsername: ${SMTP_USERNAME}
+      SmtpPassword: ${SMTP_PASSWORD}
+    volumes:
+      - acorn-data:/app/data
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - acorn
+
+volumes:
+  acorn-data:
+  caddy-data:
+  caddy-config:

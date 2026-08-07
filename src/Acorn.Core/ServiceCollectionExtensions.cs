@@ -14,7 +14,8 @@ public static class ServiceCollectionExtensions
     }
     else
     {
-      _ = services.AddOptions<MailKitEmailServiceOptions>()
+      _ = services
+        .AddOptions<MailKitEmailServiceOptions>()
         .Bind(configuration)
         .ValidateDataAnnotations()
         .ValidateOnStart();
