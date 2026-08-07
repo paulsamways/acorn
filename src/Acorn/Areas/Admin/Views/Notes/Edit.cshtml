@@ -1,9 +1,14 @@
-@model Note
+@using Acorn.Areas.Admin.Models.Notes
+@model EditViewModel
 
 <main class="f-column f-align-center">
 
   <form class="f-column g-4 w-1024" asp-route="@Routes.Admin.NotesEditPostRoute" asp-route-id="@Model.Id" method="POST">
     <textarea asp-for="Value" rows="30"></textarea>
+
+    <label>
+      <input asp-for="Published" type="checkbox"" /> Published
+    </label>
 
     <div class="f-row f-justify-space-between">
       <div>

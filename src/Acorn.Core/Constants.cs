@@ -4,7 +4,7 @@ public static class Constants
 {
   public const string Name = "Acorn";
 
-  public const string SiteName = "an undulating journey";
+  public const string SiteName = "paul.samways.id.au";
 
   public const int MinimumPasswordLength = 8;
 

@@ -1,4 +1,6 @@
+using Acorn.Areas.Admin.Models.Notes;
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Acorn.Areas.Admin.Controllers;
@@ -37,13 +39,16 @@ public sealed class NotesController : Controller
   {
     var note = await _notesService.GetNoteAsync(id, cancellationToken);
 
-    return View("Edit", note);
+    return View("Edit", MapToEditViewModel(note));
   }
 
   [HttpPost(Routes.Admin.NotesEditUrlTemplate, Name = Routes.Admin.NotesEditPostRoute)]
-  public async Task<IActionResult> EditPostAsync(int id, [FromForm] string value, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditPostAsync(int id, EditViewModel model, CancellationToken cancellationToken = default)
   {
-    _ = await _notesService.UpdateNoteAsync(id, value, cancellationToken);
+    _ = await _notesService.UpdateNoteAsync(id, model.Value, cancellationToken);
+
+    if (model.Published)
+      _ = await _notesService.PublishNoteAsync(id, cancellationToken);
 
     return RedirectToRoute(Routes.Admin.NotesIndexGetRoute);
   }
@@ -63,4 +68,12 @@ public sealed class NotesController : Controller
 
     return RedirectToRoute(Routes.Admin.NotesIndexGetRoute);
   }
+
+  public EditViewModel MapToEditViewModel(Note note)
+    => new()
+    {
+      Id = note.Id,
+      Value = note.Value,
+      Published = note.PublishedAt.HasValue
+    };
 }

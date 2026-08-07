@@ -46,7 +46,22 @@ internal sealed class NotesService : INotesService
 
   public async Task<IEnumerable<Note>> GetNotesAsync(CancellationToken cancellationToken = default)
   {
-    var notes = await _dbContext.Notes.OrderByDescending(x => x.CreatedAt).ToArrayAsync(cancellationToken);
+    var notes = await _dbContext
+      .Notes
+      .OrderByDescending(x => x.CreatedAt)
+      .ToArrayAsync(cancellationToken);
+
+    return await Task.WhenAll(notes.Select(async x => await MapNoteAsync(x, cancellationToken)));
+  }
+
+  public async Task<IEnumerable<Note>> GetPublishedNotesAsync(CancellationToken cancellationToken = default)
+  {
+    var notes = await _dbContext
+      .Notes
+      .Where(x => x.PublishedAt != null)
+      .OrderByDescending(x => x.CreatedAt)
+      .ToArrayAsync(cancellationToken);
+
     return await Task.WhenAll(notes.Select(async x => await MapNoteAsync(x, cancellationToken)));
   }
 
@@ -67,6 +82,15 @@ internal sealed class NotesService : INotesService
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
   }
 
+  public async Task<Note> PublishNoteAsync(int id, CancellationToken cancellationToken = default)
+  {
+    var note = await GetNoteContentAsync(id, cancellationToken);
+    note.PublishedAt = DateTime.UtcNow;
+
+    _ = await _dbContext.SaveChangesAsync(cancellationToken);
+    return await MapNoteAsync(note, cancellationToken);
+  }
+
   private async Task<NoteContent> GetNoteContentAsync(int id, CancellationToken cancellationToken = default)
   {
     var note = await _dbContext.Notes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -82,7 +106,8 @@ internal sealed class NotesService : INotesService
     return new Note(
       noteContent.Id,
       noteContent.Value,
-      Markdown.ToHtml(noteContent.Value, _markdownPipeline),
-      noteContent.CreatedAt.ConvertUtcToLocal(timeZone));
+      Markdown.ToHtml(noteContent.Value ?? string.Empty, _markdownPipeline),
+      noteContent.CreatedAt.ConvertUtcToLocal(timeZone),
+      noteContent.PublishedAt?.ConvertUtcToLocal(timeZone));
   }
 }
