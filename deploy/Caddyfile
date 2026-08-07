@@ -2,6 +2,6 @@
   admin off
 }
 
-:80 {
+{$SITE_HOST} {
   reverse_proxy acorn:8080
 }

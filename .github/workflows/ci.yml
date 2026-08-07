@@ -1,0 +1,32 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore src/Solution.slnx
+
+      - name: Build web app
+        run: dotnet build src/Acorn/Acorn.csproj --configuration Release --no-restore
+
+      - name: Build test host
+        run: dotnet build src/Acorn.Core.Tests/Acorn.Core.Tests.csproj --configuration Release --no-restore
+
+      - name: Test with Microsoft.Testing.Platform
+        run: dotnet run --project src/Acorn.Core.Tests/Acorn.Core.Tests.csproj --configuration Release --no-build
