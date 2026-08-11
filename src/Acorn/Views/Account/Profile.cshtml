@@ -1,0 +1,18 @@
+@model ProfileViewModel
+@{
+  ViewData["Title"] = "Profile";
+}
+
+<main class="f-grow-1 f-column f-align-center">
+  <form class="w-480 f-column g-3" asp-route="@Routes.AccountProfilePostRoute" asp-route-returnurl="@ViewData[Acorn.Controllers.AccountController.ViewDataReturnUrl]" method="POST">
+
+    <partial name="_ValidationSummary" />
+
+    <div class="f-column">
+      <label asp-for="TimeZone"></label>
+      <select asp-for="TimeZone" asp-items="Model.TimeZones" required></select>
+    </div>
+
+    <button type="submit">Update</button>
+  </form>
+</main>

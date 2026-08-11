@@ -31,6 +31,10 @@ public static class Routes
   public const string AccountActivateGetRoute = nameof(AccountActivateGetRoute);
   public const string AccountActivatePostRoute = nameof(AccountActivatePostRoute);
 
+  public const string AccountProfileUrlTemplate = "/account/profile";
+  public const string AccountProfileGetRoute = nameof(AccountProfileGetRoute);
+  public const string AccountProfilePostRoute = nameof(AccountProfilePostRoute);
+
 
   public static class Admin
   {

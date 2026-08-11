@@ -5,6 +5,8 @@ using Acorn.Models.AccountViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Acorn.Controllers;
 
@@ -101,6 +103,14 @@ public class AccountController : Controller
       new RegisterViewModel());
   }
 
+  private static TimeZoneInfo GetCanonicalLocalTimeZone()
+  {
+    var timeZone = TimeZoneInfo.Local;
+    if (TimeZoneInfo.TryConvertIanaIdToWindowsId(timeZone.Id, out var windowsId) && TimeZoneInfo.TryConvertWindowsIdToIanaId(windowsId, out var ianaId))
+      return TimeZoneInfo.FindSystemTimeZoneById(ianaId);
+    return TimeZoneInfo.Utc;
+  }
+
   [HttpPost(Routes.AccountRegisterUrlTemplate, Name = Routes.AccountRegisterPostRoute)]
   [AllowAnonymous]
   public async Task<IActionResult> RegisterPostAsync(
@@ -112,7 +122,7 @@ public class AccountController : Controller
 
     if (ModelState.IsValid)
     {
-      TimeZoneInfo tz = TimeZoneInfo.Local;
+      TimeZoneInfo tz = GetCanonicalLocalTimeZone();
 
       if (!string.IsNullOrEmpty(model.TimeZone))
       {
@@ -300,6 +310,45 @@ public class AccountController : Controller
 
     AddErrors(result);
     return View("ResetPassword");
+  }
+
+  [HttpGet(Routes.AccountProfileUrlTemplate, Name = Routes.AccountProfileGetRoute)]
+  public async Task<IActionResult> ProfileGetAsync()
+  {
+    var user = await _userManager.GetUserAsync(User);
+    if (user is null)
+    {
+      await _signInManager.SignOutAsync();
+      return RedirectToRoute(Routes.AccountSignInGetRoute);
+    }
+
+    var formModel = new ProfileFormViewModel()
+    {
+      TimeZone = user.TimeZone
+    };
+
+    return View("Profile", formModel.AsProfileViewModel());
+  }
+
+  [HttpPost(Routes.AccountProfileUrlTemplate, Name = Routes.AccountProfilePostRoute)]
+  public async Task<IActionResult> ProfilePostAsync(ProfileFormViewModel model)
+  {
+    if (!ModelState.IsValid)
+      return View("Profile", model.AsProfileViewModel());
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user is null)
+    {
+      await _signInManager.SignOutAsync();
+      return RedirectToRoute(Routes.AccountSignInGetRoute);
+    }
+
+    user.TimeZone = model.TimeZone;
+    _ = await _userManager.UpdateAsync(user);
+
+    TempData["Message"] = "User profile updated";
+
+    return RedirectToRoute(Routes.AccountProfileGetRoute);
   }
 
   #region Helpers

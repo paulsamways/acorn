@@ -28,6 +28,13 @@
 
   </header>
 
+  @if (TempData.ContainsKey("Message"))
+  {
+    <div class="text-center b danger mr-4 ml-4 mb-4 p-2">
+      @TempData["Message"]
+    </div>
+  }
+
   @RenderBody()
 
   <footer class="p-3 f-row">
@@ -36,7 +43,7 @@
     </div>
     @if (User.Identity?.IsAuthenticated == true)
     {
-      <form asp-action="@Url.RouteUrl(Routes.AccountSignOutPostRoute)" method="POST">
+      <form asp-route="@Routes.AccountSignOutPostRoute" method="POST">
         <button type="submit">Sign-out</button>
       </form>
     }
