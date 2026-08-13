@@ -3,7 +3,7 @@
 
 <main class="f-column f-align-center">
 
-  <form class="f-column g-4 w-1024" asp-route="@Routes.Admin.NotesEditPostRoute" asp-route-id="@Model.Id" method="POST">
+  <form class="f-column p-4 g-4 w-wide" asp-route="@Routes.Admin.NotesEditPostRoute" asp-route-id="@Model.Id" method="POST">
     <textarea asp-for="Value" rows="30"></textarea>
 
     <label>

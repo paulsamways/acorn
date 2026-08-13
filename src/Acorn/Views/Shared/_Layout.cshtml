@@ -37,19 +37,20 @@
 
   @RenderBody()
 
-  <footer class="p-3 f-row">
-    <div class="text-center f-grow-1 muted">
+  <footer class="p-3 f-row f-align-center">
+    <div class="f-1"></div>
+    <div class="text-center f-3 muted">
       &copy; Copyright @DateTime.Now.Year, Paul Samways
     </div>
     @if (User.Identity?.IsAuthenticated == true)
     {
-      <form asp-route="@Routes.AccountSignOutPostRoute" method="POST">
+      <form class="f-1 f-row f-justify-end" asp-route="@Routes.AccountSignOutPostRoute" method="POST">
         <button type="submit">Sign-out</button>
       </form>
     }
     else
     {
-      <div>
+      <div class="f-1 text-right">
         <a class="muted" asp-route="@Routes.AccountSignInGetRoute" target="_self">&pi;</a>
       </div>
     }
