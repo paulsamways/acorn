@@ -6,6 +6,7 @@
     --text-color-danger: oklch(70.5% 0.213 47.604);
 
     --background-color: oklch(21.8% 0.008 223.9);
+    --background-color-z0: oklch(23% 0.008 223.9);
     --background-color-z1: oklch(27.5% 0.011 216.9);
     --background-color-z2: oklch(37.8% 0.015 216);
 

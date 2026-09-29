@@ -278,6 +278,21 @@
       width: 72rem;
     }
   }
+  .r-narrow {
+    /* .r-narrow {
+    } */
+    .r-wide {
+      display: none;
+    }
+  }
+  @media (min-width: 1280px) {
+    .r-narrow {
+      display: none;
+    }
+    .r-wide {
+      display: initial;
+    }
+  }
 
   .shadow {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -325,5 +340,22 @@
   }
   .prose *:first-child {
     margin-top: 0;
+  }
+
+  .small-text {
+    font-size: .9em;
+  }
+
+  img.avatar {
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .h-6 {
+    height: 6rem;
   }
 }

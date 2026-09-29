@@ -13,50 +13,78 @@
 </head>
 
 <body>
-  <header class="p-4 f-row f-justify-space-between">
-
-    <div>
+  <div class="page">
+    <header class="h-6 p-4 f-row f-justify-space-between f-align-center">
       <h1>paul<span class="muted">.</span>samways<span class="muted">.id.au</span></h1>
-    </div>
-    <nav>
-      <a asp-route="@Routes.HomeIndexGetRoute">/home</a>
-      @if (User.Identity?.IsAuthenticated == true)
-      {
-        <a asp-route="@Routes.Admin.NotesIndexGetRoute">/admin</a>
-      }
-    </nav>
+      <button id="sidebarShow">
+        <svg style="width: 24px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+    </header>
 
-  </header>
-
-  @if (TempData.ContainsKey("Message"))
-  {
-    <div class="text-center b danger mr-4 ml-4 mb-4 p-2">
-      @TempData["Message"]
-    </div>
-  }
-
-  @RenderBody()
-
-  <footer class="p-3 f-row f-align-center">
-    <div class="f-1"></div>
-    <div class="text-center f-3 muted">
-      &copy; Copyright @DateTime.Now.Year, Paul Samways
-    </div>
-    @if (User.Identity?.IsAuthenticated == true)
+    @if (TempData.ContainsKey("Message"))
     {
-      <form class="f-1 f-row f-justify-end" asp-route="@Routes.AccountSignOutPostRoute" method="POST">
-        <button type="submit">Sign-out</button>
-      </form>
-    }
-    else
-    {
-      <div class="f-1 text-right">
-        <a class="muted" asp-route="@Routes.AccountSignInGetRoute" target="_self">&pi;</a>
+      <div class="text-center b danger mr-4 ml-4 mb-4 p-2">
+        @TempData["Message"]
       </div>
     }
-  </footer>
 
-  <!-- <script src="~/js/pages/all.js" defer asp-append-version="true"></script> -->
+    @RenderBody()
+
+    <footer class="p-3 f-row f-align-center">
+      <div class="text-center f-3 muted">
+        &copy; Copyright @DateTime.Now.Year, Paul Samways
+      </div>
+    </footer>
+  </div>
+
+  <div class="sidebar hidden">
+    <header class="h-6 p-4 f-row f-justify-space-between f-align-center">
+      <button id="sidebarHide">
+        <svg style="width: 24px" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+        </svg>
+      </button>
+      <h2 class="muted">~:/profile</h2>
+    </header>
+    <main>
+      <nav class="f-column f-align-end g-4 p-4">
+        <a asp-route="@Routes.HomeIndexGetRoute">home</a>
+        <a href="#">posts</a>
+        <a href="#">contact</a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+          <a asp-route="@Routes.Admin.NotesIndexGetRoute">admin</a>
+        }
+      </nav>
+    </main>
+    <footer class="p-4 f-row f-align-center">
+      @if (User.Identity?.IsAuthenticated == true)
+      {
+        <div class="f-row g-2">
+          <a asp-route="@Routes.AccountProfileGetRoute">
+            <img gravatar-email="@User.Identity.Name" />
+          </a>
+          <div class="f-column f-justify-space-between small-text">
+              <span>@User.Identity.Name</span>
+              <a asp-route="@Routes.AccountProfileGetRoute">Update profile</a>
+          </div>
+        </div>
+        <form class="f-1 f-row f-justify-end" asp-route="@Routes.AccountSignOutPostRoute" method="POST">
+          <button type="submit">Sign-out</button>
+        </form>
+      }
+      else
+      {
+        <div class="f-1 text-right">
+          <a class="muted" asp-route="@Routes.AccountSignInGetRoute" target="_self">&pi;</a>
+        </div>
+      }
+    </footer>
+  </div>
+
+  <script src="~/js/all.js" defer asp-append-version="true"></script>
 
   @await RenderSectionAsync("Scripts", required: false)
 </body>
