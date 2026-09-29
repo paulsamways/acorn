@@ -9,6 +9,7 @@ public static class ServiceCollectionExtensions
   public static IServiceCollection AddContentManagement(this IServiceCollection services)
   {
     return services
-      .AddScoped<INotesService, NotesService>();
+      .AddScoped<INotesService, NotesService>()
+      .AddScoped<IPostsService, PostsService>();
   }
 }

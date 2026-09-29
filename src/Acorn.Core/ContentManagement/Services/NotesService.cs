@@ -74,7 +74,7 @@ internal sealed class NotesService : INotesService
     return await MapNoteAsync(note, cancellationToken);
   }
 
-  public async Task DeleteNoteAsync(int id, CancellationToken cancellationToken)
+  public async Task DeleteNoteAsync(int id, CancellationToken cancellationToken = default)
   {
     var note = await GetNoteContentAsync(id, cancellationToken);
     note.DeletedAt = DateTime.UtcNow;

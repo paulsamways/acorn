@@ -15,7 +15,7 @@ public interface INotesService
 
   Task<Note> UpdateNoteAsync(int id, string note, CancellationToken cancellationToken = default);
 
-  Task DeleteNoteAsync(int id, CancellationToken cancellationToken);
+  Task DeleteNoteAsync(int id, CancellationToken cancellationToken = default);
 
-  Task<Note> PublishNoteAsync(int id, CancellationToken cancellationToken);
+  Task<Note> PublishNoteAsync(int id, CancellationToken cancellationToken = default);
 }
