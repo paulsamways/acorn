@@ -40,5 +40,7 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
 
   public DbSet<NoteContent> Notes => Set<NoteContent>();
 
+  public DbSet<PostContent> Posts => Set<PostContent>();
+
   public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 }

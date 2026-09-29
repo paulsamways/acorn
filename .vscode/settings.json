@@ -2,5 +2,10 @@
   "terminal.integrated.tabs.title": "${process}${separator}${sequence}",
   "dotnet.testWindow.useTestingPlatformProtocol": true,
   "editor.tabSize": 2,
-  "css.styleSheets": ["src/Acorn/wwwroot/**/*.css"]
+  "css.styleSheets": [
+    "src/Acorn/wwwroot/**/*.css"
+  ],
+  "chat.tools.terminal.autoApprove": {
+    "dotnet run": true
+  }
 }

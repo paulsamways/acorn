@@ -13,7 +13,8 @@ public sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<Co
 
     builder
       .HasDiscriminator<string>("content_type")
-      .HasValue<NoteContent>("note");
+      .HasValue<NoteContent>("note")
+      .HasValue<PostContent>("post");
 
     builder
       .HasKey(x => x.Id);
