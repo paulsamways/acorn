@@ -55,7 +55,8 @@
         <a href="#">contact</a>
         @if (User.Identity?.IsAuthenticated == true)
         {
-          <a asp-route="@Routes.Admin.NotesIndexGetRoute">admin</a>
+          <a asp-route="@Routes.Admin.NotesIndexGetRoute">admin: notes</a>
+          <a asp-route="@Routes.Admin.PostsIndexGetRoute">admin: posts</a>
         }
       </nav>
     </main>

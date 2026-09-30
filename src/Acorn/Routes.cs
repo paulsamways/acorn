@@ -41,6 +41,21 @@ internal static class Routes
     public const string AreaName = "admin";
     private const string AreaUrlPrefix = "/admin";
 
+    public const string PostsIndexUrlTemplate = AreaUrlPrefix + "/posts";
+    public const string PostsIndexGetRoute = nameof(Admin) + nameof(PostsIndexGetRoute);
+    public const string PostsIndexPostRoute = nameof(Admin) + nameof(PostsIndexPostRoute);
+
+    public const string PostsEditUrlTemplate = AreaUrlPrefix + "/posts/edit/{id}";
+    public const string PostsEditGetRoute = nameof(Admin) + nameof(PostsEditGetRoute);
+    public const string PostsEditPostRoute = nameof(Admin) + nameof(PostsEditPostRoute);
+
+    public const string PostsPublishUrlTemplate = AreaUrlPrefix + "/posts/publish/{id}";
+    public const string PostsPublishPostRoute = nameof(Admin) + nameof(PostsPublishPostRoute);
+
+    public const string PostsArchiveUrlTemplate = AreaUrlPrefix + "/posts/archive/{id}";
+    public const string PostsArchiveGetRoute = nameof(Admin) + nameof(PostsArchiveGetRoute);
+    public const string PostsArchivePostRoute = nameof(Admin) + nameof(PostsArchivePostRoute);
+
     public const string NotesIndexUrlTemplate = AreaUrlPrefix + "/notes";
     public const string NotesIndexGetRoute = nameof(Admin) + nameof(NotesIndexGetRoute);
     public const string NotesIndexPostRoute = nameof(Admin) + nameof(NotesIndexPostRoute);

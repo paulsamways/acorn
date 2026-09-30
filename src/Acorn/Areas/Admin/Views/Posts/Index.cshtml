@@ -1,0 +1,38 @@
+@model IEnumerable<Acorn.Core.ContentManagement.Models.Post>
+
+<main class="f-column f-align-center">
+  <header class="w-wide p-4 f-row f-justify-space-between f-align-center">
+    <h2>Posts</h2>
+    <form asp-route="@Routes.Admin.PostsIndexPostRoute" method="POST">
+      <button type="submit">New post</button>
+    </form>
+  </header>
+
+  <div class="f-column w-wide g-3 p-4">
+    @foreach (var post in Model)
+    {
+      <article class="f-column g-2 p-3">
+        <div class="f-row f-justify-space-between f-align-center">
+          <h3>@(string.IsNullOrWhiteSpace(post.Title) ? "Untitled post" : post.Title)</h3>
+          <span class="muted">
+            @(post.PublishedAt is null ? "Draft" : $"Published {post.PublishedAt:g}")
+          </span>
+        </div>
+
+        @if (post.Tags.Count > 0)
+        {
+          <p class="muted">@string.Join(", ", post.Tags)</p>
+        }
+
+        <div class="prose">
+          @Html.Raw(post.BodyHtml)
+        </div>
+
+        <div class="f-row g-3">
+          <a asp-route="@Routes.Admin.PostsEditGetRoute" asp-route-id="@post.Id">Edit</a>
+          <a asp-route="@Routes.Admin.PostsArchiveGetRoute" asp-route-id="@post.Id">Archive</a>
+        </div>
+      </article>
+    }
+  </div>
+</main>

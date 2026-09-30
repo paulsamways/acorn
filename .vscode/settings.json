@@ -6,6 +6,7 @@
     "src/Acorn/wwwroot/**/*.css"
   ],
   "chat.tools.terminal.autoApprove": {
-    "dotnet run": true
+    "dotnet run": true,
+    "dotnet build": true
   }
 }

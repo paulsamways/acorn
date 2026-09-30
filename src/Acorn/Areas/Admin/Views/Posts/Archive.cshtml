@@ -1,0 +1,12 @@
+@model Acorn.Core.ContentManagement.Models.Post
+
+<main class="f-column f-align-center">
+  <form class="f-column g-4 w-narrow p-4" asp-route="@Routes.Admin.PostsArchivePostRoute" asp-route-id="@Model.Id" method="POST">
+    <p class="text-center">Are you sure you want to archive "@Model.Title"?</p>
+
+    <div class="f-row f-justify-center g-2">
+      <a asp-route="@Routes.Admin.PostsEditGetRoute" asp-route-id="@Model.Id" role="button">Go back</a>
+      <button class="danger" type="submit">Confirm archive</button>
+    </div>
+  </form>
+</main>

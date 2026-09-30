@@ -1,11 +1,13 @@
 using Acorn.Areas.Admin.Models.Notes;
 using Acorn.Core.ContentManagement;
 using Acorn.Core.ContentManagement.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Acorn.Areas.Admin.Controllers;
 
 /// <summary>Handles administrative note management actions.</summary>
+[Authorize]
 [Area(Routes.Admin.AreaName)]
 public sealed class NotesController : Controller
 {

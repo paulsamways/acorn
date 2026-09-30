@@ -1,0 +1,43 @@
+@model Acorn.Areas.Admin.Models.Posts.EditViewModel
+
+<main class="f-column f-align-center">
+  <div class="f-column w-wide g-4 p-4">
+    <header class="f-row f-justify-space-between f-align-center">
+      <h2>@(Model.Id == 0 ? "New post" : "Edit post")</h2>
+      @if (Model.PublishedAt is null)
+      {
+        <form asp-route="@Routes.Admin.PostsPublishPostRoute" asp-route-id="@Model.Id" method="POST">
+          <button type="submit">Publish</button>
+        </form>
+      }
+      else
+      {
+        <span class="muted">Published @Model.PublishedAt.Value</span>
+      }
+    </header>
+
+    <form class="f-column g-3" asp-route="@Routes.Admin.PostsEditPostRoute" asp-route-id="@Model.Id" method="POST">
+      <div asp-validation-summary="All" class="danger"></div>
+
+      <label asp-for="Title">Title</label>
+      <input asp-for="Title" />
+      <span asp-validation-for="Title" class="danger"></span>
+
+      <label asp-for="Tags">Tags</label>
+      <input asp-for="Tags" />
+      <span asp-validation-for="Tags" class="danger"></span>
+
+      <label asp-for="Body">Body</label>
+      <textarea asp-for="Body" rows="24"></textarea>
+      <span asp-validation-for="Body" class="danger"></span>
+
+      <div class="f-row f-justify-space-between">
+        @if (Model.Id > 0)
+        {
+          <a asp-route="@Routes.Admin.PostsArchiveGetRoute" asp-route-id="@Model.Id" role="button" class="danger">Archive</a>
+        }
+        <button type="submit">Save changes</button>
+      </div>
+    </form>
+  </div>
+</main>
