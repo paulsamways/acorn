@@ -3,6 +3,7 @@
     --text-color-primary: oklch(87.2% 0.007 219.6);
     --text-color-muted: oklch(56% 0.021 213.5);
     --text-color-highlight: oklch(69.6% 0.17 162.48);
+    --text-color-highlight-hover: oklch(88.328% 0.19592 161.273);
     --text-color-danger: oklch(70.5% 0.213 47.604);
 
     --background-color: oklch(21.8% 0.008 223.9);

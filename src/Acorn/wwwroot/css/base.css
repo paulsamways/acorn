@@ -67,12 +67,19 @@
   body > .sidebar nav > a:hover {
     text-decoration: underline;
   }
-  h1 {
+  h1, h2, h3, h4, h5, h6 {
     color: var(--text-color-highlight);
+  }
+
+  a, button, input[type=submit] {
+    transition: color 160ms ease, background-color 160ms ease;
   }
 
   a {
     color: var(--text-color-highlight);
+  }
+  a:hover {
+    color: var(--text-color-highlight-hover);
   }
 
   hr {
@@ -126,12 +133,18 @@
     border-radius: var(--border-radius);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.3s ease; /* Smooth transition for interaction */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     outline: 1px solid transparent;
     text-decoration: none;
   }
   button:hover, input[type=submit]:hover, a[role=button]:hover {
+    color: var(--text-color-highlight-hover);
     background-color: var(--input-background-color-z1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a, button, input[type=submit] {
+      transition: none;
+    }
   }
 }
