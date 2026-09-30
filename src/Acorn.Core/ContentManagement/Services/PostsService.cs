@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.ContentManagement.Services;
 
-internal sealed class PostsService : IPostsService
+internal sealed class PostsService : IPostsService, IPostAuthoringService
 {
   private readonly ApplicationDbContext _dbContext;
   private readonly IUserContextService _userContextService;
@@ -59,7 +59,7 @@ internal sealed class PostsService : IPostsService
     var posts = await _dbContext
       .Posts
       .Where(x => x.PublishedAt != null)
-      .OrderByDescending(x => x.CreatedAt)
+      .OrderByDescending(x => x.PublishedAt)
       .ToArrayAsync(cancellationToken);
 
     return await Task.WhenAll(posts.Select(MapPostAsync));

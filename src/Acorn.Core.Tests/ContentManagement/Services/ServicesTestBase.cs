@@ -29,6 +29,8 @@ internal abstract class ServicesTestBase
 
   protected IPostsService PostsService { get; private set; } = null!;
 
+  protected IPostAuthoringService PostAuthoringService { get; private set; } = null!;
+
   [Before(Test)]
   public async Task InitializeServicesAsync()
   {
@@ -53,6 +55,7 @@ internal abstract class ServicesTestBase
     _serviceScope = _serviceProvider.CreateScope();
     NotesService = _serviceScope.ServiceProvider.GetRequiredService<INotesService>();
     PostsService = _serviceScope.ServiceProvider.GetRequiredService<IPostsService>();
+    PostAuthoringService = _serviceScope.ServiceProvider.GetRequiredService<IPostAuthoringService>();
   }
 
   [After(Test)]

@@ -11,11 +11,11 @@ namespace Acorn.Areas.Admin.Controllers;
 [Area(Routes.Admin.AreaName)]
 public sealed class PostsController : Controller
 {
-  private readonly IPostsService _postsService;
+  private readonly IPostAuthoringService _postsService;
 
   /// <summary>Creates the posts controller.</summary>
   /// <param name="postsService">The post management service.</param>
-  public PostsController(IPostsService postsService)
+  public PostsController(IPostAuthoringService postsService)
   {
     _postsService = postsService;
   }
