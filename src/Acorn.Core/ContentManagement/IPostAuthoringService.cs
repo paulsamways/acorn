@@ -23,7 +23,7 @@ public interface IPostAuthoringService
   /// <param name="excerpt">Optional Markdown excerpt for post listings.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The created post.</returns>
-  Task<Post> CreatePostAsync(string title, string body, IEnumerable<string>? tags = null, string? excerpt = null, CancellationToken cancellationToken = default);
+  Task<Post> CreatePostAsync(string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default);
 
   /// <summary>Updates an existing post.</summary>
   /// <param name="id">The post identifier.</param>
@@ -33,7 +33,7 @@ public interface IPostAuthoringService
   /// <param name="excerpt">Optional replacement Markdown excerpt.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The updated post.</returns>
-  Task<Post> UpdatePostAsync(int id, string title, string body, IEnumerable<string>? tags = null, string? excerpt = null, CancellationToken cancellationToken = default);
+  Task<Post> UpdatePostAsync(int id, string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default);
 
   /// <summary>Soft-deletes a post.</summary>
   /// <param name="id">The post identifier.</param>

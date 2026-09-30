@@ -22,7 +22,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     _markdownPipeline = markdownPipeline;
   }
 
-  public async Task<Post> CreatePostAsync(string title, string body, IEnumerable<string>? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
+  public async Task<Post> CreatePostAsync(string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
   {
     var postContent = new PostContent
     {
@@ -78,7 +78,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await MapPostAsync(post);
   }
 
-  public async Task<Post> UpdatePostAsync(int id, string title, string body, IEnumerable<string>? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
+  public async Task<Post> UpdatePostAsync(int id, string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
   {
     var post = await GetPostContentAsync(id, cancellationToken);
     post.Title = title;
@@ -138,4 +138,5 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
 
   private static string? NormalizeExcerpt(string? excerpt)
     => string.IsNullOrWhiteSpace(excerpt) ? null : excerpt;
+
 }

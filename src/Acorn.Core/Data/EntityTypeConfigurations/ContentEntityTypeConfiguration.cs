@@ -39,7 +39,7 @@ internal sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<
       .HasColumnName("published_at");
 
     builder
-      .Property(x => x.PublishedAt)
+      .Property(x => x.DeletedAt)
       .HasColumnName("deleted_at");
 
     builder

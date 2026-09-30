@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Acorn.Core.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260930205959_AddPostExcerpt")]
-    partial class AddPostExcerpt
+    [Migration("20260930223344_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,11 +36,12 @@ namespace Acorn.Core.Data.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("deleted_at");
 
                     b.Property<DateTime?>("PublishedAt")
                         .HasColumnType("TEXT")
-                        .HasColumnName("deleted_at");
+                        .HasColumnName("published_at");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT")

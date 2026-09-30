@@ -1,3 +1,4 @@
+using Acorn.Core.ContentManagement.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
@@ -7,19 +8,20 @@ internal class PostAuthoringServiceTests : ServicesTestBase
   [Test]
   public async Task CreatePostAsync_CreatesForCurrentUserAndRendersMarkdownAndLocalTime()
   {
-    var post = await PostAuthoringService.CreatePostAsync("A title", "# Hello", ["testing"], "A **short summary**");
+    var post = await PostAuthoringService.CreatePostAsync("A title", "# Hello", TagSet.Parse("Testing Foo Bar"), "A **short summary**");
 
     await Assert.That(post.Title).IsEqualTo("A title");
     await Assert.That(post.Excerpt).IsEqualTo("A **short summary**");
     await Assert.That(post.ExcerptHtml).IsEqualTo("<p>A <strong>short summary</strong></p>\n");
     await Assert.That(post.BodyHtml).IsEqualTo("<h1>Hello</h1>\n");
-    await Assert.That(post.Tags).IsEquivalentTo(["testing"]);
+    await Assert.That(post.Tags).IsEquivalentTo(["testing", "foo", "bar"]);
     await Assert.That(post.CreatedAt).IsEqualTo(ConvertToUserTime(DbContext.Posts.Local.Single(x => x.Id == post.Id).CreatedAt));
     await Assert.That(post.CreatedAt.Offset).IsEqualTo(UserTimeZone.BaseUtcOffset);
 
     DbContext.ChangeTracker.Clear();
     var savedPost = await DbContext.Posts.SingleAsync(x => x.Id == post.Id);
     await Assert.That(savedPost.AuthorId).IsEqualTo(CurrentUserId);
+    await Assert.That(savedPost.Tags).IsEquivalentTo(["testing", "foo", "bar"]);
   }
 
   [Test]
@@ -58,23 +60,23 @@ internal class PostAuthoringServiceTests : ServicesTestBase
   [Test]
   public async Task UpdatePostAsync_PersistsUpdatedFields()
   {
-    var post = await PostAuthoringService.CreatePostAsync("Original title", "Original body", ["draft"]);
+    var post = await PostAuthoringService.CreatePostAsync("Original title", "Original body", TagSet.Parse("draft"));
     DbContext.ChangeTracker.Clear();
 
-    var updatedPost = await PostAuthoringService.UpdatePostAsync(post.Id, "Updated title", "## Updated body", ["published"], "Updated **excerpt**");
+    var updatedPost = await PostAuthoringService.UpdatePostAsync(post.Id, "Updated title", "## Updated body", TagSet.Parse("Published New Tag"), "Updated **excerpt**");
 
     await Assert.That(updatedPost.Title).IsEqualTo("Updated title");
     await Assert.That(updatedPost.Excerpt).IsEqualTo("Updated **excerpt**");
     await Assert.That(updatedPost.ExcerptHtml).IsEqualTo("<p>Updated <strong>excerpt</strong></p>\n");
     await Assert.That(updatedPost.Body).IsEqualTo("## Updated body");
     await Assert.That(updatedPost.BodyHtml).IsEqualTo("<h2>Updated body</h2>\n");
-    await Assert.That(updatedPost.Tags).IsEquivalentTo(["published"]);
+    await Assert.That(updatedPost.Tags).IsEquivalentTo(["published", "new", "tag"]);
 
     DbContext.ChangeTracker.Clear();
     var savedPost = await DbContext.Posts.SingleAsync(x => x.Id == post.Id);
     await Assert.That(savedPost.Title).IsEqualTo("Updated title");
     await Assert.That(savedPost.Excerpt).IsEqualTo("Updated **excerpt**");
-    await Assert.That(savedPost.Tags).IsEquivalentTo(["published"]);
+    await Assert.That(savedPost.Tags).IsEquivalentTo(["published", "new", "tag"]);
   }
 
   [Test]

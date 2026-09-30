@@ -21,7 +21,7 @@
 
         @if (post.Tags.Count > 0)
         {
-          <p class="muted">@string.Join(", ", post.Tags)</p>
+          <p class="muted">@string.Join(", ", post.Tags.OrderBy(tag => tag, StringComparer.Ordinal))</p>
         }
 
         <div class="prose">

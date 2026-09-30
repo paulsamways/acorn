@@ -65,7 +65,19 @@ public sealed class PostsController : Controller
       return View("Edit", model);
     }
 
-    _ = await _postsService.UpdatePostAsync(id, model.Title, model.Body, ParseTags(model.Tags), model.Excerpt, cancellationToken);
+    TagSet tags;
+    try
+    {
+      tags = TagSet.Parse(model.Tags);
+    }
+    catch (ArgumentException exception)
+    {
+      ModelState.AddModelError(nameof(model.Tags), exception.Message);
+      model.PublishedAt = (await _postsService.GetPostAsync(id, cancellationToken)).PublishedAt;
+      return View("Edit", model);
+    }
+
+    _ = await _postsService.UpdatePostAsync(id, model.Title, model.Body, tags, model.Excerpt, cancellationToken);
     return RedirectToRoute(Routes.Admin.PostsIndexGetRoute);
   }
 
@@ -110,13 +122,8 @@ public sealed class PostsController : Controller
       Title = post.Title,
       Body = post.Body,
       Excerpt = post.Excerpt ?? string.Empty,
-      Tags = string.Join(", ", post.Tags),
+      Tags = string.Join(", ", post.Tags.OrderBy(tag => tag, StringComparer.Ordinal)),
       PublishedAt = post.PublishedAt
     };
-  }
-
-  private static IEnumerable<string> ParseTags(string tags)
-  {
-    return tags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
   }
 }

@@ -19,7 +19,8 @@ public sealed class EditViewModel
   /// <summary>Gets or sets an optional Markdown excerpt for post listings.</summary>
   public string Excerpt { get; set; } = string.Empty;
 
-  /// <summary>Gets or sets comma-separated post tags.</summary>
+  /// <summary>Gets or sets space- or comma-separated post tags.</summary>
+  [RegularExpression(@"^[A-Za-z0-9_,\s-]*$", ErrorMessage = "Tags may contain only letters, numbers, underscores, hyphens, and can be separated by spaces or commas.")]
   public string Tags { get; set; } = string.Empty;
 
   /// <summary>Gets or sets the publication time, if the post is published.</summary>

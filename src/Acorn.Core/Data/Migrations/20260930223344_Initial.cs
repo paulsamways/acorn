@@ -94,11 +94,15 @@ namespace Acorn.Core.Data.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     created_at = table.Column<DateTime>(type: "TEXT", nullable: false),
                     updated_at = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    published_at = table.Column<DateTime>(type: "TEXT", nullable: true),
                     deleted_at = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    DeletedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
                     author_id = table.Column<Guid>(type: "TEXT", nullable: false),
                     content_type = table.Column<string>(type: "TEXT", maxLength: 8, nullable: false),
-                    value = table.Column<string>(type: "TEXT", nullable: true)
+                    value = table.Column<string>(type: "TEXT", nullable: true),
+                    title = table.Column<string>(type: "TEXT", nullable: true),
+                    body = table.Column<string>(type: "TEXT", nullable: true),
+                    excerpt = table.Column<string>(type: "TEXT", nullable: true),
+                    tags = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {

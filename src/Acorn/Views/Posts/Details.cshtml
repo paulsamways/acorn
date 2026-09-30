@@ -17,7 +17,7 @@
     @if (Model.Tags.Count > 0)
     {
       <div class="f-row f-justify-end">
-        @foreach (var tag in Model.Tags)
+        @foreach (var tag in Model.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
         {
           <span class="badge">@tag</span>
         }

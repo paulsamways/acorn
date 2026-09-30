@@ -33,11 +33,12 @@ namespace Acorn.Core.Data.Migrations
                         .HasColumnName("created_at");
 
                     b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("deleted_at");
 
                     b.Property<DateTime?>("PublishedAt")
                         .HasColumnType("TEXT")
-                        .HasColumnName("deleted_at");
+                        .HasColumnName("published_at");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("TEXT")

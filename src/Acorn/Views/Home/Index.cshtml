@@ -30,7 +30,7 @@
         @if (post.Tags.Count > 0)
         {
           <div class="f-row f-justify-end">
-            @foreach (var tag in post.Tags)
+            @foreach (var tag in post.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
             {
               <a href="#" class="badge">@tag</a>
             }
