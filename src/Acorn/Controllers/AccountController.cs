@@ -5,22 +5,26 @@ using Acorn.Models.AccountViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Acorn.Controllers;
 
+/// <summary>Handles account registration, authentication, activation, and profile actions.</summary>
 [Authorize]
 public class AccountController : Controller
 {
-  public const string ViewDataReturnUrl = "ReturnUrl";
-  public const string RegistrationEmailSessionKey = "RegistrationEmail";
+  internal const string ViewDataReturnUrl = "ReturnUrl";
+  private const string RegistrationEmailSessionKey = "RegistrationEmail";
 
   private readonly UserManager<User> _userManager;
   private readonly SignInManager<User> _signInManager;
   private readonly IEmailService _emailService;
   private readonly ILogger _logger;
 
+  /// <summary>Creates the account controller.</summary>
+  /// <param name="userManager">The user manager.</param>
+  /// <param name="signInManager">The sign-in manager.</param>
+  /// <param name="emailService">The email service.</param>
+  /// <param name="logger">The controller logger.</param>
   public AccountController(
     UserManager<User> userManager,
     SignInManager<User> signInManager,
@@ -33,6 +37,10 @@ public class AccountController : Controller
     _logger = logger;
   }
 
+  /// <summary>Displays the sign-in form.</summary>
+  /// <param name="email">An optional email to prefill.</param>
+  /// <param name="returnUrl">An optional local URL to return to after sign-in.</param>
+  /// <returns>The sign-in page or a redirect for an authenticated user.</returns>
   [HttpGet(Routes.AccountSignInUrlTemplate, Name = Routes.AccountSignInGetRoute)]
   [AllowAnonymous]
   public IActionResult SignInGet(string? email = null, string? returnUrl = null)
@@ -50,6 +58,10 @@ public class AccountController : Controller
     return View("SignIn", model);
   }
 
+  /// <summary>Attempts to sign in the user.</summary>
+  /// <param name="model">The submitted sign-in details.</param>
+  /// <param name="returnUrl">An optional local URL to return to after sign-in.</param>
+  /// <returns>The next MVC action result.</returns>
   [HttpPost(Routes.AccountSignInUrlTemplate, Name = Routes.AccountSignInPostRoute)]
   [AllowAnonymous]
   public async Task<IActionResult> SignInAsync(SignInViewModel model, string? returnUrl)
@@ -89,6 +101,9 @@ public class AccountController : Controller
     return View("SignIn", model);
   }
 
+  /// <summary>Displays the registration form.</summary>
+  /// <param name="returnUrl">An optional local URL to return to after registration.</param>
+  /// <returns>The registration page or a redirect for an authenticated user.</returns>
   [HttpGet(Routes.AccountRegisterUrlTemplate, Name = Routes.AccountRegisterGetRoute)]
   [AllowAnonymous]
   public IActionResult RegisterGet(string? returnUrl = null)
@@ -111,6 +126,11 @@ public class AccountController : Controller
     return TimeZoneInfo.Utc;
   }
 
+  /// <summary>Creates an account and sends an activation email.</summary>
+  /// <param name="model">The submitted registration details.</param>
+  /// <param name="returnUrl">An optional local URL to return to after registration.</param>
+  /// <param name="cancellationToken">A token used to cancel email delivery.</param>
+  /// <returns>The next MVC action result.</returns>
   [HttpPost(Routes.AccountRegisterUrlTemplate, Name = Routes.AccountRegisterPostRoute)]
   [AllowAnonymous]
   public async Task<IActionResult> RegisterPostAsync(
@@ -159,6 +179,8 @@ public class AccountController : Controller
     return View("Register", model);
   }
 
+  /// <summary>Displays the registration completion page.</summary>
+  /// <returns>The completion page or a redirect if registration is incomplete.</returns>
   [HttpGet(Routes.AccountRegisterCompleteUrlTemplate, Name = Routes.AccountRegisterCompleteGetRoute)]
   [AllowAnonymous]
   public IActionResult RegisterCompleteGet()
@@ -171,6 +193,8 @@ public class AccountController : Controller
     return View("RegisterComplete", new RegisterCompleteViewModel(registrationEmail));
   }
 
+  /// <summary>Signs out the current user.</summary>
+  /// <returns>A redirect to the sign-in page.</returns>
   [HttpPost(Routes.AccountSignOutUrlTemplate, Name = Routes.AccountSignOutPostRoute)]
   public async Task<IActionResult> SignOutPostAsync()
   {
@@ -179,6 +203,10 @@ public class AccountController : Controller
     return RedirectToRoute(Routes.AccountSignInGetRoute);
   }
 
+  /// <summary>Displays the account activation form.</summary>
+  /// <param name="email">The email address of the account to activate.</param>
+  /// <param name="code">The email activation code.</param>
+  /// <returns>The activation page or a redirect if the account cannot be activated.</returns>
   [HttpGet(Routes.AccountActivateUrlTemplate, Name = Routes.AccountActivateGetRoute)]
   [AllowAnonymous]
   public async Task<IActionResult> ActivateGetAsync(string email, string code)
@@ -200,6 +228,9 @@ public class AccountController : Controller
     });
   }
 
+  /// <summary>Confirms an email address, sets the account password, and signs in the user.</summary>
+  /// <param name="model">The submitted activation details.</param>
+  /// <returns>The next MVC action result.</returns>
   [HttpPost(Routes.AccountActivateUrlTemplate, Name = Routes.AccountActivatePostRoute)]
   [AllowAnonymous]
   public async Task<IActionResult> ActivatePostAsync(ActivateViewModel model)
@@ -233,6 +264,8 @@ public class AccountController : Controller
   }
 
 
+  /// <summary>Displays the forgotten-password form.</summary>
+  /// <returns>The form or a redirect for an authenticated user.</returns>
   [HttpGet(Routes.AccountForgotPasswordUrlTemplate, Name = Routes.AccountForgotPasswordGetRoute)]
   [AllowAnonymous]
   public IActionResult ForgotPasswordGet()
@@ -243,6 +276,10 @@ public class AccountController : Controller
     return View("ForgotPassword");
   }
 
+  /// <summary>Sends a password-reset link when the account is eligible.</summary>
+  /// <param name="model">The account email to reset.</param>
+  /// <param name="cancellationToken">A token used to cancel email delivery.</param>
+  /// <returns>The confirmation page or the form with validation errors.</returns>
   [HttpPost(Routes.AccountForgotPasswordUrlTemplate, Name = Routes.AccountForgotPasswordPostRoute)]
   [AllowAnonymous]
   public async Task<IActionResult> ForgotPasswordPostAsync(
@@ -280,6 +317,10 @@ public class AccountController : Controller
     return View("ForgotPassword");
   }
 
+  /// <summary>Displays the password-reset form.</summary>
+  /// <param name="email">The email address of the account being reset.</param>
+  /// <param name="code">The password-reset code.</param>
+  /// <returns>The reset form or a redirect if the request is invalid.</returns>
   [HttpGet(Routes.AccountResetPasswordUrlTemplate, Name = Routes.AccountResetPasswordGetRoute)]
   [AllowAnonymous]
   public IActionResult ResetPasswordGet(string email, string code)
@@ -293,6 +334,9 @@ public class AccountController : Controller
     return View("ResetPassword", new ResetPasswordViewModel(email, code));
   }
 
+  /// <summary>Resets the account password.</summary>
+  /// <param name="model">The submitted reset details.</param>
+  /// <returns>The confirmation page or the form with validation errors.</returns>
   [HttpPost(Routes.AccountResetPasswordUrlTemplate, Name = Routes.AccountResetPasswordPostRoute)]
   [AllowAnonymous]
   public async Task<IActionResult> ResetPasswordPostAsync(ResetPasswordViewModel model)
@@ -312,6 +356,8 @@ public class AccountController : Controller
     return View("ResetPassword");
   }
 
+  /// <summary>Displays the current user's profile form.</summary>
+  /// <returns>The profile page or a redirect when no current user is available.</returns>
   [HttpGet(Routes.AccountProfileUrlTemplate, Name = Routes.AccountProfileGetRoute)]
   public async Task<IActionResult> ProfileGetAsync()
   {
@@ -330,6 +376,9 @@ public class AccountController : Controller
     return View("Profile", formModel.AsProfileViewModel());
   }
 
+  /// <summary>Updates the current user's profile.</summary>
+  /// <param name="model">The submitted profile details.</param>
+  /// <returns>The profile page or a redirect after a successful update.</returns>
   [HttpPost(Routes.AccountProfileUrlTemplate, Name = Routes.AccountProfilePostRoute)]
   public async Task<IActionResult> ProfilePostAsync(ProfileFormViewModel model)
   {

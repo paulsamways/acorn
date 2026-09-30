@@ -1,6 +1,6 @@
 namespace Acorn.Core.Data.Entities;
 
-public sealed class PostContent : Content
+internal sealed class PostContent : Content
 {
   public required string Title { get; set; }
 

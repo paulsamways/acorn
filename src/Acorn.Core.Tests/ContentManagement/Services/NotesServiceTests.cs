@@ -1,9 +1,8 @@
-using Acorn.Core.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
-public class NotesServiceTests : ServicesTestBase
+internal class NotesServiceTests : ServicesTestBase
 {
   [Test]
   public async Task CreateNoteAsync_CreatesForCurrentUserAndRendersMarkdownAndLocalTime()

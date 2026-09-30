@@ -4,13 +4,15 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Acorn.Models.AccountViewModels;
 
+/// <summary>Contains the editable fields for a user's profile.</summary>
 public class ProfileFormViewModel
 {
+  /// <summary>Gets or sets the user's preferred time zone identifier.</summary>
   [Required]
   [DisplayName("Time zone")]
   public string TimeZone { get; set; } = string.Empty;
 
-  public ProfileViewModel AsProfileViewModel()
+  internal ProfileViewModel AsProfileViewModel()
   {
     return new ProfileViewModel()
     {
@@ -26,7 +28,7 @@ public class ProfileFormViewModel
   }
 }
 
-public class ProfileViewModel : ProfileFormViewModel
+internal class ProfileViewModel : ProfileFormViewModel
 {
   public required IEnumerable<SelectListItem> TimeZones { get; init; }
 }

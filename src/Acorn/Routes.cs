@@ -1,6 +1,6 @@
 namespace Acorn;
 
-public static class Routes
+internal static class Routes
 {
   public const string HomeIndexUrlTemplate = "/";
   public const string HomeIndexGetRoute = nameof(HomeIndexGetRoute);

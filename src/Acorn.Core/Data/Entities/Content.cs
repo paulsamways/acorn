@@ -1,6 +1,6 @@
 namespace Acorn.Core.Data.Entities;
 
-public abstract class Content : IAuditable
+internal abstract class Content : IAuditable
 {
   public int Id { get; set; }
 

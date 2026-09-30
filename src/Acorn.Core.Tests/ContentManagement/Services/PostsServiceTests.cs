@@ -1,9 +1,8 @@
-using Acorn.Core.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
-public class PostsServiceTests : ServicesTestBase
+internal class PostsServiceTests : ServicesTestBase
 {
   [Test]
   public async Task CreatePostAsync_CreatesForCurrentUserAndRendersMarkdownAndLocalTime()

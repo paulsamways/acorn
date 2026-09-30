@@ -1,6 +1,6 @@
 namespace Acorn.Core.Extensions;
 
-public static class DateTimeExtensions
+internal static class DateTimeExtensions
 {
   public static DateTimeOffset ConvertUtcToLocal(this DateTime utcTime, TimeZoneInfo timeZone)
   {

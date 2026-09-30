@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
-public abstract class ServicesTestBase
+internal abstract class ServicesTestBase
 {
   private ServiceProvider _serviceProvider = null!;
   private IServiceScope _serviceScope = null!;

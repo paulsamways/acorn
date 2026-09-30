@@ -4,7 +4,7 @@ using MimeKit;
 
 namespace Acorn.Core.Email;
 
-public class MailKitEmailService : IEmailService
+internal sealed class MailKitEmailService : IEmailService
 {
   private readonly MailKitEmailServiceOptions _options;
 

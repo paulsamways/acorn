@@ -1,6 +1,6 @@
 namespace Acorn.Models.AccountViewModels;
 
-public class ResetPasswordConfirmationViewModel
+internal class ResetPasswordConfirmationViewModel
 {
   public ResetPasswordConfirmationViewModel(string email)
   {

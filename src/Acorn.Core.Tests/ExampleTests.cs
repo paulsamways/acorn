@@ -1,6 +1,6 @@
 namespace Acorn.Core.Tests;
 
-public class ExampleTests
+internal class ExampleTests
 {
   [Test]
   public async Task ExampleTest_Works()

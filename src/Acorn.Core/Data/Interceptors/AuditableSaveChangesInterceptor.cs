@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Acorn.Core.Data;
 
-public class AuditableSaveChangesInterceptor : SaveChangesInterceptor
+internal sealed class AuditableSaveChangesInterceptor : SaveChangesInterceptor
 {
   public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
   {

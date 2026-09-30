@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Acorn.Core.Email;
 
-public class MailKitEmailServiceOptions
+internal class MailKitEmailServiceOptions
 {
   [Required]
   public required string SenderName { get; set; }

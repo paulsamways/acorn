@@ -1,6 +1,6 @@
 namespace Acorn.Models;
 
-public class ErrorViewModel
+internal class ErrorViewModel
 {
   public string? RequestId { get; set; }
 

@@ -4,21 +4,24 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Acorn.Controllers;
 
+/// <summary>Handles the site's home and error pages.</summary>
 public class HomeController : Controller
 {
-  private readonly ILogger<HomeController> _logger;
-
-  public HomeController(ILogger<HomeController> logger)
+  /// <summary>Creates the home controller.</summary>
+  public HomeController()
   {
-    _logger = logger;
   }
 
+  /// <summary>Displays the home page.</summary>
+  /// <returns>The home page.</returns>
   [HttpGet(Routes.HomeIndexUrlTemplate, Name = Routes.HomeIndexGetRoute)]
   public IActionResult Index()
   {
     return View();
   }
 
+  /// <summary>Displays the application error page.</summary>
+  /// <returns>The error page with request diagnostics.</returns>
   [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
   public IActionResult Error()
   {

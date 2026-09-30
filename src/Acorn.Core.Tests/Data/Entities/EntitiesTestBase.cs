@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.Tests.Data.Entities;
 
-public abstract class EntitiesTestBase
+internal abstract class EntitiesTestBase
 {
   protected ApplicationDbContext DbContext { get; private set; } = null!;
 

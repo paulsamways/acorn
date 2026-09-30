@@ -1,6 +1,6 @@
 #!/bin/bash
 
 PROJECT_DIR=$(readlink -f "$(dirname "$(realpath  "$BASH_SOURCE")")/..")
-STARTUP_PROJECT="$PROJECT_DIR/src/Acorn"
+SOLUTION="$PROJECT_DIR/src/Solution.slnx"
 
-dotnet build "$STARTUP_PROJECT"
+dotnet build "$SOLUTION" --no-incremental

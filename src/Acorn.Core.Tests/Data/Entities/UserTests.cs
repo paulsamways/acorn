@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.Tests.Data.Entities;
 
-public class UserTests : EntitiesTestBase
+internal class UserTests : EntitiesTestBase
 {
   [Test]
   public async Task CanBeCreatedAndRead()

@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Acorn.Core.Email;
 
-public sealed class LoggingEmailService : IEmailService
+internal sealed class LoggingEmailService : IEmailService
 {
   private readonly ILogger<LoggingEmailService> _logger;
 

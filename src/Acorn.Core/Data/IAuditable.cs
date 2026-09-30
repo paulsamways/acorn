@@ -1,6 +1,6 @@
 namespace Acorn.Core.Data;
 
-public interface IAuditable
+internal interface IAuditable
 {
   DateTime CreatedAt { get; set; }
 

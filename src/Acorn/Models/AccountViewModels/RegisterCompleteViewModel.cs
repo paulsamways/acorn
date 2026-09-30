@@ -1,6 +1,6 @@
 namespace Acorn.Models.AccountViewModels;
 
-public class RegisterCompleteViewModel
+internal class RegisterCompleteViewModel
 {
   public RegisterCompleteViewModel(string email)
   {
