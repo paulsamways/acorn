@@ -7,6 +7,7 @@ using Acorn.Core.Extensions;
 using Acorn.Core.Security;
 using Acorn.Services;
 using Markdig;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +43,13 @@ internal class Program
       .AddEntityFrameworkStores<ApplicationDbContext>()
       .AddSignInManager()
       .AddDefaultTokenProviders();
+
+    builder.Services.AddAuthorization(options =>
+    {
+      options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    });
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<IUserContextService, UserContextService>();
@@ -95,12 +103,8 @@ internal class Program
       options.LoginPath = Routes.AccountSignInUrlTemplate;
     });
 
-    builder.Services.AddOpenApi(options =>
-    {
-      options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_1;
-    });
-
     builder.Services.AddProblemDetails();
+
 
     var app = builder.Build();
 
@@ -122,12 +126,12 @@ internal class Program
     app.UseHttpsRedirection();
     app.UseRouting();
 
+    app.UseAuthentication();
     app.UseAuthorization();
 
     app.UseSession();
 
-    app.MapStaticAssets();
-    app.MapOpenApi().CacheOutput();
+    app.MapStaticAssets().AllowAnonymous();
 
     app.MapControllerRoute(
       name: "admin",
@@ -135,8 +139,7 @@ internal class Program
 
     app.MapControllerRoute(
         name: "default",
-        pattern: "{controller=Home}/{action=Index}/{id?}")
-      .WithStaticAssets();
+        pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
     app.Run();

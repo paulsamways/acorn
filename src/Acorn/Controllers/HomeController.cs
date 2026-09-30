@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Acorn.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Acorn.Controllers;
@@ -14,6 +15,7 @@ public class HomeController : Controller
 
   /// <summary>Displays the home page.</summary>
   /// <returns>The home page.</returns>
+  [AllowAnonymous]
   [HttpGet(Routes.HomeIndexUrlTemplate, Name = Routes.HomeIndexGetRoute)]
   public IActionResult Index()
   {
@@ -22,6 +24,7 @@ public class HomeController : Controller
 
   /// <summary>Displays the application error page.</summary>
   /// <returns>The error page with request diagnostics.</returns>
+  [AllowAnonymous]
   [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
   public IActionResult Error()
   {
