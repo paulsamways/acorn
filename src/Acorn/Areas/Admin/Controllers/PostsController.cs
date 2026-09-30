@@ -65,7 +65,7 @@ public sealed class PostsController : Controller
       return View("Edit", model);
     }
 
-    _ = await _postsService.UpdatePostAsync(id, model.Title, model.Body, ParseTags(model.Tags), cancellationToken);
+    _ = await _postsService.UpdatePostAsync(id, model.Title, model.Body, ParseTags(model.Tags), model.Excerpt, cancellationToken);
     return RedirectToRoute(Routes.Admin.PostsIndexGetRoute);
   }
 
@@ -109,6 +109,7 @@ public sealed class PostsController : Controller
       Id = post.Id,
       Title = post.Title,
       Body = post.Body,
+      Excerpt = post.Excerpt ?? string.Empty,
       Tags = string.Join(", ", post.Tags),
       PublishedAt = post.PublishedAt
     };

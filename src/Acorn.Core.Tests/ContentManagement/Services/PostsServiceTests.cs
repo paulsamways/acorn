@@ -31,4 +31,35 @@ internal class PostsServiceTests : ServicesTestBase
     await Assert.That(posts[0].Title).IsEqualTo("Newer published post");
     await Assert.That(posts[1].Title).IsEqualTo("Older published post");
   }
+
+  [Test]
+  public async Task GetPublishedPostsAsync_LeavesExcerptNullWhenMissing()
+  {
+    var post = await PostAuthoringService.CreatePostAsync(
+      "A post",
+      "# Heading\n\nFirst paragraph.\n\nSecond **paragraph**.\n\nThird paragraph.\n\nFourth paragraph.");
+    await PostAuthoringService.PublishPostAsync(post.Id);
+
+    var publishedPost = (await PostsService.GetPublishedPostsAsync()).Single();
+
+    await Assert.That(publishedPost.Excerpt).IsNull();
+    await Assert.That(publishedPost.ExcerptHtml).IsNull();
+    await Assert.That(publishedPost.BodyHtml).IsEqualTo(
+      "<h1>Heading</h1>\n<p>First paragraph.</p>\n<p>Second <strong>paragraph</strong>.</p>\n<p>Third paragraph.</p>\n<p>Fourth paragraph.</p>\n");
+  }
+
+  [Test]
+  public async Task GetPublishedPostAsync_ReturnsPublishedPostAndThrowsWhenUnavailable()
+  {
+    var publishedPost = await PostAuthoringService.CreatePostAsync("Published post", "Body");
+    var draftPost = await PostAuthoringService.CreatePostAsync("Draft post", "Draft body");
+    await PostAuthoringService.PublishPostAsync(publishedPost.Id);
+    DbContext.ChangeTracker.Clear();
+
+    var visiblePost = await PostsService.GetPublishedPostAsync(publishedPost.Id);
+
+    await Assert.That(visiblePost.Title).IsEqualTo("Published post");
+    await AssertContentNotFoundAsync(async () => _ = await PostsService.GetPublishedPostAsync(draftPost.Id), draftPost.Id);
+    await AssertContentNotFoundAsync(async () => _ = await PostsService.GetPublishedPostAsync(42), 42);
+  }
 }

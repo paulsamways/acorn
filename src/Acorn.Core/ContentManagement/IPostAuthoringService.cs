@@ -20,18 +20,20 @@ public interface IPostAuthoringService
   /// <param name="title">The post title.</param>
   /// <param name="body">The Markdown post body.</param>
   /// <param name="tags">Optional tags to associate with the post.</param>
+  /// <param name="excerpt">Optional Markdown excerpt for post listings.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The created post.</returns>
-  Task<Post> CreatePostAsync(string title, string body, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default);
+  Task<Post> CreatePostAsync(string title, string body, IEnumerable<string>? tags = null, string? excerpt = null, CancellationToken cancellationToken = default);
 
   /// <summary>Updates an existing post.</summary>
   /// <param name="id">The post identifier.</param>
   /// <param name="title">The replacement title.</param>
   /// <param name="body">The replacement Markdown body.</param>
   /// <param name="tags">Optional replacement tags.</param>
+  /// <param name="excerpt">Optional replacement Markdown excerpt.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The updated post.</returns>
-  Task<Post> UpdatePostAsync(int id, string title, string body, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default);
+  Task<Post> UpdatePostAsync(int id, string title, string body, IEnumerable<string>? tags = null, string? excerpt = null, CancellationToken cancellationToken = default);
 
   /// <summary>Soft-deletes a post.</summary>
   /// <param name="id">The post identifier.</param>

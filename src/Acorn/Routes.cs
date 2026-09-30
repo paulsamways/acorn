@@ -4,6 +4,8 @@ internal static class Routes
 {
   public const string HomeIndexUrlTemplate = "/";
   public const string HomeIndexGetRoute = nameof(HomeIndexGetRoute);
+  public const string PostsDetailsUrlTemplate = "/posts/{id:int}";
+  public const string PostsDetailsGetRoute = nameof(PostsDetailsGetRoute);
 
   public const string AccountSignInUrlTemplate = "/account/sign-in";
   public const string AccountSignInGetRoute = nameof(AccountSignInGetRoute);

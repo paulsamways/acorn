@@ -22,13 +22,14 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     _markdownPipeline = markdownPipeline;
   }
 
-  public async Task<Post> CreatePostAsync(string title, string body, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
+  public async Task<Post> CreatePostAsync(string title, string body, IEnumerable<string>? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
   {
     var postContent = new PostContent
     {
       AuthorId = _userContextService.GetCurrentUserId(),
       Title = title,
       Body = body,
+      Excerpt = NormalizeExcerpt(excerpt),
       Tags = tags?.ToList() ?? []
     };
 
@@ -65,11 +66,24 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await Task.WhenAll(posts.Select(MapPostAsync));
   }
 
-  public async Task<Post> UpdatePostAsync(int id, string title, string body, IEnumerable<string>? tags = null, CancellationToken cancellationToken = default)
+  public async Task<Post> GetPublishedPostAsync(int id, CancellationToken cancellationToken = default)
+  {
+    var post = await _dbContext
+      .Posts
+      .FirstOrDefaultAsync(x => x.Id == id && x.PublishedAt != null, cancellationToken);
+
+    if (post is null)
+      throw new ContentNotFoundException(id);
+
+    return await MapPostAsync(post);
+  }
+
+  public async Task<Post> UpdatePostAsync(int id, string title, string body, IEnumerable<string>? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
   {
     var post = await GetPostContentAsync(id, cancellationToken);
     post.Title = title;
     post.Body = body;
+    post.Excerpt = NormalizeExcerpt(excerpt);
     post.Tags = tags?.ToList() ?? [];
 
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
@@ -105,14 +119,23 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
   private async Task<Post> MapPostAsync(PostContent postContent)
   {
     var timeZone = await _userContextService.GetUserTimeZoneAsync();
+    var bodyHtml = Markdown.ToHtml(postContent.Body, _markdownPipeline);
+    var excerptHtml = string.IsNullOrWhiteSpace(postContent.Excerpt)
+      ? null
+      : Markdown.ToHtml(postContent.Excerpt, _markdownPipeline);
 
     return new Post(
       postContent.Id,
       postContent.Title,
+      postContent.Excerpt,
+      excerptHtml,
       postContent.Body,
-      Markdown.ToHtml(postContent.Body, _markdownPipeline),
+      bodyHtml,
       postContent.Tags.ToArray(),
       postContent.CreatedAt.ConvertUtcToLocal(timeZone),
       postContent.PublishedAt?.ConvertUtcToLocal(timeZone));
   }
+
+  private static string? NormalizeExcerpt(string? excerpt)
+    => string.IsNullOrWhiteSpace(excerpt) ? null : excerpt;
 }

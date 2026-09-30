@@ -16,6 +16,9 @@ public sealed class EditViewModel
   [Required]
   public string Body { get; set; } = string.Empty;
 
+  /// <summary>Gets or sets an optional Markdown excerpt for post listings.</summary>
+  public string Excerpt { get; set; } = string.Empty;
+
   /// <summary>Gets or sets comma-separated post tags.</summary>
   public string Tags { get; set; } = string.Empty;
 

@@ -25,7 +25,7 @@
         }
 
         <div class="prose">
-          @Html.Raw(post.BodyHtml)
+          @Html.Raw(post.ExcerptHtml ?? post.BodyHtml)
         </div>
 
         <div class="f-row g-3">

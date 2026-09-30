@@ -1,12 +1,17 @@
 ﻿@model IEnumerable<Acorn.Core.ContentManagement.Models.Post>
 
 <main class="f-grow-1 f-column f-align-center">
+  <h2>Blog Posts</h2>
   <section class="f-column w-wide g-4 p-4" aria-label="Published posts">
     @foreach (var post in Model)
     {
       <article class="f-column g-2">
         <header class="f-column g-1">
-          <h3>@(string.IsNullOrWhiteSpace(post.Title) ? "Untitled post" : post.Title)</h3>
+          <h3>
+            <a asp-route="@Routes.PostsDetailsGetRoute" asp-route-id="@post.Id">
+              @(string.IsNullOrWhiteSpace(post.Title) ? "Untitled post" : post.Title)
+            </a>
+          </h3>
           @if (post.PublishedAt is DateTimeOffset publishedAt)
           {
             <time class="muted" datetime="@publishedAt.ToString("O")">@publishedAt.ToString("MMMM d, yyyy")</time>
@@ -14,7 +19,12 @@
         </header>
 
         <div class="prose">
-          @Html.Raw(post.BodyHtml)
+          @Html.Raw(post.ExcerptHtml ?? post.BodyHtml)
+
+          @if (post.ExcerptHtml is not null)
+          {
+            <a asp-route="@Routes.PostsDetailsGetRoute" asp-route-id="@post.Id">Continue reading</a>
+          }
         </div>
 
         @if (post.Tags.Count > 0)

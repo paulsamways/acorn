@@ -22,6 +22,10 @@ internal sealed class PostContentEntityTypeConfiguration : IEntityTypeConfigurat
       .IsRequired();
 
     builder
+      .Property(x => x.Excerpt)
+      .HasColumnName("excerpt");
+
+    builder
       .Property(x => x.Tags)
       .HasColumnName("tags")
       .IsRequired();

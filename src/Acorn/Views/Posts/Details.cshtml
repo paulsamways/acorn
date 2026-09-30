@@ -1,0 +1,27 @@
+@model Acorn.Core.ContentManagement.Models.Post
+
+<main class="f-column f-align-center">
+  <article class="f-column g-3 w-wide p-4">
+    <header class="f-column g-1">
+      <h1>@(string.IsNullOrWhiteSpace(Model.Title) ? "Untitled post" : Model.Title)</h1>
+      @if (Model.PublishedAt is DateTimeOffset publishedAt)
+      {
+        <time class="muted" datetime="@publishedAt.ToString("O")">@publishedAt.ToString("MMMM d, yyyy")</time>
+      }
+    </header>
+
+    <div class="prose">
+      @Html.Raw(Model.BodyHtml)
+    </div>
+
+    @if (Model.Tags.Count > 0)
+    {
+      <div class="f-row f-justify-end">
+        @foreach (var tag in Model.Tags)
+        {
+          <span class="badge">@tag</span>
+        }
+      </div>
+    }
+  </article>
+</main>
