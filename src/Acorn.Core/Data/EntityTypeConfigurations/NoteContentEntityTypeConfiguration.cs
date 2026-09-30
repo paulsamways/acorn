@@ -13,7 +13,7 @@ internal sealed class NoteContentEntityTypeConfiguration : IEntityTypeConfigurat
 
     builder
       .Property(x => x.Value)
-      .HasColumnName("value")
+      .HasColumnName("note_value")
       .IsRequired();
   }
 }

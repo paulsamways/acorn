@@ -1,6 +1,5 @@
 using Acorn.Core.Data.Entities;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,14 +21,6 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
   protected override void OnModelCreating(ModelBuilder builder)
   {
     base.OnModelCreating(builder);
-
-    builder.Entity<DataProtectionKey>().ToTable("data_protection_keys");
-    builder.Entity<IdentityRoleClaim<Guid>>().ToTable("role_claim");
-    builder.Entity<IdentityUserClaim<Guid>>().ToTable("user_claim");
-    builder.Entity<IdentityUserLogin<Guid>>().ToTable("user_login");
-    builder.Entity<IdentityUserRole<Guid>>().ToTable("user_role");
-    builder.Entity<IdentityUserToken<Guid>>().ToTable("user_token");
-
 
     builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
   }

@@ -13,21 +13,21 @@ internal sealed class PostContentEntityTypeConfiguration : IEntityTypeConfigurat
 
     builder
       .Property(x => x.Title)
-      .HasColumnName("title")
+      .HasColumnName("post_title")
       .IsRequired();
 
     builder
       .Property(x => x.Body)
-      .HasColumnName("body")
+      .HasColumnName("post_body")
       .IsRequired();
 
     builder
       .Property(x => x.Excerpt)
-      .HasColumnName("excerpt");
+      .HasColumnName("post_excerpt");
 
     builder
       .Property(x => x.Tags)
-      .HasColumnName("tags")
+      .HasColumnName("post_tags")
       .IsRequired();
   }
 }
