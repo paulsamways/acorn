@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Acorn.Core.ContentManagement.Models;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
@@ -7,16 +8,18 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task CreateNoteAsync_CreatesForCurrentUserAndRendersMarkdownAndLocalTime()
   {
-    var note = await NotesService.CreateNoteAsync("# Hello");
+    var note = await NotesService.CreateNoteAsync("# Hello", TagSet.Parse("Testing Notes, foo"));
 
     await Assert.That(note.Value).IsEqualTo("# Hello");
     await Assert.That(note.ValueHtml).IsEqualTo("<h1>Hello</h1>\n");
+    await Assert.That(note.Tags).IsEquivalentTo(["testing", "notes", "foo"]);
     await Assert.That(note.CreatedAt).IsEqualTo(ConvertToUserTime(DbContext.Notes.Local.Single(x => x.Id == note.Id).CreatedAt));
     await Assert.That(note.CreatedAt.Offset).IsEqualTo(UserTimeZone.BaseUtcOffset);
 
     DbContext.ChangeTracker.Clear();
     var savedNote = await DbContext.Notes.SingleAsync(x => x.Id == note.Id);
     await Assert.That(savedNote.AuthorId).IsEqualTo(CurrentUserId);
+    await Assert.That(savedNote.Tags).IsEquivalentTo(["testing", "notes", "foo"]);
   }
 
   [Test]
@@ -65,16 +68,19 @@ internal class NotesServiceTests : ServicesTestBase
   }
 
   [Test]
-  public async Task UpdateNoteAsync_PersistsUpdatedValue()
+  public async Task UpdateNoteAsync_PersistsUpdatedValueAndTags()
   {
-    var note = await NotesService.CreateNoteAsync("Original note");
+    var note = await NotesService.CreateNoteAsync("Original note", TagSet.Parse("old-tag"));
     DbContext.ChangeTracker.Clear();
 
-    var updatedNote = await NotesService.UpdateNoteAsync(note.Id, "Updated note");
+    var updatedNote = await NotesService.UpdateNoteAsync(note.Id, "Updated note", TagSet.Parse("New Note"));
 
     await Assert.That(updatedNote.Value).IsEqualTo("Updated note");
+    await Assert.That(updatedNote.Tags).IsEquivalentTo(["new", "note"]);
     DbContext.ChangeTracker.Clear();
-    await Assert.That((await DbContext.Notes.SingleAsync(x => x.Id == note.Id)).Value).IsEqualTo("Updated note");
+    var savedNote = await DbContext.Notes.SingleAsync(x => x.Id == note.Id);
+    await Assert.That(savedNote.Value).IsEqualTo("Updated note");
+    await Assert.That(savedNote.Tags).IsEquivalentTo(["new", "note"]);
   }
 
   [Test]

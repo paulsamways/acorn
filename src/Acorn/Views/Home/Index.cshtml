@@ -1,8 +1,9 @@
 ﻿@model IEnumerable<Acorn.Core.ContentManagement.Models.Post>
 
 <main class="f-grow-1 f-column f-align-center">
-  <h2>Blog Posts</h2>
+
   <section class="f-column w-wide g-4 p-4" aria-label="Published posts">
+    <h2>Recent Posts</h2>
     @foreach (var post in Model)
     {
       <article class="f-column g-2">
@@ -29,7 +30,7 @@
 
         @if (post.Tags.Count > 0)
         {
-          <div class="f-row f-justify-end">
+          <div class="f-row f-justify-end g-2">
             @foreach (var tag in post.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
             {
               <a href="#" class="badge">@tag</a>

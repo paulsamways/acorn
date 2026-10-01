@@ -4,7 +4,13 @@
 <main class="f-column f-align-center">
 
   <form class="f-column p-4 g-4 w-wide" asp-route="@Routes.Admin.NotesEditPostRoute" asp-route-id="@Model.Id" method="POST">
+    <div asp-validation-summary="All" class="danger"></div>
+
     <textarea asp-for="Value" rows="30"></textarea>
+
+    <label asp-for="Tags">Tags</label>
+    <input asp-for="Tags" />
+    <span asp-validation-for="Tags" class="danger"></span>
 
     <label>
       <input asp-for="Published" type="checkbox"" /> Published

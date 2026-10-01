@@ -11,6 +11,10 @@
           <div class="prose">
             @Html.Raw(note.ValueHtml)
           </div>
+          @if (note.Tags.Count > 0)
+          {
+            <p class="muted">@string.Join(", ", note.Tags.OrderBy(tag => tag, StringComparer.Ordinal))</p>
+          }
           <div class="f-row f-justify-space-between">
             <div>
               <a asp-route="@Routes.Admin.NotesEditGetRoute" asp-route-id="@note.Id">Edit</a>

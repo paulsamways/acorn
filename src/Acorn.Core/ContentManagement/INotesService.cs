@@ -24,16 +24,18 @@ public interface INotesService
 
   /// <summary>Creates a note for the current user.</summary>
   /// <param name="note">The Markdown note content.</param>
+  /// <param name="tags">Optional tags to associate with the note.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The created note.</returns>
-  Task<Note> CreateNoteAsync(string note, CancellationToken cancellationToken = default);
+  Task<Note> CreateNoteAsync(string note, TagSet? tags = null, CancellationToken cancellationToken = default);
 
   /// <summary>Updates an existing note.</summary>
   /// <param name="id">The note identifier.</param>
   /// <param name="note">The replacement Markdown content.</param>
+  /// <param name="tags">Optional replacement tags.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The updated note.</returns>
-  Task<Note> UpdateNoteAsync(int id, string note, CancellationToken cancellationToken = default);
+  Task<Note> UpdateNoteAsync(int id, string note, TagSet? tags = null, CancellationToken cancellationToken = default);
 
   /// <summary>Soft-deletes a note.</summary>
   /// <param name="id">The note identifier.</param>

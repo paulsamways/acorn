@@ -12,6 +12,10 @@ public sealed class EditViewModel
   [DisplayFormat(ConvertEmptyStringToNull = true)]
   public string Value { get; set; } = string.Empty;
 
+  /// <summary>Gets or sets space- or comma-separated note tags.</summary>
+  [RegularExpression(@"^[A-Za-z0-9_,\s-]*$", ErrorMessage = "Tags may contain only letters, numbers, underscores, hyphens, spaces, and commas.")]
+  public string Tags { get; set; } = string.Empty;
+
   /// <summary>Gets or sets whether the note is published.</summary>
   public bool Published { get; set; }
 }

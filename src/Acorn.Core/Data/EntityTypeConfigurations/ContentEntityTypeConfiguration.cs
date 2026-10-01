@@ -48,6 +48,11 @@ internal sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<
       .IsRequired();
 
     builder
+      .Property(x => x.Tags)
+      .HasColumnName("tags")
+      .IsRequired();
+
+    builder
       .HasOne(x => x.Author)
       .WithMany()
       .HasForeignKey(x => x.AuthorId)

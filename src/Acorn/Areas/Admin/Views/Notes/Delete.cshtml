@@ -7,6 +7,11 @@
       Are you sure you want to delete this note?
     </p>
 
+    @if (Model.Tags.Count > 0)
+    {
+      <p class="muted">@string.Join(", ", Model.Tags.OrderBy(tag => tag, StringComparer.Ordinal))</p>
+    }
+
     <div class="f-row f-justify-center g-2">
         <a asp-route="@Routes.Admin.NotesEditGetRoute" asp-route-id="@Model.Id" role="button">Go back</a>
         <button class="danger" type="submit">Confirm</button>

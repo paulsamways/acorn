@@ -23,13 +23,14 @@ internal sealed class NotesService : INotesService
     _markdownPipeline = markdownPipeline;
   }
 
-  public async Task<Note> CreateNoteAsync(string value, CancellationToken cancellationToken)
+  public async Task<Note> CreateNoteAsync(string value, TagSet? tags = null, CancellationToken cancellationToken = default)
   {
     var authorId = _userContextService.GetCurrentUserId();
     var noteContent = new NoteContent()
     {
       Value = value,
-      AuthorId = authorId
+      AuthorId = authorId,
+      Tags = tags?.ToList() ?? []
     };
 
     _ = await _dbContext.Notes.AddAsync(noteContent, cancellationToken);
@@ -65,10 +66,11 @@ internal sealed class NotesService : INotesService
     return await Task.WhenAll(notes.Select(async x => await MapNoteAsync(x, cancellationToken)));
   }
 
-  public async Task<Note> UpdateNoteAsync(int id, string value, CancellationToken cancellationToken = default)
+  public async Task<Note> UpdateNoteAsync(int id, string value, TagSet? tags = null, CancellationToken cancellationToken = default)
   {
     var note = await GetNoteContentAsync(id, cancellationToken);
     note.Value = value;
+    note.Tags = tags?.ToList() ?? [];
 
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
     return await MapNoteAsync(note, cancellationToken);
@@ -107,6 +109,7 @@ internal sealed class NotesService : INotesService
       noteContent.Id,
       noteContent.Value,
       Markdown.ToHtml(noteContent.Value ?? string.Empty, _markdownPipeline),
+      noteContent.Tags.ToArray(),
       noteContent.CreatedAt.ConvertUtcToLocal(timeZone),
       noteContent.PublishedAt?.ConvertUtcToLocal(timeZone));
   }

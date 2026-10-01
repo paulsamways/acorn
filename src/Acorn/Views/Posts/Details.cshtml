@@ -16,10 +16,10 @@
 
     @if (Model.Tags.Count > 0)
     {
-      <div class="f-row f-justify-end">
+      <div class="f-row g-2 f-justify-end">
         @foreach (var tag in Model.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
         {
-          <span class="badge">@tag</span>
+          <a href="#" class="badge">@tag</a>
         }
       </div>
     }

@@ -15,4 +15,6 @@ internal abstract class Content : IAuditable
   public required Guid AuthorId { get; set; }
 
   public User Author { get; set; } = null!;
+
+  public List<string> Tags { get; set; } = [];
 }

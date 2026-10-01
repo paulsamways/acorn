@@ -37,7 +37,7 @@ public sealed class NotesController : Controller
   [HttpPost(Routes.Admin.NotesIndexUrlTemplate, Name = Routes.Admin.NotesIndexPostRoute)]
   public async Task<IActionResult> IndexPostAsync(CancellationToken cancellationToken = default)
   {
-    var note = await _notesService.CreateNoteAsync(string.Empty, cancellationToken);
+    var note = await _notesService.CreateNoteAsync(string.Empty, cancellationToken: cancellationToken);
 
     return RedirectToRoute(Routes.Admin.NotesEditGetRoute, new { id = note.Id });
   }
@@ -62,7 +62,14 @@ public sealed class NotesController : Controller
   [HttpPost(Routes.Admin.NotesEditUrlTemplate, Name = Routes.Admin.NotesEditPostRoute)]
   public async Task<IActionResult> EditPostAsync(int id, EditViewModel model, CancellationToken cancellationToken = default)
   {
-    _ = await _notesService.UpdateNoteAsync(id, model.Value, cancellationToken);
+    if (!ModelState.IsValid)
+    {
+      model.Published = (await _notesService.GetNoteAsync(id, cancellationToken)).PublishedAt.HasValue;
+      return View("Edit", model);
+    }
+
+    var tags = TagSet.Parse(model.Tags);
+    _ = await _notesService.UpdateNoteAsync(id, model.Value, tags, cancellationToken);
 
     if (model.Published)
       _ = await _notesService.PublishNoteAsync(id, cancellationToken);
@@ -99,6 +106,7 @@ public sealed class NotesController : Controller
     {
       Id = note.Id,
       Value = note.Value,
+      Tags = string.Join(", ", note.Tags.OrderBy(tag => tag, StringComparer.Ordinal)),
       Published = note.PublishedAt.HasValue
     };
 }
