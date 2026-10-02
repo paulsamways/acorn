@@ -40,6 +40,8 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
 
   internal DbSet<PostContent> Posts => Set<PostContent>();
 
+  internal DbSet<BookmarkContent> Bookmarks => Set<BookmarkContent>();
+
   /// <summary>Gets the data-protection keys stored by this context.</summary>
   public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 }

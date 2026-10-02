@@ -1,0 +1,36 @@
+@model IEnumerable<Acorn.Core.ContentManagement.Models.Bookmark>
+
+<main class="f-column f-align-center">
+  <section class="f-column w-wide g-4 p-4" aria-label="Bookmarks">
+    <h2>Bookmarks</h2>
+    @foreach (var bookmark in Model)
+    {
+      <article class="f-column g-2">
+        <header class="f-column g-1">
+          <h3>
+            <a href="@bookmark.Url" target="_blank" rel="noopener noreferrer">@bookmark.Title</a>
+          </h3>
+          @if (bookmark.PublishedAt is DateTimeOffset publishedAt)
+          {
+            <time class="muted" datetime="@publishedAt.ToString("O")">@publishedAt.ToString("MMMM d, yyyy")</time>
+          }
+        </header>
+
+        @if (bookmark.DescriptionHtml is not null)
+        {
+          <div class="prose">@Html.Raw(bookmark.DescriptionHtml)</div>
+        }
+
+        @if (bookmark.Tags.Count > 0)
+        {
+          <div class="f-row f-justify-end">
+            @foreach (var tag in bookmark.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
+            {
+              <span class="badge">@tag</span>
+            }
+          </div>
+        }
+      </article>
+    }
+  </section>
+</main>

@@ -21,7 +21,7 @@ public sealed class EditViewModel
 
   /// <summary>Gets or sets space- or comma-separated post tags.</summary>
   [RegularExpression(@"^[A-Za-z0-9_,\s-]*$", ErrorMessage = "Tags may contain only letters, numbers, underscores, hyphens, and can be separated by spaces or commas.")]
-  public string Tags { get; set; } = string.Empty;
+  public string? Tags { get; set; }
 
   /// <summary>Gets or sets the publication time, if the post is published.</summary>
   public DateTimeOffset? PublishedAt { get; set; }

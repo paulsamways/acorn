@@ -13,6 +13,13 @@ internal class TagSetTests
   }
 
   [Test]
+  public async Task Parse_NullOrEmptyInputReturnsEmptySet()
+  {
+    await Assert.That(TagSet.Parse(null)).IsEmpty();
+    await Assert.That(TagSet.Parse(string.Empty)).IsEmpty();
+  }
+
+  [Test]
   public async Task Add_NormalizesOneTagWithoutMutatingOriginalSet()
   {
     var original = TagSet.Empty.Add(" First ");

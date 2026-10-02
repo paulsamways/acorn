@@ -1,0 +1,12 @@
+@model Acorn.Core.ContentManagement.Models.Bookmark
+
+<main class="f-column f-align-center">
+  <form class="f-column g-4 w-narrow p-4" asp-route="@Routes.Admin.BookmarksArchivePostRoute" asp-route-id="@Model.Id" method="POST">
+    <p class="text-center">Archive bookmark <strong>@Model.Title</strong>?</p>
+    <a href="@Model.Url" target="_blank" rel="noopener noreferrer">@Model.Url</a>
+    <div class="f-row f-justify-center g-2">
+      <a asp-route="@Routes.Admin.BookmarksEditGetRoute" asp-route-id="@Model.Id" role="button">Go back</a>
+      <button class="danger" type="submit">Confirm</button>
+    </div>
+  </form>
+</main>

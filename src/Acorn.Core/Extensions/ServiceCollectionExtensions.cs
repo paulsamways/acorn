@@ -14,6 +14,7 @@ public static class ServiceCollectionExtensions
   {
     return services
       .AddScoped<INotesService, NotesService>()
+      .AddScoped<IBookmarksService, BookmarksService>()
       .AddScoped<PostsService>()
       .AddScoped<IPostsService>(provider => provider.GetRequiredService<PostsService>())
       .AddScoped<IPostAuthoringService>(provider => provider.GetRequiredService<PostsService>());

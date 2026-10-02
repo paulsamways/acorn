@@ -52,11 +52,13 @@
       <nav class="f-column f-align-end g-4 p-4">
         <a asp-route="@Routes.HomeIndexGetRoute">home</a>
         <a href="#">posts</a>
+        <a asp-route="@Routes.BookmarksIndexGetRoute">bookmarks</a>
         <a href="#">contact</a>
         @if (User.Identity?.IsAuthenticated == true)
         {
           <a asp-route="@Routes.Admin.NotesIndexGetRoute">admin: notes</a>
           <a asp-route="@Routes.Admin.PostsIndexGetRoute">admin: posts</a>
+          <a asp-route="@Routes.Admin.BookmarksIndexGetRoute">admin: bookmarks</a>
         }
       </nav>
     </main>

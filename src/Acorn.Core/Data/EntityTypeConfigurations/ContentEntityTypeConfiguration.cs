@@ -14,7 +14,8 @@ internal sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<
     builder
       .HasDiscriminator<string>("content_type")
       .HasValue<NoteContent>("note")
-      .HasValue<PostContent>("post");
+      .HasValue<PostContent>("post")
+      .HasValue<BookmarkContent>("bookmark");
 
     builder
       .HasKey(x => x.Id);

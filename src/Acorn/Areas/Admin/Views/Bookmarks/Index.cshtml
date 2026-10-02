@@ -1,0 +1,48 @@
+@model IEnumerable<Acorn.Core.ContentManagement.Models.Bookmark>
+
+<main class="f-column f-align-center">
+  <header class="w-wide p-4 f-row f-justify-space-between f-align-center">
+    <h2>Bookmarks</h2>
+    <form asp-route="@Routes.Admin.BookmarksIndexPostRoute" method="POST">
+      <button type="submit">New bookmark</button>
+    </form>
+  </header>
+
+  <div class="f-column w-wide g-3 p-4">
+    @foreach (var bookmark in Model)
+    {
+      <article class="f-column g-2 p-3">
+        <div class="f-row f-justify-space-between f-align-center">
+          <h3>
+            @if (string.IsNullOrWhiteSpace(bookmark.Url))
+            {
+              @(string.IsNullOrWhiteSpace(bookmark.Title) ? "Untitled bookmark" : bookmark.Title)
+            }
+            else
+            {
+              <a href="@bookmark.Url" target="_blank" rel="noopener noreferrer">@(string.IsNullOrWhiteSpace(bookmark.Title) ? "Untitled bookmark" : bookmark.Title)</a>
+            }
+          </h3>
+          <span class="muted">
+            @(bookmark.PublishedAt is null ? "Draft" : $"Published {bookmark.PublishedAt:g}")
+          </span>
+        </div>
+
+        @if (bookmark.DescriptionHtml is not null)
+        {
+          <div class="prose">@Html.Raw(bookmark.DescriptionHtml)</div>
+        }
+
+        @if (bookmark.Tags.Count > 0)
+        {
+          <p class="muted">@string.Join(", ", bookmark.Tags.OrderBy(tag => tag, StringComparer.Ordinal))</p>
+        }
+
+        <div class="f-row g-3">
+          <a asp-route="@Routes.Admin.BookmarksEditGetRoute" asp-route-id="@bookmark.Id">Edit</a>
+          <a asp-route="@Routes.Admin.BookmarksArchiveGetRoute" asp-route-id="@bookmark.Id">Archive</a>
+        </div>
+      </article>
+    }
+  </div>
+</main>

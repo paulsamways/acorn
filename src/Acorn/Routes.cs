@@ -6,6 +6,8 @@ internal static class Routes
   public const string HomeIndexGetRoute = nameof(HomeIndexGetRoute);
   public const string PostsDetailsUrlTemplate = "/posts/{id:int}";
   public const string PostsDetailsGetRoute = nameof(PostsDetailsGetRoute);
+  public const string BookmarksIndexUrlTemplate = "/bookmarks";
+  public const string BookmarksIndexGetRoute = nameof(BookmarksIndexGetRoute);
 
   public const string AccountSignInUrlTemplate = "/account/sign-in";
   public const string AccountSignInGetRoute = nameof(AccountSignInGetRoute);
@@ -69,5 +71,20 @@ internal static class Routes
     public const string NotesDeleteUrlTemplate = AreaUrlPrefix + "/notes/delete/{id}";
     public const string NotesDeleteGetRoute = nameof(Admin) + nameof(NotesDeleteGetRoute);
     public const string NotesDeletePostRoute = nameof(Admin) + nameof(NotesDeletePostRoute);
+
+    public const string BookmarksIndexUrlTemplate = AreaUrlPrefix + "/bookmarks";
+    public const string BookmarksIndexGetRoute = nameof(Admin) + nameof(BookmarksIndexGetRoute);
+    public const string BookmarksIndexPostRoute = nameof(Admin) + nameof(BookmarksIndexPostRoute);
+
+    public const string BookmarksEditUrlTemplate = AreaUrlPrefix + "/bookmarks/edit/{id}";
+    public const string BookmarksEditGetRoute = nameof(Admin) + nameof(BookmarksEditGetRoute);
+    public const string BookmarksEditPostRoute = nameof(Admin) + nameof(BookmarksEditPostRoute);
+
+    public const string BookmarksPublishUrlTemplate = AreaUrlPrefix + "/bookmarks/publish/{id}";
+    public const string BookmarksPublishPostRoute = nameof(Admin) + nameof(BookmarksPublishPostRoute);
+
+    public const string BookmarksArchiveUrlTemplate = AreaUrlPrefix + "/bookmarks/archive/{id}";
+    public const string BookmarksArchiveGetRoute = nameof(Admin) + nameof(BookmarksArchiveGetRoute);
+    public const string BookmarksArchivePostRoute = nameof(Admin) + nameof(BookmarksArchivePostRoute);
   }
 }
