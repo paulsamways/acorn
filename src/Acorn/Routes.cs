@@ -76,6 +76,9 @@ internal static class Routes
     public const string BookmarksIndexGetRoute = nameof(Admin) + nameof(BookmarksIndexGetRoute);
     public const string BookmarksIndexPostRoute = nameof(Admin) + nameof(BookmarksIndexPostRoute);
 
+    public const string BookmarksMetadataUrlTemplate = AreaUrlPrefix + "/bookmarks/metadata";
+    public const string BookmarksMetadataPostRoute = nameof(Admin) + nameof(BookmarksMetadataPostRoute);
+
     public const string BookmarksEditUrlTemplate = AreaUrlPrefix + "/bookmarks/edit/{id}";
     public const string BookmarksEditGetRoute = nameof(Admin) + nameof(BookmarksEditGetRoute);
     public const string BookmarksEditPostRoute = nameof(Admin) + nameof(BookmarksEditPostRoute);

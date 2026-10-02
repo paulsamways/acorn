@@ -12,12 +12,17 @@ namespace Acorn.Areas.Admin.Controllers;
 public sealed class BookmarksController : Controller
 {
   private readonly IBookmarksService _bookmarksService;
+  private readonly IBookmarkMetadataService _bookmarkMetadataService;
 
   /// <summary>Creates the bookmarks controller.</summary>
   /// <param name="bookmarksService">The bookmark service.</param>
-  public BookmarksController(IBookmarksService bookmarksService)
+  /// <param name="bookmarkMetadataService">The bookmark metadata fetcher.</param>
+  public BookmarksController(
+    IBookmarksService bookmarksService,
+    IBookmarkMetadataService bookmarkMetadataService)
   {
     _bookmarksService = bookmarksService;
+    _bookmarkMetadataService = bookmarkMetadataService;
   }
 
   /// <summary>Displays all bookmarks.</summary>
@@ -38,6 +43,17 @@ public sealed class BookmarksController : Controller
   {
     var bookmark = await _bookmarksService.CreateBookmarkAsync(string.Empty, string.Empty, cancellationToken: cancellationToken);
     return RedirectToRoute(Routes.Admin.BookmarksEditGetRoute, new { id = bookmark.Id });
+  }
+
+  /// <summary>Fetches metadata for a bookmark URL.</summary>
+  /// <param name="url">The URL to inspect.</param>
+  /// <param name="cancellationToken">A token used to cancel the operation.</param>
+  /// <returns>The URL validation result and any discovered metadata.</returns>
+  [HttpPost(Routes.Admin.BookmarksMetadataUrlTemplate, Name = Routes.Admin.BookmarksMetadataPostRoute)]
+  public async Task<IActionResult> FetchMetadataPostAsync([FromForm] string? url, CancellationToken cancellationToken = default)
+  {
+    var result = await _bookmarkMetadataService.FetchMetadataAsync(url, cancellationToken);
+    return Json(result);
   }
 
   /// <summary>Displays the edit form for a bookmark.</summary>

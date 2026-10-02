@@ -16,12 +16,13 @@
       }
     </header>
 
-    <form class="f-column g-3" asp-route="@Routes.Admin.BookmarksEditPostRoute" asp-route-id="@Model.Id" method="POST">
+    <form class="f-column g-3" asp-route="@Routes.Admin.BookmarksEditPostRoute" asp-route-id="@Model.Id" method="POST" data-bookmark-metadata-url="@Url.RouteUrl(Routes.Admin.BookmarksMetadataPostRoute)">
       <div asp-validation-summary="All" class="danger"></div>
 
       <label asp-for="Url">URL</label>
       <input asp-for="Url" type="url" />
       <span asp-validation-for="Url" class="danger"></span>
+      <p class="muted" data-bookmark-metadata-status aria-live="polite"></p>
 
       <label asp-for="Title">Title</label>
       <input asp-for="Title" />
@@ -45,3 +46,7 @@
     </form>
   </div>
 </main>
+
+@section Scripts {
+  <script src="~/js/bookmark-metadata.js" defer asp-append-version="true"></script>
+}
