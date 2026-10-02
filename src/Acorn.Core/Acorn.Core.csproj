@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="EFCore.NamingConventions" />
     <PackageReference Include="AngleSharp" />
     <PackageReference Include="MailKit" />
     <PackageReference Include="Markdig" />
@@ -13,8 +12,6 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
-    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" />
-    <PackageReference Include="SQLitePCLRaw.core" />
   </ItemGroup>
 
 </Project>
