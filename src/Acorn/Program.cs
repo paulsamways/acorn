@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Acorn;
 using Acorn.Core;
+using Acorn.Core.Data.Backups;
 using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
 using Acorn.Core.Extensions;
@@ -12,6 +13,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 
 internal class Program
@@ -37,6 +39,18 @@ internal class Program
 
     builder.Services
       .AddDbContext<ApplicationDbContext>((o) => o.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    if (!builder.Environment.IsDevelopment())
+    {
+      builder.Services.Configure<SqliteDatabaseBackupOptions>(builder.Configuration.GetSection("DatabaseBackup"));
+      builder.Services.AddSingleton<ISqliteDatabaseBackupService>(serviceProvider =>
+        new SqliteDatabaseBackupService(
+          builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("The default database connection string is not configured."),
+          builder.Environment.ContentRootPath,
+          serviceProvider.GetRequiredService<IOptions<SqliteDatabaseBackupOptions>>().Value,
+          serviceProvider.GetRequiredService<ILogger<SqliteDatabaseBackupService>>()));
+      builder.Services.AddHostedService<SqliteDatabaseBackupHostedService>();
+    }
 
     builder.Services
       .AddIdentity<User, Role>()
@@ -69,9 +83,7 @@ internal class Program
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
       });
 
-    // builder.Services
-    //   .AddAuthentication(IdentityConstants.ApplicationScheme)
-    //   .AddIdentityCookies();
+
 
     builder.Services.AddSingleton(
       new MarkdownPipelineBuilder()
