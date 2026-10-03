@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.querySelector("body > .sidebar");
   const sidebarHideButton = document.getElementById("sidebarHide");
@@ -12,4 +11,5 @@ document.addEventListener('DOMContentLoaded', () => {
   sidebarHideButton.addEventListener("click", () => setSidebarVisible(false));
   sidebarShowButton.addEventListener("click", () => setSidebarVisible(true));
 
+  setSidebarVisible(window.matchMedia("(min-width: 1280px)").matches);
 });
