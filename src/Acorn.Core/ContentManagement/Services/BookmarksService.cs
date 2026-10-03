@@ -2,9 +2,8 @@ using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
-using Acorn.Core.Extensions;
+using Acorn.Core.Mapping;
 using Acorn.Core.Security;
-using Markdig;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.ContentManagement.Services;
@@ -13,16 +12,16 @@ internal sealed class BookmarksService : IBookmarksService
 {
   private readonly ApplicationDbContext _dbContext;
   private readonly IUserContextService _userContextService;
-  private readonly MarkdownPipeline _markdownPipeline;
+  private readonly IEntityModelMapper<BookmarkContent, Bookmark> _bookmarkMapper;
 
   public BookmarksService(
     ApplicationDbContext dbContext,
     IUserContextService userContextService,
-    MarkdownPipeline markdownPipeline)
+    IEntityModelMapper<BookmarkContent, Bookmark> bookmarkMapper)
   {
     _dbContext = dbContext;
     _userContextService = userContextService;
-    _markdownPipeline = markdownPipeline;
+    _bookmarkMapper = bookmarkMapper;
   }
 
   public async Task<Bookmark> CreateBookmarkAsync(
@@ -44,13 +43,13 @@ internal sealed class BookmarksService : IBookmarksService
     _ = await _dbContext.Bookmarks.AddAsync(bookmark, cancellationToken);
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
 
-    return await MapBookmarkAsync(bookmark);
+    return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
   }
 
   public async Task<Bookmark> GetBookmarkAsync(int id, CancellationToken cancellationToken = default)
   {
     var bookmark = await GetBookmarkContentAsync(id, cancellationToken);
-    return await MapBookmarkAsync(bookmark);
+    return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
   }
 
   public async Task<IEnumerable<Bookmark>> GetBookmarksAsync(CancellationToken cancellationToken = default)
@@ -60,7 +59,7 @@ internal sealed class BookmarksService : IBookmarksService
       .OrderByDescending(x => x.CreatedAt)
       .ToArrayAsync(cancellationToken);
 
-    return await Task.WhenAll(bookmarks.Select(MapBookmarkAsync));
+    return await Task.WhenAll(bookmarks.Select(bookmark => _bookmarkMapper.MapAsync(bookmark, cancellationToken)));
   }
 
   public async Task<IEnumerable<Bookmark>> GetPublishedBookmarksAsync(CancellationToken cancellationToken = default)
@@ -71,7 +70,7 @@ internal sealed class BookmarksService : IBookmarksService
       .OrderByDescending(x => x.PublishedAt)
       .ToArrayAsync(cancellationToken);
 
-    return await Task.WhenAll(bookmarks.Select(MapBookmarkAsync));
+    return await Task.WhenAll(bookmarks.Select(bookmark => _bookmarkMapper.MapAsync(bookmark, cancellationToken)));
   }
 
   public async Task<Bookmark> UpdateBookmarkAsync(
@@ -89,7 +88,7 @@ internal sealed class BookmarksService : IBookmarksService
     bookmark.Tags = tags?.ToList() ?? [];
 
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
-    return await MapBookmarkAsync(bookmark);
+    return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
   }
 
   public async Task DeleteBookmarkAsync(int id, CancellationToken cancellationToken = default)
@@ -108,7 +107,7 @@ internal sealed class BookmarksService : IBookmarksService
     bookmark.PublishedAt = DateTime.UtcNow;
 
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
-    return await MapBookmarkAsync(bookmark);
+    return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
   }
 
   private async Task<BookmarkContent> GetBookmarkContentAsync(int id, CancellationToken cancellationToken)
@@ -118,24 +117,6 @@ internal sealed class BookmarksService : IBookmarksService
       throw new ContentNotFoundException(id);
 
     return bookmark;
-  }
-
-  private async Task<Bookmark> MapBookmarkAsync(BookmarkContent bookmark)
-  {
-    var timeZone = await _userContextService.GetUserTimeZoneAsync();
-    var descriptionHtml = string.IsNullOrWhiteSpace(bookmark.Description)
-      ? null
-      : Markdown.ToHtml(bookmark.Description, _markdownPipeline);
-
-    return new Bookmark(
-      bookmark.Id,
-      bookmark.Url,
-      bookmark.Title,
-      bookmark.Description,
-      descriptionHtml,
-      bookmark.Tags.ToArray(),
-      bookmark.CreatedAt.ConvertUtcToLocal(timeZone),
-      bookmark.PublishedAt?.ConvertUtcToLocal(timeZone));
   }
 
   private static string? NormalizeDescription(string? description)

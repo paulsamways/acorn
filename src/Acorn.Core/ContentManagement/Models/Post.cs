@@ -9,6 +9,7 @@ namespace Acorn.Core.ContentManagement.Models;
 /// <param name="BodyHtml">The rendered HTML body.</param>
 /// <param name="Tags">The post's tags.</param>
 /// <param name="CreatedAt">The creation time in the user's time zone.</param>
+/// <param name="UpdatedAt">The most recent update time in the user's time zone.</param>
 /// <param name="PublishedAt">The publication time in the user's time zone, if published.</param>
 public record Post(
   int Id,
@@ -19,4 +20,6 @@ public record Post(
   string BodyHtml,
   IReadOnlyList<string> Tags,
   DateTimeOffset CreatedAt,
-  DateTimeOffset? PublishedAt);
+  DateTimeOffset UpdatedAt,
+  DateTimeOffset? PublishedAt)
+  : Content(Id, Tags, CreatedAt, UpdatedAt, PublishedAt);

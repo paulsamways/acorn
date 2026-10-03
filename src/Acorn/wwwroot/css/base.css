@@ -81,6 +81,9 @@
   a:hover {
     color: var(--text-color-highlight-hover);
   }
+  a>svg, h1>svg, h2>svg, h3>svg {
+    display: inline;
+  }
 
   hr {
     border-color: var(--border-color);

@@ -11,12 +11,13 @@ internal sealed class UserContextService : IUserContextService
 
   private readonly ApplicationDbContext _dbContext;
 
-  private TimeZoneInfo? _timeZoneInfo = null;
+  private readonly Lazy<Task<TimeZoneInfo>> _timeZoneInfo;
 
   public UserContextService(IHttpContextAccessor httpContextAccessor, ApplicationDbContext dbContext)
   {
     _httpContextAccessor = httpContextAccessor;
     _dbContext = dbContext;
+    _timeZoneInfo = new Lazy<Task<TimeZoneInfo>>(ResolveUserTimeZoneAsync, LazyThreadSafetyMode.ExecutionAndPublication);
   }
 
   public bool IsAuthenticated()
@@ -32,35 +33,22 @@ internal sealed class UserContextService : IUserContextService
     return Guid.Parse(nameIdentifier);
   }
 
-  public async Task<TimeZoneInfo> GetUserTimeZoneAsync()
+  public Task<TimeZoneInfo> GetUserTimeZoneAsync()
+    => _timeZoneInfo.Value;
+
+  private async Task<TimeZoneInfo> ResolveUserTimeZoneAsync()
   {
-    if (_timeZoneInfo is null)
-    {
-      if (IsAuthenticated())
-      {
-        var timeZoneId = await _dbContext
-          .Users
-          .Where(x => x.Id == GetCurrentUserId())
-          .Select(x => x.TimeZone)
-          .FirstAsync();
+    if (!IsAuthenticated())
+      return TimeZoneInfo.Local;
 
-        if (timeZoneId is not null)
-        {
-          _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        }
-        else
-        {
-          _timeZoneInfo = TimeZoneInfo.Local;
-        }
-      }
-      else
-      {
-        _timeZoneInfo = TimeZoneInfo.Local;
-      }
-    }
+    var timeZoneId = await _dbContext
+      .Users
+      .Where(x => x.Id == GetCurrentUserId())
+      .Select(x => x.TimeZone)
+      .FirstAsync();
 
-    return _timeZoneInfo;
+    return timeZoneId is null
+      ? TimeZoneInfo.Local
+      : TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
   }
-
-
 }

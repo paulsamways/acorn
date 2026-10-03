@@ -2,9 +2,8 @@ using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
-using Acorn.Core.Extensions;
+using Acorn.Core.Mapping;
 using Acorn.Core.Security;
-using Markdig;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.ContentManagement.Services;
@@ -13,13 +12,16 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
 {
   private readonly ApplicationDbContext _dbContext;
   private readonly IUserContextService _userContextService;
-  private readonly MarkdownPipeline _markdownPipeline;
+  private readonly IEntityModelMapper<PostContent, Post> _postMapper;
 
-  public PostsService(ApplicationDbContext dbContext, IUserContextService userContextService, MarkdownPipeline markdownPipeline)
+  public PostsService(
+    ApplicationDbContext dbContext,
+    IUserContextService userContextService,
+    IEntityModelMapper<PostContent, Post> postMapper)
   {
     _dbContext = dbContext;
     _userContextService = userContextService;
-    _markdownPipeline = markdownPipeline;
+    _postMapper = postMapper;
   }
 
   public async Task<Post> CreatePostAsync(string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
@@ -36,13 +38,13 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     _ = await _dbContext.Posts.AddAsync(postContent, cancellationToken);
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
 
-    return await MapPostAsync(postContent);
+    return await _postMapper.MapAsync(postContent, cancellationToken);
   }
 
   public async Task<Post> GetPostAsync(int id, CancellationToken cancellationToken = default)
   {
     var postContent = await GetPostContentAsync(id, cancellationToken);
-    return await MapPostAsync(postContent);
+    return await _postMapper.MapAsync(postContent, cancellationToken);
   }
 
   public async Task<IEnumerable<Post>> GetPostsAsync(CancellationToken cancellationToken = default)
@@ -52,7 +54,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
       .OrderByDescending(x => x.CreatedAt)
       .ToArrayAsync(cancellationToken);
 
-    return await Task.WhenAll(posts.Select(MapPostAsync));
+    return await Task.WhenAll(posts.Select(post => _postMapper.MapAsync(post, cancellationToken)));
   }
 
   public async Task<IEnumerable<Post>> GetPublishedPostsAsync(CancellationToken cancellationToken = default)
@@ -63,7 +65,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
       .OrderByDescending(x => x.PublishedAt)
       .ToArrayAsync(cancellationToken);
 
-    return await Task.WhenAll(posts.Select(MapPostAsync));
+    return await Task.WhenAll(posts.Select(post => _postMapper.MapAsync(post, cancellationToken)));
   }
 
   public async Task<Post> GetPublishedPostAsync(int id, CancellationToken cancellationToken = default)
@@ -75,7 +77,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     if (post is null)
       throw new ContentNotFoundException(id);
 
-    return await MapPostAsync(post);
+    return await _postMapper.MapAsync(post, cancellationToken);
   }
 
   public async Task<Post> UpdatePostAsync(int id, string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
@@ -87,7 +89,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     post.Tags = tags?.ToList() ?? [];
 
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
-    return await MapPostAsync(post);
+    return await _postMapper.MapAsync(post, cancellationToken);
   }
 
   public async Task DeletePostAsync(int id, CancellationToken cancellationToken = default)
@@ -104,7 +106,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     post.PublishedAt = DateTime.UtcNow;
 
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
-    return await MapPostAsync(post);
+    return await _postMapper.MapAsync(post, cancellationToken);
   }
 
   private async Task<PostContent> GetPostContentAsync(int id, CancellationToken cancellationToken)
@@ -114,26 +116,6 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
       throw new ContentNotFoundException(id);
 
     return post;
-  }
-
-  private async Task<Post> MapPostAsync(PostContent postContent)
-  {
-    var timeZone = await _userContextService.GetUserTimeZoneAsync();
-    var bodyHtml = Markdown.ToHtml(postContent.Body, _markdownPipeline);
-    var excerptHtml = string.IsNullOrWhiteSpace(postContent.Excerpt)
-      ? null
-      : Markdown.ToHtml(postContent.Excerpt, _markdownPipeline);
-
-    return new Post(
-      postContent.Id,
-      postContent.Title,
-      postContent.Excerpt,
-      excerptHtml,
-      postContent.Body,
-      bodyHtml,
-      postContent.Tags.ToArray(),
-      postContent.CreatedAt.ConvertUtcToLocal(timeZone),
-      postContent.PublishedAt?.ConvertUtcToLocal(timeZone));
   }
 
   private static string? NormalizeExcerpt(string? excerpt)

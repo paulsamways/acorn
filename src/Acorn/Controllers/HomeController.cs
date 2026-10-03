@@ -9,13 +9,13 @@ namespace Acorn.Controllers;
 /// <summary>Handles the site's home and error pages.</summary>
 public class HomeController : Controller
 {
-  private readonly IPostsService _postsService;
+  private readonly IContentService _contentService;
 
   /// <summary>Creates the home controller.</summary>
-  /// <param name="postsService">The published-post service.</param>
-  public HomeController(IPostsService postsService)
+  /// <param name="contentService">The published-content service.</param>
+  public HomeController(IContentService contentService)
   {
-    _postsService = postsService;
+    _contentService = contentService;
   }
 
   /// <summary>Displays the home page.</summary>
@@ -24,8 +24,8 @@ public class HomeController : Controller
   [HttpGet(Routes.HomeIndexUrlTemplate, Name = Routes.HomeIndexGetRoute)]
   public async Task<IActionResult> Index(CancellationToken cancellationToken)
   {
-    var posts = await _postsService.GetPublishedPostsAsync(cancellationToken);
-    return View(posts);
+    var content = await _contentService.GetRecentPublishedContentAsync(cancellationToken: cancellationToken);
+    return View(content);
   }
 
   /// <summary>Displays the application error page.</summary>

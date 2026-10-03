@@ -6,5 +6,14 @@ namespace Acorn.Core.ContentManagement.Models;
 /// <param name="ValueHtml">The rendered HTML content.</param>
 /// <param name="Tags">The note's tags.</param>
 /// <param name="CreatedAt">The creation time in the user's time zone.</param>
+/// <param name="UpdatedAt">The most recent update time in the user's time zone.</param>
 /// <param name="PublishedAt">The publication time in the user's time zone, if published.</param>
-public record Note(int Id, string Value, string ValueHtml, IReadOnlyList<string> Tags, DateTimeOffset CreatedAt, DateTimeOffset? PublishedAt);
+public record Note(
+    int Id,
+    string Value,
+    string ValueHtml,
+    IReadOnlyList<string> Tags,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    DateTimeOffset? PublishedAt)
+    : Content(Id, Tags, CreatedAt, UpdatedAt, PublishedAt);

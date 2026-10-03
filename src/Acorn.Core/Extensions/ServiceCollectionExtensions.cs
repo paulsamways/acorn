@@ -1,5 +1,8 @@
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.ContentManagement.Services;
+using Acorn.Core.Data.Entities;
+using Acorn.Core.Mapping;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net;
 
@@ -30,6 +33,11 @@ public static class ServiceCollectionExtensions
       });
 
     return services
+      .AddScoped<ContentModelMapper>()
+      .AddScoped<IEntityModelMapper<PostContent, Post>>(provider => provider.GetRequiredService<ContentModelMapper>())
+      .AddScoped<IEntityModelMapper<NoteContent, Note>>(provider => provider.GetRequiredService<ContentModelMapper>())
+      .AddScoped<IEntityModelMapper<BookmarkContent, Bookmark>>(provider => provider.GetRequiredService<ContentModelMapper>())
+      .AddScoped<IContentService, ContentService>()
       .AddScoped<INotesService, NotesService>()
       .AddScoped<IBookmarksService, BookmarksService>()
       .AddScoped<PostsService>()
