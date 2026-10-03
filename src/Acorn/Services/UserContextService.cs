@@ -19,6 +19,11 @@ internal sealed class UserContextService : IUserContextService
     _dbContext = dbContext;
   }
 
+  public bool IsAuthenticated()
+  {
+    return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
+  }
+
   public Guid GetCurrentUserId()
   {
     var nameIdentifier = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -31,15 +36,22 @@ internal sealed class UserContextService : IUserContextService
   {
     if (_timeZoneInfo is null)
     {
-      var timeZoneId = await _dbContext
-        .Users
-        .Where(x => x.Id == GetCurrentUserId())
-        .Select(x => x.TimeZone)
-        .FirstAsync();
-
-      if (timeZoneId is not null)
+      if (IsAuthenticated())
       {
-        _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        var timeZoneId = await _dbContext
+          .Users
+          .Where(x => x.Id == GetCurrentUserId())
+          .Select(x => x.TimeZone)
+          .FirstAsync();
+
+        if (timeZoneId is not null)
+        {
+          _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        }
+        else
+        {
+          _timeZoneInfo = TimeZoneInfo.Local;
+        }
       }
       else
       {
@@ -50,8 +62,5 @@ internal sealed class UserContextService : IUserContextService
     return _timeZoneInfo;
   }
 
-  public bool IsAuthenticated()
-  {
-    return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
-  }
+
 }
