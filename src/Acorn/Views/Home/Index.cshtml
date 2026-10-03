@@ -35,7 +35,7 @@
           </h3>
           <div class="f-row g-2">
             <span class="muted">@content.GetType().Name</span>&mdash;
-            <time class="muted" datetime="@content.UpdatedAt.ToString("O")">@content.UpdatedAt.ToString("MMMM d, yyyy")</time>
+            <time class="muted" datetime="@content.UpdatedAt" title="Published at {0}" display="Date"></time>
           </div>
         </header>
         @if (content is Acorn.Core.ContentManagement.Models.Post postContent)
