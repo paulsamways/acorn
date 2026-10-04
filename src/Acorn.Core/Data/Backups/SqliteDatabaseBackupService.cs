@@ -17,7 +17,7 @@ public sealed class SqliteDatabaseBackupService : ISqliteDatabaseBackupService
   /// <summary>Creates the backup service.</summary>
   /// <param name="connectionString">The SQLite database connection string.</param>
   /// <param name="contentRootPath">The application content root used to resolve relative paths.</param>
-  /// <param name="options">Backup interval, directory, and retention settings.</param>
+  /// <param name="options">Backup directory and retention settings.</param>
   /// <param name="logger">The service logger.</param>
   public SqliteDatabaseBackupService(
     string connectionString,
@@ -31,8 +31,6 @@ public sealed class SqliteDatabaseBackupService : ISqliteDatabaseBackupService
 
     if (options.RetentionCount < 1)
       throw new ArgumentOutOfRangeException(nameof(options), "At least one backup must be retained.");
-    if (options.Interval <= TimeSpan.Zero)
-      throw new ArgumentOutOfRangeException(nameof(options), "The backup interval must be positive.");
 
     var connection = new SqliteConnectionStringBuilder(connectionString);
     if (connection.Mode == SqliteOpenMode.Memory || connection.DataSource == ":memory:")

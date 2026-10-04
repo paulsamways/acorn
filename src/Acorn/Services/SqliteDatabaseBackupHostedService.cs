@@ -1,38 +1,39 @@
 using Acorn.Core.Data.Backups;
-using Microsoft.Extensions.Options;
 
 namespace Acorn.Services;
 
 internal sealed class SqliteDatabaseBackupHostedService : BackgroundService
 {
+  private static readonly TimeZoneInfo _backupTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Australia/Sydney");
+
+  private static readonly TimeOnly _backupTime = new TimeOnly(4, 0);
+
   private readonly ISqliteDatabaseBackupService _backupService;
-  private readonly SqliteDatabaseBackupOptions _options;
   private readonly ILogger<SqliteDatabaseBackupHostedService> _logger;
 
   public SqliteDatabaseBackupHostedService(
     ISqliteDatabaseBackupService backupService,
-    IOptions<SqliteDatabaseBackupOptions> options,
     ILogger<SqliteDatabaseBackupHostedService> logger)
   {
     _backupService = backupService;
-    _options = options.Value;
     _logger = logger;
   }
 
   [System.Diagnostics.CodeAnalysis.SuppressMessage(
     "Design",
     "CA1031:Do not catch general exception types",
-    Justification = "Backup failures are logged and retried on the next interval without terminating the web host.")]
+    Justification = "Backup failures are logged and retried at the next scheduled run without terminating the web host.")]
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
-    using var timer = new PeriodicTimer(_options.Interval);
-
     while (!stoppingToken.IsCancellationRequested)
     {
       try
       {
-        if (!await timer.WaitForNextTickAsync(stoppingToken))
-          break;
+        var now = DateTimeOffset.UtcNow;
+        var delay = GetDelayUntilNextBackup(now);
+        var nextBackupTime = TimeZoneInfo.ConvertTime(now.Add(delay), _backupTimeZone);
+        _logger.LogInformation("Next SQLite backup due at {BackupDueTime}", nextBackupTime);
+        await Task.Delay(delay, stoppingToken);
       }
       catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
       {
@@ -53,5 +54,15 @@ internal sealed class SqliteDatabaseBackupHostedService : BackgroundService
         _logger.LogError(exception, "Failed to create SQLite backup");
       }
     }
+  }
+
+  private static TimeSpan GetDelayUntilNextBackup(DateTimeOffset now)
+  {
+    var localNow = TimeZoneInfo.ConvertTime(now, _backupTimeZone);
+    var scheduledLocalTime = DateTime.SpecifyKind(localNow.Date.Add(_backupTime.ToTimeSpan()), DateTimeKind.Unspecified);
+    if (scheduledLocalTime < localNow.DateTime)
+      scheduledLocalTime = scheduledLocalTime.AddDays(1);
+
+    return TimeZoneInfo.ConvertTimeToUtc(scheduledLocalTime, _backupTimeZone) - now.UtcDateTime;
   }
 }
