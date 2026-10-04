@@ -2,7 +2,6 @@ using Acorn.Core.ContentManagement;
 using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
-using Acorn.Core.Extensions;
 using Acorn.Core.Security;
 using Markdig;
 using Microsoft.EntityFrameworkCore;

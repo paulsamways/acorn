@@ -4,20 +4,16 @@ using Acorn.Core;
 using Acorn.Core.Data.Backups;
 using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
-using Acorn.Core.Extensions;
 using Acorn.Core.Security;
 using Acorn.Core.Storage;
 using Acorn.Services;
-using Markdig;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Options;
 
 
 internal class Program
@@ -31,13 +27,9 @@ internal class Program
     var dataDirectoryService = new DataDirectoryService(configuredDataDirectory, builder.Environment.ContentRootPath);
     dataDirectoryService.EnsureCreated();
 
-    var databaseConnectionString = new SqliteConnectionStringBuilder
-    {
-      DataSource = dataDirectoryService.GetAbsolutePath("acorn.db")
-    }.ToString();
-
-    builder.Services.ConfigureCore(builder.Configuration, builder.Environment.IsDevelopment());
-    builder.Services.AddSingleton<IDataDirectoryService>(dataDirectoryService);
+    builder.Services.ConfigureCore(builder.Configuration, dataDirectoryService, builder.Environment.IsDevelopment());
+    if (!builder.Environment.IsDevelopment())
+      builder.Services.AddHostedService<SqliteDatabaseBackupHostedService>();
 
     builder.Services.AddSession((options) =>
     {
@@ -50,32 +42,6 @@ internal class Program
     builder.Services
       .AddDataProtection()
       .PersistKeysToDbContext<ApplicationDbContext>();
-
-    builder.Services
-      .AddDbContext<ApplicationDbContext>((o) => o.UseSqlite(databaseConnectionString));
-
-    builder.Services
-      .AddOptions<FileSystemContentAddressedBlobStoreOptions>()
-      .Bind(builder.Configuration.GetSection(nameof(FileSystemContentAddressedBlobStore)))
-      .ValidateDataAnnotations()
-      .ValidateOnStart();
-    builder.Services.AddSingleton<IContentAddressedBlobStore, FileSystemContentAddressedBlobStore>();
-
-    if (!builder.Environment.IsDevelopment())
-    {
-      builder.Services
-        .AddOptions<SqliteDatabaseBackupOptions>()
-        .Bind(builder.Configuration.GetSection("DatabaseBackup"))
-        .ValidateDataAnnotations()
-        .ValidateOnStart();
-      builder.Services.AddSingleton<ISqliteDatabaseBackupService>(serviceProvider =>
-        new SqliteDatabaseBackupService(
-          databaseConnectionString,
-          serviceProvider.GetRequiredService<IDataDirectoryService>(),
-          serviceProvider.GetRequiredService<IOptions<SqliteDatabaseBackupOptions>>().Value,
-          serviceProvider.GetRequiredService<ILogger<SqliteDatabaseBackupService>>()));
-      builder.Services.AddHostedService<SqliteDatabaseBackupHostedService>();
-    }
 
     builder.Services
       .AddIdentity<User, Role>()
@@ -92,7 +58,6 @@ internal class Program
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<IUserContextService, UserContextService>();
-    builder.Services.AddContentManagement();
 
     builder.Services.AddControllersWithViews()
       .AddMvcOptions(static (options) =>
@@ -107,17 +72,6 @@ internal class Program
       {
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
       });
-
-
-
-    builder.Services.AddSingleton(
-      new MarkdownPipelineBuilder()
-        .UseAdvancedExtensions()
-        .UseEmojiAndSmiley()
-        .DisableHtml()
-        .Build()
-    );
-
     builder.Services.AddAntiforgery((options) =>
     {
       options.Cookie.IsEssential = true;
