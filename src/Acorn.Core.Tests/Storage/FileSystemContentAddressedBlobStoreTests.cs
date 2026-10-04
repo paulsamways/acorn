@@ -10,19 +10,34 @@ internal sealed class FileSystemContentAddressedBlobStoreTests
   public async Task Constructor_RejectsNullOptions()
   {
     var wasRejected = await ThrowsAsync<ArgumentNullException>(
-      () => Task.FromResult(new FileSystemContentAddressedBlobStore(null!)));
+      () => Task.FromResult(new FileSystemContentAddressedBlobStore(
+        new DataDirectoryService(Path.GetTempPath(), Path.GetTempPath()),
+        null!)));
 
     await Assert.That(wasRejected).IsTrue();
   }
 
   [Test]
-  public async Task Constructor_RejectsBlankBasePath()
+  public async Task PutBlobAsync_StoresBlobUnderConfiguredDirectoryPath()
   {
-    var wasRejected = await ThrowsAsync<ArgumentException>(
-      () => Task.FromResult(new FileSystemContentAddressedBlobStore(Options.Create(
-          new FileSystemContentAddressedBlobStoreOptions { BasePath = " " }))));
+    var dataDirectory = Path.Combine(Path.GetTempPath(), $"acorn-blob-store-tests-{Guid.NewGuid():N}");
+    var directoryPath = Path.Combine("content", "blobs");
+    var store = new FileSystemContentAddressedBlobStore(
+      new DataDirectoryService(dataDirectory, dataDirectory),
+      Options.Create(new FileSystemContentAddressedBlobStoreOptions { DirectoryPath = directoryPath }));
 
-    await Assert.That(wasRejected).IsTrue();
+    try
+    {
+      var info = await store.PutBlobAsync(new MemoryStream([1, 2, 3]));
+      var hex = Convert.ToHexStringLower(info.Digest);
+      var expectedBlobPath = Path.Combine(dataDirectory, directoryPath, hex[..2], hex[2..]);
+      await Assert.That(File.Exists(expectedBlobPath)).IsTrue();
+    }
+    finally
+    {
+      if (Directory.Exists(dataDirectory))
+        Directory.Delete(dataDirectory, recursive: true);
+    }
   }
 
   [Test]
@@ -280,14 +295,16 @@ internal sealed class FileSystemContentAddressedBlobStoreTests
 
   private sealed class BlobStoreFixture : IDisposable
   {
-    private readonly string _basePath = Path.Combine(
+    private readonly string _dataDirectory = Path.Combine(
       Path.GetTempPath(),
       $"acorn-blob-store-tests-{Guid.NewGuid():N}");
+    private const string BlobDirectoryPath = "content/blobs";
 
     public BlobStoreFixture()
     {
-      Store = new FileSystemContentAddressedBlobStore(Options.Create(
-        new FileSystemContentAddressedBlobStoreOptions { BasePath = _basePath }));
+      Store = new FileSystemContentAddressedBlobStore(
+        new DataDirectoryService(_dataDirectory, _dataDirectory),
+        Options.Create(new FileSystemContentAddressedBlobStoreOptions { DirectoryPath = BlobDirectoryPath }));
     }
 
     public FileSystemContentAddressedBlobStore Store { get; }
@@ -295,21 +312,21 @@ internal sealed class FileSystemContentAddressedBlobStoreTests
     public string GetBlobPath(byte[] digest)
     {
       var hex = Convert.ToHexStringLower(digest);
-      return Path.Combine(_basePath, hex[..2], hex[2..]);
+      return Path.Combine(_dataDirectory, BlobDirectoryPath, hex[..2], hex[2..]);
     }
 
     public string GetShardDirectory(byte[] digest)
     {
       var hex = Convert.ToHexStringLower(digest);
-      return Path.Combine(_basePath, hex[..2]);
+      return Path.Combine(_dataDirectory, BlobDirectoryPath, hex[..2]);
     }
 
-    public string GetTempDirectory() => Path.Combine(_basePath, "temp");
+    public string GetTempDirectory() => Path.Combine(_dataDirectory, BlobDirectoryPath, "temp");
 
     public void Dispose()
     {
-      if (Directory.Exists(_basePath))
-        Directory.Delete(_basePath, recursive: true);
+      if (Directory.Exists(_dataDirectory))
+        Directory.Delete(_dataDirectory, recursive: true);
     }
   }
 

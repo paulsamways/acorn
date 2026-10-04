@@ -7,7 +7,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: Data Source=/app/data/acorn.db
+      DataDirectory: /app/data
       SenderName: ${SENDER_NAME}
       SenderEmailAddress: ${SENDER_EMAIL_ADDRESS}
       SmtpServer: ${SMTP_SERVER}

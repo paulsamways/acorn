@@ -1,4 +1,5 @@
 using Acorn.Core.Data.Backups;
+using Acorn.Core.Storage;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -10,9 +11,11 @@ internal class SqliteDatabaseBackupServiceTests
   public async Task CreateBackupAsync_CreatesReadableTimestampedSnapshotAndPrunesOldBackups()
   {
     var testDirectory = Path.Combine(Path.GetTempPath(), $"acorn-backup-tests-{Guid.NewGuid():N}");
-    var backupDirectory = Path.Combine(testDirectory, "backups");
+    var dataDirectory = Path.Combine(testDirectory, "application-data");
+    var backupDirectory = Path.Combine(dataDirectory, "scheduled", "daily-backups");
     var databasePath = Path.Combine(testDirectory, "acorn.db");
     Directory.CreateDirectory(testDirectory);
+    Directory.CreateDirectory(dataDirectory);
 
     try
     {
@@ -30,10 +33,10 @@ internal class SqliteDatabaseBackupServiceTests
 
       var service = new SqliteDatabaseBackupService(
         $"Data Source={databasePath}",
-        testDirectory,
+        new DataDirectoryService(dataDirectory, dataDirectory),
         new SqliteDatabaseBackupOptions
         {
-          BackupDirectory = backupDirectory,
+          DirectoryPath = Path.Combine("scheduled", "daily-backups"),
           RetentionCount = 1
         },
         NullLogger<SqliteDatabaseBackupService>.Instance);
@@ -67,7 +70,7 @@ internal class SqliteDatabaseBackupServiceTests
     {
       _ = new SqliteDatabaseBackupService(
         "Data Source=:memory:",
-        Path.GetTempPath(),
+        new DataDirectoryService(Path.GetTempPath(), Path.GetTempPath()),
         new SqliteDatabaseBackupOptions(),
         NullLogger<SqliteDatabaseBackupService>.Instance);
     }
@@ -78,4 +81,5 @@ internal class SqliteDatabaseBackupServiceTests
 
     await Assert.That(threw).IsTrue();
   }
+
 }

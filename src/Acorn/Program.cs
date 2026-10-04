@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -25,8 +26,18 @@ internal class Program
   private static async Task Main(string[] args)
   {
     var builder = WebApplication.CreateBuilder(args);
+    var configuredDataDirectory = builder.Configuration["DataDirectory"];
+    ArgumentException.ThrowIfNullOrWhiteSpace(configuredDataDirectory);
+    var dataDirectoryService = new DataDirectoryService(configuredDataDirectory, builder.Environment.ContentRootPath);
+    dataDirectoryService.EnsureCreated();
+
+    var databaseConnectionString = new SqliteConnectionStringBuilder
+    {
+      DataSource = dataDirectoryService.GetAbsolutePath("acorn.db")
+    }.ToString();
 
     builder.Services.ConfigureCore(builder.Configuration, builder.Environment.IsDevelopment());
+    builder.Services.AddSingleton<IDataDirectoryService>(dataDirectoryService);
 
     builder.Services.AddSession((options) =>
     {
@@ -41,23 +52,26 @@ internal class Program
       .PersistKeysToDbContext<ApplicationDbContext>();
 
     builder.Services
-      .AddDbContext<ApplicationDbContext>((o) => o.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+      .AddDbContext<ApplicationDbContext>((o) => o.UseSqlite(databaseConnectionString));
 
     builder.Services
       .AddOptions<FileSystemContentAddressedBlobStoreOptions>()
       .Bind(builder.Configuration.GetSection(nameof(FileSystemContentAddressedBlobStore)))
-      .PostConfigure(options => options.BasePath = Path.GetFullPath(options.BasePath, builder.Environment.ContentRootPath))
       .ValidateDataAnnotations()
       .ValidateOnStart();
     builder.Services.AddSingleton<IContentAddressedBlobStore, FileSystemContentAddressedBlobStore>();
 
     if (!builder.Environment.IsDevelopment())
     {
-      builder.Services.Configure<SqliteDatabaseBackupOptions>(builder.Configuration.GetSection("DatabaseBackup"));
+      builder.Services
+        .AddOptions<SqliteDatabaseBackupOptions>()
+        .Bind(builder.Configuration.GetSection("DatabaseBackup"))
+        .ValidateDataAnnotations()
+        .ValidateOnStart();
       builder.Services.AddSingleton<ISqliteDatabaseBackupService>(serviceProvider =>
         new SqliteDatabaseBackupService(
-          builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("The default database connection string is not configured."),
-          builder.Environment.ContentRootPath,
+          databaseConnectionString,
+          serviceProvider.GetRequiredService<IDataDirectoryService>(),
           serviceProvider.GetRequiredService<IOptions<SqliteDatabaseBackupOptions>>().Value,
           serviceProvider.GetRequiredService<ILogger<SqliteDatabaseBackupService>>()));
       builder.Services.AddHostedService<SqliteDatabaseBackupHostedService>();
@@ -130,6 +144,9 @@ internal class Program
 
 
     var app = builder.Build();
+    app.Logger.LogInformation(
+      "Using application data directory {DataDirectory}",
+      dataDirectoryService.GetAbsolutePath("."));
 
     await ApplyMigrations(app);
 

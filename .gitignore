@@ -1,4 +1,4 @@
-acorn.db*
+/var
 .env
 [Tt]est[Rr]esults/
 [Bb]in/

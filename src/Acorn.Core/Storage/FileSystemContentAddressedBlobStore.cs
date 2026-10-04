@@ -13,14 +13,17 @@ public sealed class FileSystemContentAddressedBlobStore : IContentAddressedBlobS
   private readonly string _basePath;
 
   /// <summary>Creates a filesystem-backed content-addressed blob store.</summary>
+  /// <param name="dataDirectoryService">Resolves paths beneath the application data directory.</param>
   /// <param name="options">The filesystem storage options.</param>
-  public FileSystemContentAddressedBlobStore(IOptions<FileSystemContentAddressedBlobStoreOptions> options)
+  public FileSystemContentAddressedBlobStore(
+    IDataDirectoryService dataDirectoryService,
+    IOptions<FileSystemContentAddressedBlobStoreOptions> options)
   {
+    ArgumentNullException.ThrowIfNull(dataDirectoryService);
     ArgumentNullException.ThrowIfNull(options);
     ArgumentNullException.ThrowIfNull(options.Value);
-    ArgumentException.ThrowIfNullOrWhiteSpace(options.Value.BasePath);
 
-    _basePath = Path.GetFullPath(options.Value.BasePath);
+    _basePath = dataDirectoryService.GetAbsolutePath(options.Value.DirectoryPath);
   }
 
   private FileInfo GetFileInfo(byte[] digest)
