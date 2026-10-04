@@ -13,13 +13,15 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 
 
 internal class Program
 {
   [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "WebApplicationBuilder is a fluent API.")]
-  private static void Main(string[] args)
+  private static async Task Main(string[] args)
   {
     var builder = WebApplication.CreateBuilder(args);
 
@@ -120,11 +122,7 @@ internal class Program
 
     var app = builder.Build();
 
-    using (var scope = app.Services.CreateScope())
-    {
-      var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-      dbContext.Database.Migrate();
-    }
+    await ApplyMigrations(app);
 
     // Configure the HTTP request pipeline.
     if (!app.Environment.IsDevelopment())
@@ -154,7 +152,35 @@ internal class Program
         pattern: "{controller=Home}/{action=Index}/{id?}")
       .WithStaticAssets();
 
+    await app.RunAsync();
+  }
 
-    app.Run();
+  private static async Task ApplyMigrations(WebApplication app)
+  {
+    using (var scope = app.Services.CreateScope())
+    {
+      var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+      if (!app.Environment.IsDevelopment())
+      {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        var databaseCreator = dbContext.GetService<IRelationalDatabaseCreator>();
+
+        var databaseExists = await databaseCreator.ExistsAsync();
+
+        if (databaseExists)
+        {
+          var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+
+          if (pendingMigrations.Any())
+          {
+            var backupService = scope.ServiceProvider.GetRequiredService<ISqliteDatabaseBackupService>();
+            var path = await backupService.CreateBackupAsync();
+            logger.LogInformation("Created pre-migration SQLite backup at {BackupPath}", path);
+          }
+        }
+      }
+      await dbContext.Database.MigrateAsync();
+    }
   }
 }
