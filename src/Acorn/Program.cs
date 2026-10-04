@@ -6,6 +6,7 @@ using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
 using Acorn.Core.Extensions;
 using Acorn.Core.Security;
+using Acorn.Core.Storage;
 using Acorn.Services;
 using Markdig;
 using Microsoft.AspNetCore.Authorization;
@@ -41,6 +42,14 @@ internal class Program
 
     builder.Services
       .AddDbContext<ApplicationDbContext>((o) => o.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+    builder.Services
+      .AddOptions<FileSystemContentAddressedBlobStoreOptions>()
+      .Bind(builder.Configuration.GetSection(nameof(FileSystemContentAddressedBlobStore)))
+      .PostConfigure(options => options.BasePath = Path.GetFullPath(options.BasePath, builder.Environment.ContentRootPath))
+      .ValidateDataAnnotations()
+      .ValidateOnStart();
+    builder.Services.AddSingleton<IContentAddressedBlobStore, FileSystemContentAddressedBlobStore>();
 
     if (!builder.Environment.IsDevelopment())
     {
