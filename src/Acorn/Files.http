@@ -1,0 +1,27 @@
+@baseUrl = http://localhost:8000
+@postId = 1
+@publicId = 00000000-0000-0000-0000-000000000001
+@authAndAntiforgeryCookies = replace-with-auth-and-antiforgery-cookies
+@antiforgeryToken = replace-with-request-token
+
+### Upload an image to an owned post
+POST {{baseUrl}}/admin/posts/{{postId}}/files
+Cookie: {{authAndAntiforgeryCookies}}
+RequestVerificationToken: {{antiforgeryToken}}
+Content-Type: multipart/form-data; boundary=file-boundary
+
+--file-boundary
+Content-Disposition: form-data; name="file"; filename="photo.png"
+Content-Type: image/png
+
+< ./photo.png
+--file-boundary--
+
+### Get an existing image derivative (public only through a published attachment)
+GET {{baseUrl}}/files/{{publicId}}/web-1200
+
+### Download an original as its owner
+GET {{baseUrl}}/files/{{publicId}}/original
+
+### Missing derivative returns not found
+GET {{baseUrl}}/files/00000000-0000-0000-0000-000000000002/web-1200

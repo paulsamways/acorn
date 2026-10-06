@@ -4,6 +4,8 @@ internal abstract class Content : IAuditable
 {
   public int Id { get; set; }
 
+  public Guid PublicId { get; private set; } = Guid.NewGuid();
+
   public DateTime CreatedAt { get; set; }
 
   public DateTime UpdatedAt { get; set; }
@@ -17,4 +19,6 @@ internal abstract class Content : IAuditable
   public User Author { get; set; } = null!;
 
   public List<string> Tags { get; set; } = [];
+
+  public List<ContentAttachment> Attachments { get; set; } = [];
 }

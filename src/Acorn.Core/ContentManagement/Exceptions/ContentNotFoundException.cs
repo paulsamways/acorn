@@ -10,6 +10,14 @@ public sealed class ContentNotFoundException : Exception
   {
   }
 
+  /// <summary>Creates an exception for the missing content public identifier.</summary>
+  /// <param name="publicId">The unavailable public identifier.</param>
+  public ContentNotFoundException(Guid publicId)
+    : base($"Content with PublicId={publicId} was not found")
+  {
+    PublicId = publicId;
+  }
+
   /// <summary>Creates an exception with a custom message.</summary>
   /// <param name="id">The identifier of the content that was not found.</param>
   /// <param name="message">The exception message.</param>
@@ -26,4 +34,7 @@ public sealed class ContentNotFoundException : Exception
 
   /// <summary>Gets the identifier of the content that was not found.</summary>
   public int Id { get; private set; }
+
+  /// <summary>Gets the unavailable public identifier, if the lookup used one.</summary>
+  public Guid? PublicId { get; private set; }
 }

@@ -6,6 +6,8 @@ using Acorn.Core.Data;
 using Acorn.Core.Data.Backups;
 using Acorn.Core.Data.Entities;
 using Acorn.Core.Email;
+using Acorn.Core.FileManagement;
+using Acorn.Core.FileManagement.Upload;
 using Acorn.Core.Mapping;
 using Acorn.Core.Storage;
 using Markdig;
@@ -33,6 +35,7 @@ public static class ServiceCollectionExtensions
     _ = services
       .AddData(configuration, dataDirectoryService, isDevelopment)
       .AddStorage(configuration)
+      .AddFileManagement()
       .AddEmail(configuration, isDevelopment)
       .AddContentManagement();
 
@@ -146,6 +149,7 @@ public static class ServiceCollectionExtensions
 
     return services
       .AddScoped<ContentModelMapper>()
+      .AddScoped<IPostImageReferenceResolver, PostImageReferenceResolver>()
       .AddScoped<IEntityModelMapper<PostContent, Post>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IEntityModelMapper<NoteContent, Note>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IEntityModelMapper<BookmarkContent, Bookmark>>(provider => provider.GetRequiredService<ContentModelMapper>())
@@ -155,5 +159,19 @@ public static class ServiceCollectionExtensions
       .AddScoped<PostsService>()
       .AddScoped<IPostsService>(provider => provider.GetRequiredService<PostsService>())
       .AddScoped<IPostAuthoringService>(provider => provider.GetRequiredService<PostsService>());
+  }
+
+  /// <summary>Registers file upload processing and post-scoped file services.</summary>
+  /// <param name="services">The service collection.</param>
+  /// <returns>The service collection for chaining.</returns>
+  public static IServiceCollection AddFileManagement(this IServiceCollection services)
+  {
+    _ = services
+      .AddSingleton<IFileRecipe, Web1200ImageRecipe>()
+      .AddSingleton<IImageUploadPipeline, ImageUploadPipeline>()
+      .AddScoped<IPostFileService, PostFileService>()
+      .AddScoped<IFileServingService, FileServingService>();
+
+    return services;
   }
 }

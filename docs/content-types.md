@@ -8,6 +8,8 @@ This guide describes how to add a new content type to Acorn. It is written for b
 
 The entities use EF Core table-per-hierarchy (TPH) mapping: every type is stored in the `content` table, and the `content_type` discriminator identifies each derived type. The shared primary key is `content_id`. Derived fields use type-specific lower-snake-case column names to avoid collisions in the shared table, such as `note_value`, `post_title`, and `bookmark_url`.
 
+Each content item also has a server-generated, immutable `public_id` UUID. Keep `content_id` for internal relationships; public routes and references use `public_id`, which is an identifier and not an authorization token.
+
 Soft-deleted content is excluded by the global query filter in `ContentEntityTypeConfiguration`. Normal list and lookup queries should rely on this filter. Public listing queries must additionally require `PublishedAt != null`.
 
 ## Add a Content Type

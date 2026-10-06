@@ -262,6 +262,11 @@
           "System.Composition.Runtime": "10.0.1"
         }
       },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "ne1843evDugl0md7Fjzy6QjJrzsjh46ZKbhf8GwBXb5f/gw97J4bxMs0NQKifDuThh/f0bZ0e62NPl1jzTuRqA=="
+      },
       "acorn.core": {
         "type": "Project",
         "dependencies": {
@@ -272,7 +277,8 @@
           "Microsoft.AspNetCore.Identity.EntityFrameworkCore": "[11.0.0-rc.1.26425.128, )",
           "Microsoft.Data.Sqlite.Core": "[11.0.0-rc.1.26425.128, )",
           "Microsoft.EntityFrameworkCore": "[11.0.0-rc.1.26425.128, )",
-          "Microsoft.EntityFrameworkCore.Sqlite": "[11.0.0-rc.1.26425.128, )"
+          "Microsoft.EntityFrameworkCore.Sqlite": "[11.0.0-rc.1.26425.128, )",
+          "SixLabors.ImageSharp": "[4.1.2, )"
         }
       },
       "AngleSharp": {
@@ -334,6 +340,15 @@
           "Microsoft.Extensions.DependencyModel": "11.0.0-rc.1.26425.128",
           "SQLitePCLRaw.bundle_e_sqlite3": "3.0.5",
           "SQLitePCLRaw.core": "3.0.5"
+        }
+      },
+      "SixLabors.ImageSharp": {
+        "type": "CentralTransitive",
+        "requested": "[4.1.2, )",
+        "resolved": "4.1.2",
+        "contentHash": "AQ0oouhH/6qmXJC70/k50iVt7SiZRjCgd4tXXiC5ZrB5CvyBwA81HTqb5twcXz8CvTAFxUNV0TAcL83OhyRA1g==",
+        "dependencies": {
+          "System.IO.Hashing": "8.0.0"
         }
       }
     }

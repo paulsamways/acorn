@@ -68,14 +68,14 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await Task.WhenAll(posts.Select(post => _postMapper.MapAsync(post, cancellationToken)));
   }
 
-  public async Task<Post> GetPublishedPostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<Post> GetPublishedPostAsync(Guid publicId, CancellationToken cancellationToken = default)
   {
     var post = await _dbContext
       .Posts
-      .FirstOrDefaultAsync(x => x.Id == id && x.PublishedAt != null, cancellationToken);
+      .FirstOrDefaultAsync(x => x.PublicId == publicId && x.PublishedAt != null, cancellationToken);
 
     if (post is null)
-      throw new ContentNotFoundException(id);
+      throw new ContentNotFoundException(publicId);
 
     return await _postMapper.MapAsync(post, cancellationToken);
   }

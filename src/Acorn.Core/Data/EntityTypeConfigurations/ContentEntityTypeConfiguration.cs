@@ -26,6 +26,11 @@ internal sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<
       .IsRequired();
 
     builder
+      .Property(x => x.PublicId)
+      .HasColumnName("public_id")
+      .IsRequired();
+
+    builder
       .Property(x => x.CreatedAt)
       .HasColumnName("created_at")
       .IsRequired();
@@ -58,6 +63,10 @@ internal sealed class ContentEntityTypeConfiguration : IEntityTypeConfiguration<
       .WithMany()
       .HasForeignKey(x => x.AuthorId)
       .OnDelete(DeleteBehavior.Cascade);
+
+    builder
+      .HasIndex(x => x.PublicId)
+      .IsUnique();
 
     builder
       .HasQueryFilter(x => x.DeletedAt == null);

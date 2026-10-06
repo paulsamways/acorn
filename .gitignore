@@ -1,5 +1,6 @@
 /var
 .env
+**/sixlabors.lic
 [Tt]est[Rr]esults/
 [Bb]in/
 [Oo]bj/
