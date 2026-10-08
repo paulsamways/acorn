@@ -9,6 +9,7 @@ using Acorn.Core.Email;
 using Acorn.Core.FileManagement;
 using Acorn.Core.FileManagement.Upload;
 using Acorn.Core.Mapping;
+using Acorn.Core.Security;
 using Acorn.Core.Storage;
 using Markdig;
 using Microsoft.Data.Sqlite;
@@ -29,9 +30,19 @@ public static class ServiceCollectionExtensions
   /// <param name="dataDirectoryService">Resolves paths beneath the application data directory.</param>
   /// <param name="isDevelopment">Whether to use development-only services.</param>
   /// <returns>The service collection for chaining.</returns>
-  public static IServiceCollection ConfigureCore(this IServiceCollection services, IConfiguration configuration, IDataDirectoryService dataDirectoryService, bool isDevelopment = false)
+  public static IServiceCollection ConfigureCore<TUserContextService, TAttachmentUrlResolver>(
+    this IServiceCollection services,
+    IConfiguration configuration,
+    IDataDirectoryService dataDirectoryService,
+    bool isDevelopment = false)
+      where TUserContextService : class, IUserContextService
+      where TAttachmentUrlResolver : class, IAttachmentUrlResolver
   {
     _ = services.AddSingleton(dataDirectoryService);
+
+    _ = services.AddScoped<IAttachmentUrlResolver, TAttachmentUrlResolver>();
+    _ = services.AddScoped<IUserContextService, TUserContextService>();
+
     _ = services
       .AddData(configuration, dataDirectoryService, isDevelopment)
       .AddStorage(configuration)
@@ -149,7 +160,6 @@ public static class ServiceCollectionExtensions
 
     return services
       .AddScoped<ContentModelMapper>()
-      .AddScoped<IPostImageReferenceResolver, PostImageReferenceResolver>()
       .AddScoped<IEntityModelMapper<PostContent, Post>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IEntityModelMapper<NoteContent, Note>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IEntityModelMapper<BookmarkContent, Bookmark>>(provider => provider.GetRequiredService<ContentModelMapper>())

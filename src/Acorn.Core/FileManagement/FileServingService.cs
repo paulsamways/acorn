@@ -23,6 +23,7 @@ internal sealed class FileServingService : IFileServingService
   }
 
   public async Task<FileServeResult?> GetDerivativeAsync(
+    Guid contentPublicId,
     Guid publicId,
     string recipe,
     CancellationToken cancellationToken = default)
@@ -46,11 +47,20 @@ internal sealed class FileServingService : IFileServingService
     if (derivative is null)
       return null;
 
+    var attachment = await _dbContext.ContentAttachments
+      .Where(item =>
+        item.FileId == parent.Id &&
+        item.Content.PublicId == contentPublicId &&
+        item.Content.AuthorId == parent.OwnerId)
+      .Select(item => new { item.Content.PublishedAt })
+      .SingleOrDefaultAsync(
+      cancellationToken);
+    if (attachment is null)
+      return null;
+
     var isOwner = _userContextService.IsAuthenticated() &&
       parent.OwnerId == _userContextService.GetCurrentUserId();
-    var isPublic = await _dbContext.ContentAttachments.AnyAsync(
-      attachment => attachment.FileId == parent.Id && attachment.Content.PublishedAt != null,
-      cancellationToken);
+    var isPublic = attachment.PublishedAt is not null;
     if (!isOwner && !isPublic)
       return null;
 

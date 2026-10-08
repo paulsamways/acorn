@@ -51,6 +51,7 @@ internal abstract class ServicesTestBase
     var services = new ServiceCollection()
       .AddContentManagement()
       .AddSingleton<IUserContextService>(new MockUserContextService(CurrentUserId, UserTimeZone))
+      .AddSingleton<IAttachmentUrlResolver, MockAttachmentUrlResolver>()
       .AddSingleton(new MarkdownPipelineBuilder().Build())
       .AddSingleton(DbContext);
 
@@ -100,5 +101,11 @@ internal abstract class ServicesTestBase
     public Task<TimeZoneInfo> GetUserTimeZoneAsync() => Task.FromResult(timeZone);
 
     public bool IsAuthenticated() => true;
+  }
+
+  private sealed class MockAttachmentUrlResolver : IAttachmentUrlResolver
+  {
+    public string ResolveUrl(Guid contentPublicId, Guid filePublicId)
+      => $"/files/{filePublicId:D}/web-1200?contentPublicId={contentPublicId:D}";
   }
 }

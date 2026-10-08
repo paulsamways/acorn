@@ -17,16 +17,16 @@ internal sealed class ContentModelMapper :
 {
   private readonly IUserContextService _userContextService;
   private readonly MarkdownPipeline _markdownPipeline;
-  private readonly IPostImageReferenceResolver _postImageReferenceResolver;
+  private readonly IAttachmentUrlResolver _attachmentUrlResolver;
 
   public ContentModelMapper(
     IUserContextService userContextService,
     MarkdownPipeline markdownPipeline,
-    IPostImageReferenceResolver postImageReferenceResolver)
+    IAttachmentUrlResolver attachmentUrlResolver)
   {
     _userContextService = userContextService;
     _markdownPipeline = markdownPipeline;
-    _postImageReferenceResolver = postImageReferenceResolver;
+    _attachmentUrlResolver = attachmentUrlResolver;
   }
 
   public async Task<Post> MapAsync(PostContent content, CancellationToken cancellationToken = default)
@@ -36,24 +36,55 @@ internal sealed class ContentModelMapper :
     var timeZone = await _userContextService.GetUserTimeZoneAsync();
     var metadata = MapMetadata(content, timeZone);
 
-    var excerptHtml = await RenderMarkdownAsync(content.Excerpt, content, cancellationToken);
-    var bodyHtml = await RenderMarkdownAsync(content.Body, content, cancellationToken);
-
     return new Post(
       content.Id,
       content.PublicId,
       content.Title,
       content.Excerpt,
-      excerptHtml,
+      RenderMarkdown(content.Excerpt, content),
       content.Body,
-      bodyHtml,
+      RenderMarkdown(content.Body, content),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
       metadata.PublishedAt);
   }
 
-  private async Task<string> RenderMarkdownAsync(string? markdown, DataContent content, CancellationToken cancellationToken)
+  public async Task<Note> MapAsync(NoteContent content, CancellationToken cancellationToken = default)
+  {
+    cancellationToken.ThrowIfCancellationRequested();
+    var timeZone = await _userContextService.GetUserTimeZoneAsync();
+    var metadata = MapMetadata(content, timeZone);
+
+    return new Note(
+      content.Id,
+      content.Value,
+      RenderMarkdown(content.Value, content),
+      metadata.Tags,
+      metadata.CreatedAt,
+      metadata.UpdatedAt,
+      metadata.PublishedAt);
+  }
+
+  public async Task<Bookmark> MapAsync(BookmarkContent content, CancellationToken cancellationToken = default)
+  {
+    cancellationToken.ThrowIfCancellationRequested();
+    var timeZone = await _userContextService.GetUserTimeZoneAsync();
+    var metadata = MapMetadata(content, timeZone);
+
+    return new Bookmark(
+      content.Id,
+      content.Url,
+      content.Title,
+      content.Description,
+      RenderMarkdown(content.Description, content),
+      metadata.Tags,
+      metadata.CreatedAt,
+      metadata.UpdatedAt,
+      metadata.PublishedAt);
+  }
+
+  private string RenderMarkdown(string? markdown, DataContent content)
   {
     if (string.IsNullOrWhiteSpace(markdown))
       return string.Empty;
@@ -63,25 +94,11 @@ internal sealed class ContentModelMapper :
       .Where(link => link.IsImage && link.Url?.StartsWith("file:", StringComparison.OrdinalIgnoreCase) == true)
       .ToArray();
 
-    if (fileImages.Length == 0)
-      return Markdown.ToHtml(document, _markdownPipeline);
-
-    var references = fileImages
-      .Select(link => TryParseFileReference(link.Url, out var publicId) ? publicId : (Guid?)null)
-      .Where(publicId => publicId is not null)
-      .Select(publicId => publicId!.Value)
-      .Distinct()
-      .ToArray();
-    var attachedPublicIds = await _postImageReferenceResolver.GetAttachedImagePublicIdsAsync(
-      content.Id,
-      references,
-      cancellationToken);
-
     foreach (var image in fileImages)
     {
-      if (TryParseFileReference(image.Url, out var publicId) && attachedPublicIds.Contains(publicId))
+      if (TryParseFileReference(image.Url, out var filePublicId))
       {
-        image.Url = $"/files/{publicId:D}/web-1200";
+        image.Url = _attachmentUrlResolver.ResolveUrl(content.PublicId, filePublicId);
       }
       else
       {
@@ -98,42 +115,6 @@ internal sealed class ContentModelMapper :
     return url is not null &&
       url.StartsWith("file:", StringComparison.OrdinalIgnoreCase) &&
       Guid.TryParse(url.AsSpan("file:".Length), out publicId);
-  }
-
-  public async Task<Note> MapAsync(NoteContent content, CancellationToken cancellationToken = default)
-  {
-    cancellationToken.ThrowIfCancellationRequested();
-    var timeZone = await _userContextService.GetUserTimeZoneAsync();
-    var metadata = MapMetadata(content, timeZone);
-    var valueHtml = await RenderMarkdownAsync(content.Value, content, cancellationToken);
-
-    return new Note(
-      content.Id,
-      content.Value,
-      valueHtml,
-      metadata.Tags,
-      metadata.CreatedAt,
-      metadata.UpdatedAt,
-      metadata.PublishedAt);
-  }
-
-  public async Task<Bookmark> MapAsync(BookmarkContent content, CancellationToken cancellationToken = default)
-  {
-    cancellationToken.ThrowIfCancellationRequested();
-    var timeZone = await _userContextService.GetUserTimeZoneAsync();
-    var metadata = MapMetadata(content, timeZone);
-    var descriptionHtml = await RenderMarkdownAsync(content.Description, content, cancellationToken);
-
-    return new Bookmark(
-      content.Id,
-      content.Url,
-      content.Title,
-      content.Description,
-      descriptionHtml,
-      metadata.Tags,
-      metadata.CreatedAt,
-      metadata.UpdatedAt,
-      metadata.PublishedAt);
   }
 
   private static ContentMetadata MapMetadata(DataContent content, TimeZoneInfo timeZone)

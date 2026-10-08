@@ -3,12 +3,14 @@ namespace Acorn.Core.FileManagement;
 /// <summary>Looks up existing originals and derivatives using file access policies.</summary>
 public interface IFileServingService
 {
-  /// <summary>Opens a derivative when the current user is its owner or it is publicly attached.</summary>
+  /// <summary>Opens a derivative when attached to the specified content and allowed by its access policy.</summary>
+  /// <param name="contentPublicId">The public UUID of the content containing the attachment.</param>
   /// <param name="publicId">The original file's public UUID.</param>
   /// <param name="recipe">The registered derivative recipe name.</param>
   /// <param name="cancellationToken">A token to cancel the operation.</param>
   /// <returns>The derivative response data, or <see langword="null"/> when unavailable.</returns>
   Task<FileServeResult?> GetDerivativeAsync(
+    Guid contentPublicId,
     Guid publicId,
     string recipe,
     CancellationToken cancellationToken = default);

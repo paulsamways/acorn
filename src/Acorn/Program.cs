@@ -4,7 +4,6 @@ using Acorn.Core;
 using Acorn.Core.Data.Backups;
 using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
-using Acorn.Core.Security;
 using Acorn.Core.Storage;
 using Acorn.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -27,7 +26,11 @@ internal class Program
     var dataDirectoryService = new DataDirectoryService(configuredDataDirectory, builder.Environment.ContentRootPath);
     dataDirectoryService.EnsureCreated();
 
-    builder.Services.ConfigureCore(builder.Configuration, dataDirectoryService, builder.Environment.IsDevelopment());
+    builder.Services.ConfigureCore<UserContextService, AttachmentUrlResolver>(
+      builder.Configuration,
+      dataDirectoryService,
+      builder.Environment.IsDevelopment());
+
     if (!builder.Environment.IsDevelopment())
       builder.Services.AddHostedService<SqliteDatabaseBackupHostedService>();
 
@@ -57,7 +60,6 @@ internal class Program
     });
 
     builder.Services.AddHttpContextAccessor();
-    builder.Services.AddScoped<IUserContextService, UserContextService>();
 
     builder.Services.AddControllersWithViews()
       .AddMvcOptions(static (options) =>

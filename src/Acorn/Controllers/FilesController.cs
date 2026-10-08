@@ -19,19 +19,21 @@ public sealed class FilesController : Controller
   }
 
   /// <summary>Serves an existing derivative when its access policy permits.</summary>
+  /// <param name="contentPublicId">The public UUID of the content containing the attachment.</param>
   /// <param name="publicId">The original file's public UUID.</param>
   /// <param name="recipe">The derivative recipe name.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The derivative or not found when missing or unauthorized.</returns>
   [HttpGet(Routes.FileDerivativeUrlTemplate, Name = Routes.FileDerivativeGetRoute)]
   public async Task<IActionResult> GetDerivativeAsync(
+    [FromQuery] Guid contentPublicId,
     Guid publicId,
     string recipe,
     CancellationToken cancellationToken)
   {
     try
     {
-      var result = await _fileServingService.GetDerivativeAsync(publicId, recipe, cancellationToken);
+      var result = await _fileServingService.GetDerivativeAsync(contentPublicId, publicId, recipe, cancellationToken);
       if (result is null)
         return NotFound();
 

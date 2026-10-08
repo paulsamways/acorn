@@ -17,13 +17,46 @@ internal class FileServingServiceTests : EntitiesTestBase
       DbContext,
       fixture.BlobStore,
       new TestUserContextService(Guid.NewGuid(), authenticated: true));
+    var ownerService = new FileServingService(
+      DbContext,
+      fixture.BlobStore,
+      new TestUserContextService(fixture.Owner.Id, authenticated: true));
 
-    var draftResult = await service.GetDerivativeAsync(fixture.Original.PublicId, "web-1200");
+    var draftResult = await service.GetDerivativeAsync(
+      fixture.Post.PublicId,
+      fixture.Original.PublicId,
+      "web-1200");
     await Assert.That(draftResult).IsNull();
+
+    var ownerDraftResult = await ownerService.GetDerivativeAsync(
+      fixture.Post.PublicId,
+      fixture.Original.PublicId,
+      "web-1200");
+    await Assert.That(ownerDraftResult).IsNotNull();
+    await Assert.That(ownerDraftResult!.IsPublic).IsFalse();
+    await ownerDraftResult.Stream.DisposeAsync();
+
+    var unrelatedPost = new PostContent
+    {
+      AuthorId = fixture.Owner.Id,
+      Title = "Unrelated post",
+      Body = "Body",
+      PublishedAt = DateTime.UtcNow
+    };
+    DbContext.Posts.Add(unrelatedPost);
+    await DbContext.SaveChangesAsync();
+    var unrelatedPostResult = await service.GetDerivativeAsync(
+      unrelatedPost.PublicId,
+      fixture.Original.PublicId,
+      "web-1200");
+    await Assert.That(unrelatedPostResult).IsNull();
 
     fixture.Post.PublishedAt = DateTime.UtcNow;
     await DbContext.SaveChangesAsync();
-    var publicResult = await service.GetDerivativeAsync(fixture.Original.PublicId, "web-1200");
+    var publicResult = await service.GetDerivativeAsync(
+      fixture.Post.PublicId,
+      fixture.Original.PublicId,
+      "web-1200");
 
     await Assert.That(publicResult).IsNotNull();
     await Assert.That(publicResult!.IsPublic).IsTrue();
