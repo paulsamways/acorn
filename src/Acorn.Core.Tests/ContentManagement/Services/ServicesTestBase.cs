@@ -105,7 +105,7 @@ internal abstract class ServicesTestBase
 
   private sealed class MockAttachmentUrlResolver : IAttachmentUrlResolver
   {
-    public string ResolveUrl(Guid contentPublicId, Guid filePublicId)
-      => $"/files/{filePublicId:D}/web-1200?contentPublicId={contentPublicId:D}";
+    public string ResolveUrl(Guid attachmentPublicId)
+      => $"/files/{attachmentPublicId:D}/web-1200";
   }
 }

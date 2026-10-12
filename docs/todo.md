@@ -1,22 +1,8 @@
-using Acorn.Core.Data.Entities;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.Processing;
-using FileEntity = Acorn.Core.Data.Entities.File;
+# TODO
 
-namespace Acorn.Core.FileManagement.Upload;
+## Derivatives
 
-internal sealed class Web1200ImageRecipe : IFileRecipe
-{
-  public string Name => "web-1200";
-
-  public int Version => 1;
-
-  public bool CanApply(FileEntity parent)
-    => parent is ImageFile;
-
-  public async Task<MemoryStream> ApplyAsync(Stream parentContent, CancellationToken cancellationToken)
-  {
+```c#
     ArgumentNullException.ThrowIfNull(parentContent);
 
     MemoryStream? output = null;
@@ -52,5 +38,4 @@ internal sealed class Web1200ImageRecipe : IFileRecipe
       if (!outputOwnershipTransferred)
         output?.Dispose();
     }
-  }
-}
+```

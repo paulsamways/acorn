@@ -1,4 +1,5 @@
 using Acorn.Core.ContentManagement.Models;
+using Acorn.Core.FileManagement;
 
 namespace Acorn.Core.ContentManagement;
 
@@ -10,4 +11,8 @@ public interface IContentService
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The recent published content.</returns>
   Task<IEnumerable<Content>> GetRecentPublishedContentAsync(int count = 10, CancellationToken cancellationToken = default);
+
+  Task<Guid> CreateAttachmentAsync(int contentId, Stream stream, string filename, string mediaType, CancellationToken cancellationToken = default);
+
+  Task<AttachmentFileDescriptor> OpenAttachmentAsync(Guid attachmentId, string? variant = null, CancellationToken cancellationToken = default);
 }

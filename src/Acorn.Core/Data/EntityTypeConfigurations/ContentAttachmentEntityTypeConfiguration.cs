@@ -12,7 +12,12 @@ internal sealed class ContentAttachmentEntityTypeConfiguration : IEntityTypeConf
     builder.ToTable("content_attachment");
 
     builder
-      .HasKey(x => new { x.ContentId, x.FileId });
+      .HasKey(x => x.Id);
+
+    builder
+      .Property(x => x.Id)
+      .HasColumnName("content_attachment_id")
+      .IsRequired();
 
     builder
       .Property(x => x.ContentId)
@@ -21,6 +26,20 @@ internal sealed class ContentAttachmentEntityTypeConfiguration : IEntityTypeConf
     builder
       .Property(x => x.FileId)
       .HasColumnName("file_id");
+
+    builder
+      .Property(x => x.Visibility)
+      .HasColumnName("visibility")
+      .HasConversion<string>()
+      .IsRequired();
+
+    builder
+      .Property(x => x.ParentId)
+      .HasColumnName("parent_id");
+
+    builder
+      .Property(x => x.VariantName)
+      .HasColumnName("variant_name");
 
     builder
       .HasOne(x => x.Content)
@@ -35,7 +54,14 @@ internal sealed class ContentAttachmentEntityTypeConfiguration : IEntityTypeConf
       .OnDelete(DeleteBehavior.Cascade);
 
     builder
-      .HasIndex(x => x.FileId);
+      .HasOne(x => x.Parent)
+      .WithMany(x => x.Variants)
+      .HasForeignKey(x => x.ParentId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    builder
+      .HasIndex(x => new { x.ParentId, x.VariantName })
+      .IsUnique();
 
     builder
       .HasQueryFilter(x => x.Content.DeletedAt == null && x.File.DeletedAt == null);

@@ -10,10 +10,7 @@ internal sealed class FileEntityTypeConfiguration : IEntityTypeConfiguration<Fil
   [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "ModelBuilder is a fluent API.")]
   public void Configure(EntityTypeBuilder<FileEntity> builder)
   {
-    builder.ToTable("file", table => table.HasCheckConstraint(
-      "ck_file_derivation",
-      "(parent_file_id IS NULL AND recipe IS NULL AND recipe_version IS NULL) OR " +
-      "(parent_file_id IS NOT NULL AND recipe IS NOT NULL AND recipe_version > 0)"));
+    builder.ToTable("file");
 
     builder
       .HasDiscriminator<string>("file_type")
@@ -44,20 +41,14 @@ internal sealed class FileEntityTypeConfiguration : IEntityTypeConfiguration<Fil
       .IsRequired();
 
     builder
-      .Property(x => x.OriginalFilename)
-      .HasColumnName("original_filename")
+      .Property(x => x.Filename)
+      .HasColumnName("filename")
       .HasMaxLength(255)
       .IsRequired();
 
     builder
-      .Property(x => x.DeclaredMediaType)
-      .HasColumnName("declared_media_type")
-      .HasMaxLength(255)
-      .IsRequired();
-
-    builder
-      .Property(x => x.ValidatedMediaType)
-      .HasColumnName("validated_media_type")
+      .Property(x => x.MediaType)
+      .HasColumnName("media_type")
       .HasMaxLength(255)
       .IsRequired();
 
@@ -69,19 +60,6 @@ internal sealed class FileEntityTypeConfiguration : IEntityTypeConfiguration<Fil
     builder
       .Property(x => x.DeletedAt)
       .HasColumnName("deleted_at");
-
-    builder
-      .Property(x => x.ParentFileId)
-      .HasColumnName("parent_file_id");
-
-    builder
-      .Property(x => x.Recipe)
-      .HasColumnName("recipe")
-      .HasMaxLength(64);
-
-    builder
-      .Property(x => x.RecipeVersion)
-      .HasColumnName("recipe_version");
 
     builder
       .HasOne(x => x.Blob)
@@ -96,21 +74,11 @@ internal sealed class FileEntityTypeConfiguration : IEntityTypeConfiguration<Fil
       .OnDelete(DeleteBehavior.Cascade);
 
     builder
-      .HasOne(x => x.ParentFile)
-      .WithMany(x => x.DerivedFiles)
-      .HasForeignKey(x => x.ParentFileId)
-      .OnDelete(DeleteBehavior.Cascade);
-
-    builder
       .HasIndex(x => x.PublicId)
       .IsUnique();
 
     builder
       .HasIndex(x => new { x.OwnerId, x.DeletedAt });
-
-    builder
-      .HasIndex(x => new { x.ParentFileId, x.Recipe })
-      .IsUnique();
 
     builder
       .HasQueryFilter(x => x.DeletedAt == null);

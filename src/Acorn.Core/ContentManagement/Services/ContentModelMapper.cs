@@ -41,9 +41,9 @@ internal sealed class ContentModelMapper :
       content.PublicId,
       content.Title,
       content.Excerpt,
-      RenderMarkdown(content.Excerpt, content),
+      RenderMarkdown(content.Excerpt),
       content.Body,
-      RenderMarkdown(content.Body, content),
+      RenderMarkdown(content.Body),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
@@ -59,7 +59,7 @@ internal sealed class ContentModelMapper :
     return new Note(
       content.Id,
       content.Value,
-      RenderMarkdown(content.Value, content),
+      RenderMarkdown(content.Value),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
@@ -77,14 +77,14 @@ internal sealed class ContentModelMapper :
       content.Url,
       content.Title,
       content.Description,
-      RenderMarkdown(content.Description, content),
+      RenderMarkdown(content.Description),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
       metadata.PublishedAt);
   }
 
-  private string RenderMarkdown(string? markdown, DataContent content)
+  private string RenderMarkdown(string? markdown)
   {
     if (string.IsNullOrWhiteSpace(markdown))
       return string.Empty;
@@ -96,9 +96,9 @@ internal sealed class ContentModelMapper :
 
     foreach (var image in fileImages)
     {
-      if (TryParseFileReference(image.Url, out var filePublicId))
+      if (TryParseFileReference(image.Url, out var attachmentId))
       {
-        image.Url = _attachmentUrlResolver.ResolveUrl(content.PublicId, filePublicId);
+        image.Url = _attachmentUrlResolver.ResolveUrl(attachmentId);
       }
       else
       {
@@ -109,12 +109,12 @@ internal sealed class ContentModelMapper :
     return Markdown.ToHtml(document, _markdownPipeline);
   }
 
-  private static bool TryParseFileReference(string? url, out Guid publicId)
+  private static bool TryParseFileReference(string? url, out Guid attachmentId)
   {
-    publicId = Guid.Empty;
+    attachmentId = Guid.Empty;
     return url is not null &&
       url.StartsWith("file:", StringComparison.OrdinalIgnoreCase) &&
-      Guid.TryParse(url.AsSpan("file:".Length), out publicId);
+      Guid.TryParse(url.AsSpan("file:".Length), out attachmentId);
   }
 
   private static ContentMetadata MapMetadata(DataContent content, TimeZoneInfo timeZone)

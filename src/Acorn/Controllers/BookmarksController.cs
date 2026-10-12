@@ -20,7 +20,7 @@ public sealed class BookmarksController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The published bookmark list.</returns>
   [AllowAnonymous]
-  [HttpGet(Routes.BookmarksIndexUrlTemplate, Name = Routes.BookmarksIndexGetRoute)]
+  [HttpGet(Routes.ContentBookmarksIndexUrlTemplate, Name = Routes.ContentBookmarksIndexGetRoute)]
   public async Task<IActionResult> Index(CancellationToken cancellationToken)
   {
     var bookmarks = await _bookmarksService.GetPublishedBookmarksAsync(cancellationToken);

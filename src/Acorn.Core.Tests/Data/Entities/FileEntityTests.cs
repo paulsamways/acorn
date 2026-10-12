@@ -21,9 +21,8 @@ internal class FileEntityTests : EntitiesTestBase
     {
       BlobDigest = digest,
       OwnerId = owner.Id,
-      OriginalFilename = "photo.png",
-      DeclaredMediaType = "image/png",
-      ValidatedMediaType = "image/png",
+      Filename = "photo.png",
+      MediaType = "image/png",
       CreatedAt = DateTime.UtcNow,
       Width = 16,
       Height = 12
@@ -79,9 +78,8 @@ internal class FileEntityTests : EntitiesTestBase
     {
       BlobDigest = digest,
       OwnerId = owner.Id,
-      OriginalFilename = "deleted.png",
-      DeclaredMediaType = "image/png",
-      ValidatedMediaType = "image/png",
+      Filename = "deleted.png",
+      MediaType = "image/png",
       CreatedAt = DateTime.UtcNow,
       Width = 1,
       Height = 1,

@@ -22,7 +22,7 @@ public sealed class PostsController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The post page, or not found if the post is unpublished or unavailable.</returns>
   [AllowAnonymous]
-  [HttpGet(Routes.PostsDetailsUrlTemplate, Name = Routes.PostsDetailsGetRoute)]
+  [HttpGet(Routes.ContentPostsDetailsUrlTemplate, Name = Routes.ContentPostsDetailsGetRoute)]
   public async Task<IActionResult> Details(Guid publicId, CancellationToken cancellationToken)
   {
     try

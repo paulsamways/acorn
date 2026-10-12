@@ -8,31 +8,19 @@ internal abstract class File
 
   public required byte[] BlobDigest { get; set; }
 
-  public Blob Blob { get; set; } = null!;
-
   public required Guid OwnerId { get; set; }
 
-  public User Owner { get; set; } = null!;
+  public required string Filename { get; set; }
 
-  public required string OriginalFilename { get; set; }
-
-  public required string DeclaredMediaType { get; set; }
-
-  public required string ValidatedMediaType { get; set; }
+  public required string MediaType { get; set; }
 
   public DateTime CreatedAt { get; set; }
 
   public DateTime? DeletedAt { get; set; }
 
-  public int? ParentFileId { get; set; }
+  public Blob Blob { get; set; } = null!;
 
-  public File? ParentFile { get; set; }
-
-  public List<File> DerivedFiles { get; set; } = [];
-
-  public string? Recipe { get; set; }
-
-  public int? RecipeVersion { get; set; }
+  public User Owner { get; set; } = null!;
 
   public List<ContentAttachment> Attachments { get; set; } = [];
 }

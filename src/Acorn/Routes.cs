@@ -4,14 +4,19 @@ internal static class Routes
 {
   public const string HomeIndexUrlTemplate = "/";
   public const string HomeIndexGetRoute = nameof(HomeIndexGetRoute);
-  public const string PostsDetailsUrlTemplate = "/posts/{publicId:guid}";
-  public const string PostsDetailsGetRoute = nameof(PostsDetailsGetRoute);
-  public const string FileDerivativeUrlTemplate = "/files/{publicId:guid}/{recipe:regex(^(?!original$).+$)}";
-  public const string FileDerivativeGetRoute = nameof(FileDerivativeGetRoute);
-  public const string FileOriginalUrlTemplate = "/files/{publicId:guid}/original";
-  public const string FileOriginalGetRoute = nameof(FileOriginalGetRoute);
-  public const string BookmarksIndexUrlTemplate = "/bookmarks";
-  public const string BookmarksIndexGetRoute = nameof(BookmarksIndexGetRoute);
+
+  // Content Management
+
+  public const string ContentPostsDetailsUrlTemplate = "/content/posts/{publicId:guid}";
+  public const string ContentPostsDetailsGetRoute = nameof(ContentPostsDetailsGetRoute);
+
+  public const string ContentAttachmentsUrlTemplate = "/content/attachments/{attachmentId:guid}";
+  public const string ContentAttachmentsGetRoute = nameof(ContentAttachmentsGetRoute);
+
+  public const string ContentBookmarksIndexUrlTemplate = "/content/bookmarks";
+  public const string ContentBookmarksIndexGetRoute = nameof(ContentBookmarksIndexGetRoute);
+
+  // Account
 
   public const string AccountSignInUrlTemplate = "/account/sign-in";
   public const string AccountSignInGetRoute = nameof(AccountSignInGetRoute);

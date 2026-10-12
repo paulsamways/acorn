@@ -15,7 +15,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261006045256_AddFileStorageMetadata";
+    public override string LastMigrationId => "20261011204340_Initial";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -103,6 +103,11 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Acorn.Core.Data.Entities.ContentAttachment", b =>
             {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT")
+                    .HasColumnName("content_attachment_id");
+
                 b.Property<int>("ContentId")
                     .HasColumnType("INTEGER")
                     .HasColumnName("content_id");
@@ -111,9 +116,27 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("INTEGER")
                     .HasColumnName("file_id");
 
-                b.HasKey("ContentId", "FileId");
+                b.Property<Guid?>("ParentId")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("parent_id");
+
+                b.Property<string>("VariantName")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("variant_name");
+
+                b.Property<string>("Visibility")
+                    .IsRequired()
+                    .HasColumnType("TEXT")
+                    .HasColumnName("visibility");
+
+                b.HasKey("Id");
+
+                b.HasIndex("ContentId");
 
                 b.HasIndex("FileId");
+
+                b.HasIndex("ParentId", "VariantName")
+                    .IsUnique();
 
                 b.ToTable("content_attachment");
             });
@@ -134,48 +157,29 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("created_at");
 
-                b.Property<string>("DeclaredMediaType")
-                    .IsRequired()
-                    .HasMaxLength(255)
-                    .HasColumnType("TEXT")
-                    .HasColumnName("declared_media_type");
-
                 b.Property<DateTime?>("DeletedAt")
                     .HasColumnType("TEXT")
                     .HasColumnName("deleted_at");
 
-                b.Property<string>("OriginalFilename")
+                b.Property<string>("Filename")
                     .IsRequired()
                     .HasMaxLength(255)
                     .HasColumnType("TEXT")
-                    .HasColumnName("original_filename");
+                    .HasColumnName("filename");
+
+                b.Property<string>("MediaType")
+                    .IsRequired()
+                    .HasMaxLength(255)
+                    .HasColumnType("TEXT")
+                    .HasColumnName("media_type");
 
                 b.Property<Guid>("OwnerId")
                     .HasColumnType("TEXT")
                     .HasColumnName("owner_id");
 
-                b.Property<int?>("ParentFileId")
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("parent_file_id");
-
                 b.Property<Guid>("PublicId")
                     .HasColumnType("TEXT")
                     .HasColumnName("public_id");
-
-                b.Property<string>("Recipe")
-                    .HasMaxLength(64)
-                    .HasColumnType("TEXT")
-                    .HasColumnName("recipe");
-
-                b.Property<int?>("RecipeVersion")
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("recipe_version");
-
-                b.Property<string>("ValidatedMediaType")
-                    .IsRequired()
-                    .HasMaxLength(255)
-                    .HasColumnType("TEXT")
-                    .HasColumnName("validated_media_type");
 
                 b.Property<string>("file_type")
                     .IsRequired()
@@ -191,13 +195,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
                 b.HasIndex("OwnerId", "DeletedAt");
 
-                b.HasIndex("ParentFileId", "Recipe")
-                    .IsUnique();
-
-                b.ToTable("file", t =>
-                    {
-                        t.HasCheckConstraint("ck_file_derivation", "(parent_file_id IS NULL AND recipe IS NULL AND recipe_version IS NULL) OR (parent_file_id IS NOT NULL AND recipe IS NOT NULL AND recipe_version > 0)");
-                    });
+                b.ToTable("file");
 
                 b.HasDiscriminator<string>("file_type").HasValue("File");
 
@@ -530,10 +528,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("INTEGER")
                     .HasColumnName("image_width");
 
-                b.ToTable("file", t =>
-                    {
-                        t.HasCheckConstraint("ck_file_derivation", "(parent_file_id IS NULL AND recipe IS NULL AND recipe_version IS NULL) OR (parent_file_id IS NOT NULL AND recipe IS NOT NULL AND recipe_version > 0)");
-                    });
+                b.ToTable("file");
 
                 b.HasDiscriminator().HasValue("image");
             });
@@ -563,9 +558,16 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
 
+                b.HasOne("Acorn.Core.Data.Entities.ContentAttachment", "Parent")
+                    .WithMany("Variants")
+                    .HasForeignKey("ParentId")
+                    .OnDelete(DeleteBehavior.Cascade);
+
                 b.Navigation("Content");
 
                 b.Navigation("File");
+
+                b.Navigation("Parent");
             });
 
         modelBuilder.Entity("Acorn.Core.Data.Entities.File", b =>
@@ -582,16 +584,9 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
 
-                b.HasOne("Acorn.Core.Data.Entities.File", "ParentFile")
-                    .WithMany("DerivedFiles")
-                    .HasForeignKey("ParentFileId")
-                    .OnDelete(DeleteBehavior.Cascade);
-
                 b.Navigation("Blob");
 
                 b.Navigation("Owner");
-
-                b.Navigation("ParentFile");
             });
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -655,11 +650,14 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.Navigation("Attachments");
             });
 
+        modelBuilder.Entity("Acorn.Core.Data.Entities.ContentAttachment", b =>
+            {
+                b.Navigation("Variants");
+            });
+
         modelBuilder.Entity("Acorn.Core.Data.Entities.File", b =>
             {
                 b.Navigation("Attachments");
-
-                b.Navigation("DerivedFiles");
             });
 #pragma warning restore 612, 618
     }

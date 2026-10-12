@@ -7,7 +7,7 @@ using Acorn.Core.Data.Backups;
 using Acorn.Core.Data.Entities;
 using Acorn.Core.Email;
 using Acorn.Core.FileManagement;
-using Acorn.Core.FileManagement.Upload;
+using Acorn.Core.FileManagement.Validation;
 using Acorn.Core.Mapping;
 using Acorn.Core.Security;
 using Acorn.Core.Storage;
@@ -177,10 +177,8 @@ public static class ServiceCollectionExtensions
   public static IServiceCollection AddFileManagement(this IServiceCollection services)
   {
     _ = services
-      .AddSingleton<IFileRecipe, Web1200ImageRecipe>()
-      .AddSingleton<IImageUploadPipeline, ImageUploadPipeline>()
-      .AddScoped<IPostFileService, PostFileService>()
-      .AddScoped<IFileServingService, FileServingService>();
+      .AddScoped<IFileValidator, FileValidator>()
+      .AddScoped<IFileManager, FileManager>();
 
     return services;
   }

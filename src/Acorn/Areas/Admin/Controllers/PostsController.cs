@@ -2,7 +2,7 @@ using Acorn.Areas.Admin.Models.Posts;
 using Acorn.Core.ContentManagement;
 using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
-using Acorn.Core.FileManagement;
+using Acorn.Core.FileManagement.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,15 +14,15 @@ namespace Acorn.Areas.Admin.Controllers;
 public sealed class PostsController : Controller
 {
   private readonly IPostAuthoringService _postsService;
-  private readonly IPostFileService _postFileService;
+  private readonly IContentService _contentService;
 
   /// <summary>Creates the posts controller.</summary>
   /// <param name="postsService">The post management service.</param>
   /// <param name="postFileService">The post-scoped file upload service.</param>
-  public PostsController(IPostAuthoringService postsService, IPostFileService postFileService)
+  public PostsController(IPostAuthoringService postsService, IContentService postFileService)
   {
     _postsService = postsService;
-    _postFileService = postFileService;
+    _contentService = postFileService;
   }
 
   /// <summary>Displays all posts, including drafts.</summary>
@@ -107,7 +107,7 @@ public sealed class PostsController : Controller
     try
     {
       await using var stream = file.OpenReadStream();
-      var publicId = await _postFileService.UploadImageToPostAsync(
+      var publicId = await _contentService.CreateAttachmentAsync(
         id,
         stream,
         file.FileName,
@@ -120,11 +120,7 @@ public sealed class PostsController : Controller
     {
       return NotFound();
     }
-    catch (FileUploadBusyException)
-    {
-      return StatusCode(StatusCodes.Status429TooManyRequests, new { error = "Another upload is being processed. Try again shortly." });
-    }
-    catch (FileUploadException exception)
+    catch (FileValidationException exception)
     {
       return BadRequest(new { error = exception.Message });
     }

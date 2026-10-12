@@ -51,6 +51,8 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
   {
     var posts = await _dbContext
       .Posts
+      .Include(x => x.Attachments)
+      .ThenInclude(x => x.File)
       .OrderByDescending(x => x.CreatedAt)
       .ToArrayAsync(cancellationToken);
 
@@ -61,6 +63,8 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
   {
     var posts = await _dbContext
       .Posts
+      .Include(x => x.Attachments)
+      .ThenInclude(x => x.File)
       .Where(x => x.PublishedAt != null)
       .OrderByDescending(x => x.PublishedAt)
       .ToArrayAsync(cancellationToken);
@@ -72,6 +76,8 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
   {
     var post = await _dbContext
       .Posts
+      .Include(x => x.Attachments)
+      .ThenInclude(x => x.File)
       .FirstOrDefaultAsync(x => x.PublicId == publicId && x.PublishedAt != null, cancellationToken);
 
     if (post is null)
@@ -111,7 +117,10 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
 
   private async Task<PostContent> GetPostContentAsync(int id, CancellationToken cancellationToken)
   {
-    var post = await _dbContext.Posts.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    var post = await _dbContext.Posts
+      .Include(x => x.Attachments)
+      .ThenInclude(x => x.File)
+      .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     if (post is null)
       throw new ContentNotFoundException(id);
 

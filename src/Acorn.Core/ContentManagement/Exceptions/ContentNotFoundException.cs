@@ -1,7 +1,9 @@
+using Acorn.Core.Exceptions;
+
 namespace Acorn.Core.ContentManagement.Exceptions;
 
 /// <summary>Represents a request for content that does not exist.</summary>
-public sealed class ContentNotFoundException : Exception
+public sealed class ContentNotFoundException : NotFoundException
 {
   /// <summary>Creates an exception for the missing content identifier.</summary>
   /// <param name="id">The identifier of the content that was not found.</param>
