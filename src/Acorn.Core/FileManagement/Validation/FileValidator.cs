@@ -40,8 +40,11 @@ internal sealed class FileValidator : IFileValidator
       stream.Position = 0;
       var format = await Image.DetectFormatAsync(stream, cancellationToken);
 
-      if (!SupportedMediaTypes.Contains(format.DefaultMimeType))
+      if (!SupportedMediaTypes.Contains(format.DefaultMimeType) ||
+          !string.Equals(format.DefaultMimeType, mediaType.MediaType, StringComparison.OrdinalIgnoreCase))
+      {
         throw new FileValidationException($"Stream contents did not match media type: {mediaType.MediaType}");
+      }
 
       stream.Position = 0;
       var info = await Image.IdentifyAsync(_imageDecoderOptions, stream, cancellationToken);
@@ -49,7 +52,7 @@ internal sealed class FileValidator : IFileValidator
       return new ImageFileMetadata()
       {
         Filename = filename,
-        MediaType = mediaType.ToString(),
+        MediaType = format.DefaultMimeType,
         Format = ParseFormat(mediaType),
         Width = info.Width,
         Height = info.Height

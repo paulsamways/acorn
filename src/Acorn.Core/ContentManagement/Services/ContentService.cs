@@ -84,20 +84,22 @@ internal sealed class ContentService : IContentService
     if (attachment is null)
       throw new AttachmentNotFoundException();
 
-    var owner = _userContextService.IsAuthenticated() && attachment.File.OwnerId != _userContextService.GetCurrentUserId();
+    var isAuthenticated = _userContextService.IsAuthenticated();
+    var isOwner = isAuthenticated && attachment.File.OwnerId == _userContextService.GetCurrentUserId();
 
-    if (!owner)
+    if (!isOwner)
     {
       if (attachment.Content.PublishedAt is null || attachment.Visibility == AttachmentVisibility.Owner)
         throw new UnauthorizedException();
 
-      if (attachment.Visibility == AttachmentVisibility.Authenticated && !_userContextService.IsAuthenticated())
+      if (attachment.Visibility == AttachmentVisibility.Authenticated && !isAuthenticated)
         throw new UnauthorizedException();
     }
 
     var fileDescriptor = await _fileManager.OpenFileAsync(attachment.File.Id, cancellationToken);
 
-    return new(fileDescriptor, attachment.Content.PublishedAt is not null);
+    var isPublic = attachment.Content.PublishedAt is not null && attachment.Visibility == AttachmentVisibility.Public;
+    return new(fileDescriptor, isPublic);
   }
 
   public async Task<IEnumerable<Models.Content>> GetRecentPublishedContentAsync(int count = 10, CancellationToken cancellationToken = default)

@@ -14,7 +14,7 @@ internal class PostImageRenderingTests : ServicesTestBase
 
     var rendered = await PostAuthoringService.GetPostAsync(post.Id);
 
-    await Assert.That(rendered.BodyHtml).Contains($"/files/{filePublicId:D}/web-1200");
+    await Assert.That(rendered.BodyHtml).Contains($"/content/attachments/{filePublicId:D}");
     await Assert.That(rendered.BodyHtml).DoesNotContain("contentPublicId");
     await Assert.That(rendered.BodyHtml).Contains("alt=\"A photo\"");
   }
@@ -49,12 +49,12 @@ internal class PostImageRenderingTests : ServicesTestBase
     };
     DbContext.ContentAttachments.Add(attachment);
     DbContext.ImageFiles.Add(file);
-    postEntity!.Body = $"![A photo](file:{file.PublicId:D})";
+    postEntity!.Body = $"![A photo](file:{attachment.Id:D})";
     await DbContext.SaveChangesAsync();
 
     var rendered = await PostAuthoringService.GetPostAsync(post.Id);
 
-    await Assert.That(rendered.BodyHtml).Contains($"/files/{attachment.Id:D}/web-1200");
+    await Assert.That(rendered.BodyHtml).Contains($"/content/attachments/{attachment.Id:D}");
     await Assert.That(rendered.BodyHtml).DoesNotContain(file.PublicId.ToString("D"));
   }
 
@@ -68,6 +68,6 @@ internal class PostImageRenderingTests : ServicesTestBase
     var rendered = await PostAuthoringService.GetPostAsync(post.Id);
 
     await Assert.That(rendered.BodyHtml).Contains("[Image unavailable]");
-    await Assert.That(rendered.BodyHtml).Contains("/files/00000000-0000-0000-0000-000000000001/web-1200");
+    await Assert.That(rendered.BodyHtml).Contains("/content/attachments/00000000-0000-0000-0000-000000000001");
   }
 }

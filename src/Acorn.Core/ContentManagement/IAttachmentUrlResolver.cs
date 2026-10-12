@@ -5,6 +5,6 @@ public interface IAttachmentUrlResolver
 {
   /// <summary>Creates the URL used to request an attachment.</summary>
   /// <param name="attachmentId">The public UUID of the content attachment.</param>
-  /// <returns>A relative URL to the requested file derivative.</returns>
+  /// <returns>A relative URL to the attachment.</returns>
   string ResolveUrl(Guid attachmentId);
 }

@@ -5,21 +5,24 @@ using Acorn.Core.Exceptions;
 
 namespace Acorn.Controllers;
 
-/// <summary>Serves processed file derivatives and owner-only originals.</summary>
+/// <summary>Serves content attachments when their access policy permits.</summary>
 [AllowAnonymous]
 public sealed class ContentController : Controller
 {
   private readonly IContentService _contentService;
 
+  /// <summary>Creates the content controller.</summary>
+  /// <param name="contentService">The service used to open content attachments.</param>
   public ContentController(IContentService contentService)
   {
     _contentService = contentService;
   }
 
-  /// <summary>Serves an existing derivative when its access policy permits.</summary>
+  /// <summary>Serves an attachment or named variant when its access policy permits.</summary>
   /// <param name="attachmentId">The public UUID of the content attachment.</param>
+  /// <param name="variant">The optional attachment variant to serve.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
-  /// <returns>The derivative or not found when missing or unauthorized.</returns>
+  /// <returns>The file response, or not found when missing or unauthorized.</returns>
   [HttpGet(Routes.ContentAttachmentsUrlTemplate, Name = Routes.ContentAttachmentsGetRoute)]
   public async Task<IActionResult> GetAttachmentAsync(Guid attachmentId, string? variant, CancellationToken cancellationToken)
   {

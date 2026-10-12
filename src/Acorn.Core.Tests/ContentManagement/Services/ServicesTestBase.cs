@@ -3,9 +3,11 @@ using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
 using Acorn.Core.Security;
+using Acorn.Core.Storage;
 using Markdig;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Cryptography;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
@@ -50,6 +52,8 @@ internal abstract class ServicesTestBase
 
     var services = new ServiceCollection()
       .AddContentManagement()
+      .AddFileManagement()
+      .AddSingleton<IContentAddressedBlobStore, TestContentAddressedBlobStore>()
       .AddSingleton<IUserContextService>(new MockUserContextService(CurrentUserId, UserTimeZone))
       .AddSingleton<IAttachmentUrlResolver, MockAttachmentUrlResolver>()
       .AddSingleton(new MarkdownPipelineBuilder().Build())
@@ -106,6 +110,23 @@ internal abstract class ServicesTestBase
   private sealed class MockAttachmentUrlResolver : IAttachmentUrlResolver
   {
     public string ResolveUrl(Guid attachmentPublicId)
-      => $"/files/{attachmentPublicId:D}/web-1200";
+      => $"/content/attachments/{attachmentPublicId:D}";
+  }
+
+  private sealed class TestContentAddressedBlobStore : IContentAddressedBlobStore
+  {
+    public async Task<BlobInfo> PutBlobAsync(Stream stream, CancellationToken cancellationToken = default)
+    {
+      using var content = new MemoryStream();
+      await stream.CopyToAsync(content, cancellationToken);
+      var bytes = content.ToArray();
+      return new(SHA256.HashData(bytes), bytes.Length);
+    }
+
+    public Task<Stream> GetBlobAsync(byte[] digest, CancellationToken cancellationToken = default)
+      => Task.FromResult<Stream>(new MemoryStream([0], writable: false));
+
+    public Task DeleteBlobAsync(byte[] digest, CancellationToken cancellationToken = default)
+      => Task.CompletedTask;
   }
 }

@@ -18,11 +18,11 @@ public sealed class PostsController : Controller
 
   /// <summary>Creates the posts controller.</summary>
   /// <param name="postsService">The post management service.</param>
-  /// <param name="postFileService">The post-scoped file upload service.</param>
-  public PostsController(IPostAuthoringService postsService, IContentService postFileService)
+  /// <param name="contentService">The service used to create content attachments.</param>
+  public PostsController(IPostAuthoringService postsService, IContentService contentService)
   {
     _postsService = postsService;
-    _contentService = postFileService;
+    _contentService = contentService;
   }
 
   /// <summary>Displays all posts, including drafts.</summary>

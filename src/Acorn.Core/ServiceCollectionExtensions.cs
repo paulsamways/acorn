@@ -171,7 +171,7 @@ public static class ServiceCollectionExtensions
       .AddScoped<IPostAuthoringService>(provider => provider.GetRequiredService<PostsService>());
   }
 
-  /// <summary>Registers file upload processing and post-scoped file services.</summary>
+  /// <summary>Registers file validation and file-management services.</summary>
   /// <param name="services">The service collection.</param>
   /// <returns>The service collection for chaining.</returns>
   public static IServiceCollection AddFileManagement(this IServiceCollection services)

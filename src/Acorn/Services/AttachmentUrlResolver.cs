@@ -4,15 +4,13 @@ namespace Acorn.Services;
 
 internal sealed class AttachmentUrlResolver(LinkGenerator linkGenerator) : IAttachmentUrlResolver
 {
-  private const string DefaultImageRecipe = "web-1200";
-
   public string ResolveUrl(Guid attachmentId)
   {
     var path = linkGenerator.GetPathByName(
       Routes.ContentAttachmentsGetRoute,
-      new { attachmentId, recipe = DefaultImageRecipe });
+      new { attachmentId });
     if (path is null)
-      throw new InvalidOperationException($"The file derivative route '{Routes.ContentAttachmentsGetRoute}' is not registered.");
+      throw new InvalidOperationException($"The content attachment route '{Routes.ContentAttachmentsGetRoute}' is not registered.");
 
     return path;
   }

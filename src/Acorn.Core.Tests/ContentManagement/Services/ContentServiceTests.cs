@@ -1,5 +1,8 @@
 using Acorn.Core.ContentManagement.Models;
+using Acorn.Core.ContentManagement;
+using Acorn.Core.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
@@ -46,5 +49,100 @@ internal class ContentServiceTests : ServicesTestBase
     await PostAuthoringService.PublishPostAsync(second.Id);
 
     await Assert.That(await ContentService.GetRecentPublishedContentAsync(1)).Count().IsEqualTo(1);
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_RejectsAuthenticatedNonOwnerForOwnerOnlyAttachment()
+  {
+    var ownerId = Guid.NewGuid();
+    DbContext.Users.Add(new User("attachment-owner@example.test") { Id = ownerId });
+    var attachment = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, publishedAt: null);
+
+    await Assert.That(async () => await ContentService.OpenAttachmentAsync(attachment.Id))
+      .Throws<Acorn.Core.Exceptions.UnauthorizedException>();
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_AllowsOwnerToOpenUnpublishedOwnerOnlyAttachment()
+  {
+    var attachment = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, publishedAt: null);
+
+    var result = await ContentService.OpenAttachmentAsync(attachment.Id);
+    await using var stream = result.Stream;
+
+    await Assert.That(result.IsPublic).IsFalse();
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_DoesNotMarkAuthenticatedAttachmentAsPublic()
+  {
+    var attachment = await CreateAttachmentAsync(
+      CurrentUserId,
+      AttachmentVisibility.Authenticated,
+      publishedAt: DateTime.UtcNow);
+
+    var result = await ContentService.OpenAttachmentAsync(attachment.Id);
+    await using var stream = result.Stream;
+
+    await Assert.That(result.IsPublic).IsFalse();
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_MarksPublishedPublicAttachmentAsPublic()
+  {
+    var attachment = await CreateAttachmentAsync(
+      CurrentUserId,
+      AttachmentVisibility.Public,
+      publishedAt: DateTime.UtcNow);
+
+    var result = await ContentService.OpenAttachmentAsync(attachment.Id);
+    await using var stream = result.Stream;
+
+    await Assert.That(result.IsPublic).IsTrue();
+  }
+
+  private async Task<ContentAttachment> CreateAttachmentAsync(
+    Guid ownerId,
+    AttachmentVisibility visibility,
+    DateTime? publishedAt)
+  {
+    var digest = RandomNumberGenerator.GetBytes(32);
+    var blob = new Blob
+    {
+      Digest = digest,
+      Size = 1,
+      CreatedAt = DateTime.UtcNow
+    };
+    var file = new ImageFile
+    {
+      BlobDigest = digest,
+      Blob = blob,
+      OwnerId = ownerId,
+      Filename = "attachment.png",
+      MediaType = "image/png",
+      CreatedAt = DateTime.UtcNow,
+      Width = 1,
+      Height = 1
+    };
+    var content = new PostContent
+    {
+      AuthorId = ownerId,
+      Title = "Attachment post",
+      Body = "Body",
+      PublishedAt = publishedAt
+    };
+    var attachment = new ContentAttachment
+    {
+      Content = content,
+      File = file,
+      Visibility = visibility
+    };
+
+    DbContext.Blobs.Add(blob);
+    DbContext.ImageFiles.Add(file);
+    DbContext.Posts.Add(content);
+    DbContext.ContentAttachments.Add(attachment);
+    await DbContext.SaveChangesAsync();
+    return attachment;
   }
 }
