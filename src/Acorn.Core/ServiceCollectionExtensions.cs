@@ -1,5 +1,6 @@
 using System.Net;
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.ContentManagement.Services;
 using Acorn.Core.Data;
@@ -159,6 +160,7 @@ public static class ServiceCollectionExtensions
       });
 
     return services
+      .AddSingleton<IContentAttachmentDerivationPipeline, DefaultImageContentAttachmentDerivationPipeline>()
       .AddScoped<ContentModelMapper>()
       .AddScoped<IEntityModelMapper<PostContent, Post>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IEntityModelMapper<NoteContent, Note>>(provider => provider.GetRequiredService<ContentModelMapper>())

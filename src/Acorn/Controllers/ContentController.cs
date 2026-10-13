@@ -18,17 +18,17 @@ public sealed class ContentController : Controller
     _contentService = contentService;
   }
 
-  /// <summary>Serves an attachment or named variant when its access policy permits.</summary>
+  /// <summary>Serves an attachment or named derivation when its access policy permits.</summary>
   /// <param name="attachmentId">The public UUID of the content attachment.</param>
-  /// <param name="variant">The optional attachment variant to serve.</param>
+  /// <param name="derivation">The optional derivation name to serve.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The file response, or not found when missing or unauthorized.</returns>
   [HttpGet(Routes.ContentAttachmentsUrlTemplate, Name = Routes.ContentAttachmentsGetRoute)]
-  public async Task<IActionResult> GetAttachmentAsync(Guid attachmentId, string? variant, CancellationToken cancellationToken)
+  public async Task<IActionResult> GetAttachmentAsync(Guid attachmentId, string? derivation, CancellationToken cancellationToken)
   {
     try
     {
-      var result = await _contentService.OpenAttachmentAsync(attachmentId, variant, cancellationToken);
+      var result = await _contentService.OpenAttachmentAsync(attachmentId, derivation, cancellationToken);
 
       Response.Headers.CacheControl = result.IsPublic ? "public, max-age=300" : "private, no-store";
       Response.Headers.XContentTypeOptions = "nosniff";

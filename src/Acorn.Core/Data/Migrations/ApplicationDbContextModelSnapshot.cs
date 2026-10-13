@@ -15,7 +15,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261011204340_Initial";
+    public override string LastMigrationId => "20261013023806_RenameAttachmentPreferredDerivation";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -112,17 +112,21 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("INTEGER")
                     .HasColumnName("content_id");
 
+                b.Property<string>("DerivationName")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("derivation_name");
+
                 b.Property<int>("FileId")
                     .HasColumnType("INTEGER")
                     .HasColumnName("file_id");
 
+                b.Property<bool?>("IsPreferredDerivation")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("is_preferred_derivation");
+
                 b.Property<Guid?>("ParentId")
                     .HasColumnType("TEXT")
                     .HasColumnName("parent_id");
-
-                b.Property<string>("VariantName")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("variant_name");
 
                 b.Property<string>("Visibility")
                     .IsRequired()
@@ -135,10 +139,19 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
                 b.HasIndex("FileId");
 
-                b.HasIndex("ParentId", "VariantName")
+                b.HasIndex("ParentId")
+                    .IsUnique()
+                    .HasFilter("is_preferred_derivation = 1");
+
+                b.HasIndex("ParentId", "DerivationName")
                     .IsUnique();
 
-                b.ToTable("content_attachment");
+                b.ToTable("content_attachment", t =>
+                    {
+                        t.HasCheckConstraint("ck_content_attachment_preferred_derivation_is_public", "is_preferred_derivation = 0 OR visibility = 'Public'");
+
+                        t.HasCheckConstraint("ck_content_attachment_preferred_derivation_requires_parent", "(parent_id IS NULL AND is_preferred_derivation IS NULL) OR (parent_id IS NOT NULL AND is_preferred_derivation IS NOT NULL)");
+                    });
             });
 
         modelBuilder.Entity("Acorn.Core.Data.Entities.File", b =>
@@ -559,7 +572,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .IsRequired();
 
                 b.HasOne("Acorn.Core.Data.Entities.ContentAttachment", "Parent")
-                    .WithMany("Variants")
+                    .WithMany("Derivations")
                     .HasForeignKey("ParentId")
                     .OnDelete(DeleteBehavior.Cascade);
 
@@ -652,7 +665,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Acorn.Core.Data.Entities.ContentAttachment", b =>
             {
-                b.Navigation("Variants");
+                b.Navigation("Derivations");
             });
 
         modelBuilder.Entity("Acorn.Core.Data.Entities.File", b =>

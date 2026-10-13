@@ -44,7 +44,8 @@ internal sealed class FileManager : IFileManager
   {
     var blobInfo = await _blobStore.PutBlobAsync(stream, cancellationToken);
 
-    var blob = await _dbContext.Blobs.FirstOrDefaultAsync(x => x.Digest == blobInfo.Digest, cancellationToken);
+    var blob = _dbContext.Blobs.Local.FirstOrDefault(x => x.Digest.SequenceEqual(blobInfo.Digest))
+      ?? await _dbContext.Blobs.FirstOrDefaultAsync(x => x.Digest == blobInfo.Digest, cancellationToken);
 
     if (blob is null)
     {

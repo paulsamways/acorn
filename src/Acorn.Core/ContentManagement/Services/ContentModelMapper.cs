@@ -98,7 +98,7 @@ internal sealed class ContentModelMapper :
     {
       if (TryParseFileReference(image.Url, out var attachmentId))
       {
-        image.Url = _attachmentUrlResolver.ResolveUrl(attachmentId);
+        image.Url = _attachmentUrlResolver.ResolveUrl(attachmentId, "medium");
       }
       else
       {

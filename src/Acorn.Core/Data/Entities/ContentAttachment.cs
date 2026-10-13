@@ -14,8 +14,9 @@ internal sealed class ContentAttachment
 
   public Guid? ParentId { get; set; }
 
-  public string? VariantName { get; set; }
+  public string? DerivationName { get; set; }
 
+  public bool? IsPreferredDerivation { get; set; }
 
   public Content Content { get; set; } = null!;
 
@@ -24,5 +25,5 @@ internal sealed class ContentAttachment
   public ContentAttachment? Parent { get; set; }
 
 
-  public List<ContentAttachment> Variants { get; set; } = [];
+  public List<ContentAttachment> Derivations { get; set; } = [];
 }

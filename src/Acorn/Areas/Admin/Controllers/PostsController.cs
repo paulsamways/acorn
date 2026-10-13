@@ -1,5 +1,6 @@
 using Acorn.Areas.Admin.Models.Posts;
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.FileManagement.Exceptions;
@@ -112,6 +113,7 @@ public sealed class PostsController : Controller
         stream,
         file.FileName,
         file.ContentType,
+        ContentAttachmentDerivationPipelineNames.DefaultImageContentAttachment,
         cancellationToken);
 
       return Ok(new { publicId });
