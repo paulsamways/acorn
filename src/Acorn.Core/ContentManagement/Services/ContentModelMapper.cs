@@ -41,7 +41,7 @@ internal sealed class ContentModelMapper :
       content.PublicId,
       content.Title,
       content.Excerpt,
-      content.Excerpt is null ? null : RenderMarkdown(content.Excerpt),
+      content.Excerpt is null ? null : RenderMarkdown(content.Excerpt, "small"),
       content.Body,
       RenderMarkdown(content.Body),
       metadata.Tags,
@@ -84,7 +84,7 @@ internal sealed class ContentModelMapper :
       metadata.PublishedAt);
   }
 
-  private string RenderMarkdown(string? markdown)
+  private string RenderMarkdown(string? markdown, string? imageDerivation = "medium")
   {
     if (string.IsNullOrWhiteSpace(markdown))
       return string.Empty;
@@ -98,7 +98,7 @@ internal sealed class ContentModelMapper :
     {
       if (TryParseFileReference(image.Url, out var attachmentId))
       {
-        image.Url = _attachmentUrlResolver.ResolveUrl(attachmentId, "medium");
+        image.Url = _attachmentUrlResolver.ResolveUrl(attachmentId, imageDerivation);
       }
       else
       {

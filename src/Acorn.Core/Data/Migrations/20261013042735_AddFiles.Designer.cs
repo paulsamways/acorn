@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Acorn.Core.Data.Migrations;
 
 [DbContext(typeof(ApplicationDbContext))]
-[Migration("20261013020100_AddAttachmentDerivationPreference")]
-partial class _20261013020100_AddAttachmentDerivationPreference
+[Migration("20261013042735_AddFiles")]
+partial class _20261013042735_AddFiles
 {
     /// <inheritdoc />
     protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -118,11 +118,9 @@ partial class _20261013020100_AddAttachmentDerivationPreference
                     .HasColumnType("INTEGER")
                     .HasColumnName("file_id");
 
-                b.Property<bool>("IsPreferred")
-                    .ValueGeneratedOnAdd()
+                b.Property<bool?>("IsPreferredDerivation")
                     .HasColumnType("INTEGER")
-                    .HasDefaultValue(false)
-                    .HasColumnName("is_preferred");
+                    .HasColumnName("is_preferred_derivation");
 
                 b.Property<Guid?>("ParentId")
                     .HasColumnType("TEXT")
@@ -141,16 +139,16 @@ partial class _20261013020100_AddAttachmentDerivationPreference
 
                 b.HasIndex("ParentId")
                     .IsUnique()
-                    .HasFilter("is_preferred = 1");
+                    .HasFilter("is_preferred_derivation = 1");
 
                 b.HasIndex("ParentId", "DerivationName")
                     .IsUnique();
 
                 b.ToTable("content_attachment", t =>
                     {
-                        t.HasCheckConstraint("ck_content_attachment_preferred_is_public", "is_preferred = 0 OR visibility = 'Public'");
+                        t.HasCheckConstraint("ck_content_attachment_preferred_derivation_is_public", "is_preferred_derivation = 0 OR visibility = 'Public'");
 
-                        t.HasCheckConstraint("ck_content_attachment_root_not_preferred", "parent_id IS NOT NULL OR is_preferred = 0");
+                        t.HasCheckConstraint("ck_content_attachment_preferred_derivation_requires_parent", "(parent_id IS NULL AND is_preferred_derivation IS NULL) OR (parent_id IS NOT NULL AND is_preferred_derivation IS NOT NULL)");
                     });
             });
 
