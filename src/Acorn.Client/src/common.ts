@@ -8,5 +8,5 @@ export const getRequiredDomNode = (selectors: string): Element => {
 export const getRequiredDomData = <T>(selectors: string): T => {
   const domDataNode = getRequiredDomNode(selectors);
   // TODO: Add error handling for invalid JSON
-  return JSON.parse(domDataNode.textContent) as T;
+  return JSON.parse(domDataNode.textContent ?? "") as T;
 }
