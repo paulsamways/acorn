@@ -113,6 +113,19 @@
     cursor: default;
     color: var(--text-color-muted);
   }
+  markdown-editor {
+    display: block;
+  }
+  markdown-editor > [role=toolbar] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .2rem 1rem;
+    margin-bottom: .5rem;
+  }
+  markdown-editor > [role=toolbar] > [role=group] {
+    display: flex;
+    gap: .4rem;
+  }
   label > input[type=checkbox] {
     vertical-align: text-top;
   }

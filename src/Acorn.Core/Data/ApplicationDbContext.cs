@@ -2,6 +2,7 @@ using Acorn.Core.Data.Entities;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using FileEntity = Acorn.Core.Data.Entities.File;
 
 namespace Acorn.Core.Data;
 
@@ -41,6 +42,14 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
   internal DbSet<PostContent> Posts => Set<PostContent>();
 
   internal DbSet<BookmarkContent> Bookmarks => Set<BookmarkContent>();
+
+  internal DbSet<Blob> Blobs => Set<Blob>();
+
+  internal DbSet<FileEntity> Files => Set<FileEntity>();
+
+  internal DbSet<ImageFile> ImageFiles => Set<ImageFile>();
+
+  internal DbSet<ContentAttachment> ContentAttachments => Set<ContentAttachment>();
 
   /// <summary>Gets the data-protection keys stored by this context.</summary>
   public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();

@@ -1,5 +1,11 @@
 using Acorn.Core.ContentManagement.Models;
+using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Derivations;
+using Acorn.Core.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
@@ -46,5 +52,334 @@ internal class ContentServiceTests : ServicesTestBase
     await PostAuthoringService.PublishPostAsync(second.Id);
 
     await Assert.That(await ContentService.GetRecentPublishedContentAsync(1)).Count().IsEqualTo(1);
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_RejectsAuthenticatedNonOwnerForOwnerOnlyAttachment()
+  {
+    var ownerId = Guid.NewGuid();
+    DbContext.Users.Add(new User("attachment-owner@example.test") { Id = ownerId });
+    var attachment = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, publishedAt: null);
+
+    await Assert.That(async () => await ContentAttachmentService.OpenAttachmentAsync(attachment.Id))
+      .Throws<Acorn.Core.Exceptions.UnauthorizedException>();
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_AllowsOwnerToOpenUnpublishedOwnerOnlyAttachment()
+  {
+    var attachment = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, publishedAt: null);
+
+    var result = await ContentAttachmentService.OpenAttachmentAsync(attachment.Id);
+    await using var stream = result.Stream;
+
+    await Assert.That(result.IsPublic).IsFalse();
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_DoesNotMarkAuthenticatedAttachmentAsPublic()
+  {
+    var attachment = await CreateAttachmentAsync(
+      CurrentUserId,
+      AttachmentVisibility.Authenticated,
+      publishedAt: DateTime.UtcNow);
+
+    var result = await ContentAttachmentService.OpenAttachmentAsync(attachment.Id);
+    await using var stream = result.Stream;
+
+    await Assert.That(result.IsPublic).IsFalse();
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_MarksPublishedPublicAttachmentAsPublic()
+  {
+    var attachment = await CreateAttachmentAsync(
+      CurrentUserId,
+      AttachmentVisibility.Public,
+      publishedAt: DateTime.UtcNow);
+
+    var result = await ContentAttachmentService.OpenAttachmentAsync(attachment.Id);
+    await using var stream = result.Stream;
+
+    await Assert.That(result.IsPublic).IsTrue();
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_OpensNamedDerivation()
+  {
+    var ownerId = Guid.NewGuid();
+    DbContext.Users.Add(new User("derivation-owner@example.test") { Id = ownerId });
+    var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, DateTime.UtcNow);
+    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
+
+    var result = await ContentAttachmentService.OpenAttachmentAsync(parent.Id, derivationName: "MEDIUM");
+    await using var stream = result.Stream;
+
+    await Assert.That(result.IsPublic).IsTrue();
+    await Assert.That(result.MediaType).IsEqualTo("image/webp");
+  }
+
+  [Test]
+  public async Task CreateAttachmentAsync_CreatesPublicOriginalAndWebpDerivations()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Attachment post", "Body");
+    await using var stream = await CreatePngAsync(100, 50);
+
+    var attachmentId = await ContentAttachmentService.CreateAttachmentAsync(
+      post.Id,
+      stream,
+      "photo.png",
+      "image/png");
+
+    var attachments = await DbContext.ContentAttachments
+      .Include(x => x.File)
+      .Where(x => x.Id == attachmentId || x.ParentId == attachmentId)
+      .ToArrayAsync();
+    var original = attachments.Single(x => x.Id == attachmentId);
+    var derivations = attachments.Where(x => x.ParentId == attachmentId).ToArray();
+
+    await Assert.That(original.Visibility).IsEqualTo(AttachmentVisibility.Public);
+    await Assert.That(original.DerivationName).IsNull();
+    await Assert.That(derivations.Length).IsEqualTo(3);
+    await Assert.That(derivations.Select(x => x.DerivationName ?? string.Empty).Order().ToArray())
+      .IsEquivalentTo(new[] { "inline", "large", "preview" });
+    await Assert.That(derivations.All(x => x.Visibility == AttachmentVisibility.Public)).IsTrue();
+    await Assert.That(derivations.All(x => x.File.MediaType == "image/webp")).IsTrue();
+    await Assert.That(derivations.Select(x => ((ImageFile)x.File).Width).Distinct().Count()).IsEqualTo(1);
+    await Assert.That(derivations.Select(x => ((ImageFile)x.File).Height).Distinct().Count()).IsEqualTo(1);
+    await Assert.That(derivations.Select(x => ((ImageFile)x.File).BlobDigest)
+      .All(digest => digest.SequenceEqual(((ImageFile)derivations[0].File).BlobDigest))).IsTrue();
+    await Assert.That(await DbContext.Blobs.CountAsync()).IsEqualTo(2);
+  }
+
+  [Test]
+  public async Task CreateAttachmentAsync_CreatesRenditionsForSupportedImages()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Attachment post", "Body");
+    await using var stream = await CreatePngAsync(100, 50);
+
+    var attachmentId = await ContentAttachmentService.CreateAttachmentAsync(
+      post.Id,
+      stream,
+      "photo.png",
+      "image/png");
+
+    var attachments = await DbContext.ContentAttachments
+      .Where(x => x.Id == attachmentId || x.ParentId == attachmentId)
+      .ToArrayAsync();
+    var original = attachments.Single(x => x.Id == attachmentId);
+
+    await Assert.That(original.Visibility).IsEqualTo(AttachmentVisibility.Public);
+    await Assert.That(original.ParentId).IsNull();
+    await Assert.That(original.DerivationName).IsNull();
+    await Assert.That(attachments.Count(x => x.ParentId == attachmentId)).IsEqualTo(3);
+  }
+
+  [Test]
+  public async Task CreateAttachmentAsync_TruncatesLongDerivationFilenames()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Attachment post", "Body");
+    await using var stream = await CreatePngAsync(100, 50);
+    var filename = $"{new string('a', 251)}.png";
+
+    var attachmentId = await ContentAttachmentService.CreateAttachmentAsync(
+      post.Id,
+      stream,
+      filename,
+      "image/png");
+
+    var derivationFilenames = await DbContext.ContentAttachments
+      .Where(x => x.ParentId == attachmentId)
+      .Select(x => x.File.Filename)
+      .ToArrayAsync();
+
+    await Assert.That(derivationFilenames.Length).IsEqualTo(3);
+    await Assert.That(derivationFilenames.All(x => x.Length <= 255)).IsTrue();
+  }
+
+  [Test]
+  public async Task GetAttachmentFilenameAsync_ReturnsOriginalAndNamedDerivationFilenames()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Attachment post", "Body");
+    await using var stream = await CreatePngAsync(100, 50);
+    var attachmentId = await ContentAttachmentService.CreateAttachmentAsync(
+      post.Id,
+      stream,
+      "photo.png",
+      "image/png");
+
+    await Assert.That(await ContentAttachmentService.GetAttachmentFilenameAsync(attachmentId))
+      .IsEqualTo("photo.png");
+    await Assert.That(await ContentAttachmentService.GetAttachmentFilenameAsync(
+      attachmentId,
+      DerivationName.Images.Inline.ToUpperInvariant()))
+      .IsEqualTo("photo-inline.webp");
+  }
+
+  [Test]
+  public async Task OpenAttachmentByFilenameAsync_OpensNamedDerivationForNonOwner()
+  {
+    var ownerId = Guid.NewGuid();
+    DbContext.Users.Add(new User("derivation-owner@example.test") { Id = ownerId });
+    var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, DateTime.UtcNow);
+    _ = await AddDerivationAsync(parent, "large", AttachmentVisibility.Public);
+    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
+
+    var result = await ContentAttachmentService.OpenAttachmentByFilenameAsync(parent.Id, "attachment-medium.webp");
+    await using var stream = result.Stream;
+
+    await Assert.That(result.IsPublic).IsTrue();
+    await Assert.That(result.FileName).IsEqualTo("attachment-medium.webp");
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_ReturnsOriginalToOwnerByDefault()
+  {
+    var parent = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, DateTime.UtcNow);
+    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
+
+    var result = await ContentAttachmentService.OpenAttachmentAsync(parent.Id);
+    await using var stream = result.Stream;
+
+    await Assert.That(result.FileName).IsEqualTo("attachment.png");
+    await Assert.That(result.IsPublic).IsFalse();
+  }
+
+  [Test]
+  public async Task OpenAttachmentByFilenameAsync_OpensPublicOriginalByFilename()
+  {
+    var ownerId = Guid.NewGuid();
+    DbContext.Users.Add(new User("public-attachment-owner@example.test") { Id = ownerId });
+    var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Public, DateTime.UtcNow);
+    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
+
+    var result = await ContentAttachmentService.OpenAttachmentByFilenameAsync(parent.Id, "attachment.png");
+    await using var stream = result.Stream;
+
+    await Assert.That(result.FileName).IsEqualTo("attachment.png");
+    await Assert.That(result.IsPublic).IsTrue();
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_DoesNotServePublicDerivationForUnpublishedContent()
+  {
+    var ownerId = Guid.NewGuid();
+    DbContext.Users.Add(new User("draft-attachment-owner@example.test") { Id = ownerId });
+    var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, publishedAt: null);
+    _ = await AddDerivationAsync(parent, DerivationName.Images.Inline, AttachmentVisibility.Public);
+
+    await Assert.That(async () => await ContentAttachmentService.OpenAttachmentAsync(parent.Id, DerivationName.Images.Inline))
+      .Throws<Acorn.Core.Exceptions.UnauthorizedException>();
+  }
+
+  [Test]
+  public async Task OpenAttachmentByFilenameAsync_ReturnsNotFoundForUnknownFilename()
+  {
+    var attachment = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, DateTime.UtcNow);
+    await Assert.That(async () => await ContentAttachmentService.OpenAttachmentByFilenameAsync(attachment.Id, "missing.webp"))
+      .Throws<AttachmentNotFoundException>();
+  }
+
+  [Test]
+  public async Task OpenAttachmentAsync_ReturnsNotFoundForMissingDerivation()
+  {
+    var attachment = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, DateTime.UtcNow);
+
+    await Assert.That(async () => await ContentAttachmentService.OpenAttachmentAsync(attachment.Id, derivationName: "missing"))
+      .Throws<AttachmentNotFoundException>();
+  }
+
+  private async Task<ContentAttachment> CreateAttachmentAsync(
+    Guid ownerId,
+    AttachmentVisibility visibility,
+    DateTime? publishedAt)
+  {
+    var digest = RandomNumberGenerator.GetBytes(32);
+    var blob = new Blob
+    {
+      Digest = digest,
+      Size = 1,
+      CreatedAt = DateTime.UtcNow
+    };
+    var file = new ImageFile
+    {
+      BlobDigest = digest,
+      Blob = blob,
+      OwnerId = ownerId,
+      Filename = "attachment.png",
+      MediaType = "image/png",
+      CreatedAt = DateTime.UtcNow,
+      Width = 1,
+      Height = 1
+    };
+    var content = new PostContent
+    {
+      AuthorId = ownerId,
+      Title = "Attachment post",
+      Body = "Body",
+      PublishedAt = publishedAt
+    };
+    var attachment = new ContentAttachment
+    {
+      Content = content,
+      File = file,
+      Visibility = visibility
+    };
+
+    DbContext.Blobs.Add(blob);
+    DbContext.ImageFiles.Add(file);
+    DbContext.Posts.Add(content);
+    DbContext.ContentAttachments.Add(attachment);
+    await DbContext.SaveChangesAsync();
+    return attachment;
+  }
+
+  private async Task<ContentAttachment> AddDerivationAsync(
+    ContentAttachment parent,
+    string name,
+    AttachmentVisibility visibility)
+  {
+    var digest = RandomNumberGenerator.GetBytes(32);
+    var blob = new Blob
+    {
+      Digest = digest,
+      Size = 1,
+      CreatedAt = DateTime.UtcNow
+    };
+    var file = new ImageFile
+    {
+      BlobDigest = digest,
+      Blob = blob,
+      OwnerId = parent.File.OwnerId,
+      Filename = $"attachment-{name}.webp",
+      MediaType = "image/webp",
+      CreatedAt = DateTime.UtcNow,
+      Width = 1,
+      Height = 1
+    };
+    var derivation = new ContentAttachment
+    {
+      Content = parent.Content,
+      File = file,
+      Parent = parent,
+      ParentId = parent.Id,
+      DerivationName = name,
+      Visibility = visibility
+    };
+
+    DbContext.Blobs.Add(blob);
+    DbContext.ImageFiles.Add(file);
+    DbContext.ContentAttachments.Add(derivation);
+    await DbContext.SaveChangesAsync();
+    return derivation;
+  }
+
+  private static async Task<MemoryStream> CreatePngAsync(int width, int height)
+  {
+    using var image = new Image<Rgba32>(width, height);
+    var stream = new MemoryStream();
+    await image.SaveAsPngAsync(stream);
+    stream.Position = 0;
+    return stream;
   }
 }

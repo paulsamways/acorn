@@ -249,6 +249,11 @@
           "SQLitePCLRaw.core": "3.0.5"
         }
       },
+      "System.IO.Hashing": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "ne1843evDugl0md7Fjzy6QjJrzsjh46ZKbhf8GwBXb5f/gw97J4bxMs0NQKifDuThh/f0bZ0e62NPl1jzTuRqA=="
+      },
       "System.Security.Cryptography.Pkcs": {
         "type": "Transitive",
         "resolved": "11.0.0-rc.1.26425.128",
@@ -296,7 +301,8 @@
           "Microsoft.EntityFrameworkCore.Sqlite": "[11.0.0-rc.1.26425.128, )",
           "Microsoft.Extensions.Http": "[11.0.0-rc.1.26425.128, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[11.0.0-rc.1.26425.128, )",
-          "Microsoft.Extensions.Options.DataAnnotations": "[11.0.0-rc.1.26425.128, )"
+          "Microsoft.Extensions.Options.DataAnnotations": "[11.0.0-rc.1.26425.128, )",
+          "SixLabors.ImageSharp": "[4.1.2, )"
         }
       },
       "AngleSharp": {
@@ -399,6 +405,15 @@
         "requested": "[11.0.0-rc.1.26425.128, )",
         "resolved": "11.0.0-rc.1.26425.128",
         "contentHash": "wlxXgsCvVzxq96xe9w8ACggf89LA6znlHUGIZF8s+/ByRcguL7+7zn3qt+GE7W4pieFYMlk+eLI8+vms0UaBUQ=="
+      },
+      "SixLabors.ImageSharp": {
+        "type": "CentralTransitive",
+        "requested": "[4.1.2, )",
+        "resolved": "4.1.2",
+        "contentHash": "AQ0oouhH/6qmXJC70/k50iVt7SiZRjCgd4tXXiC5ZrB5CvyBwA81HTqb5twcXz8CvTAFxUNV0TAcL83OhyRA1g==",
+        "dependencies": {
+          "System.IO.Hashing": "8.0.0"
+        }
       }
     }
   }

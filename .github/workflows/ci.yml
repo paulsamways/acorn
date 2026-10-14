@@ -23,9 +23,13 @@ jobs:
         run: dotnet restore src/Solution.slnx
 
       - name: Build web app
+        env:
+          SIXLABORS_LICENSE_KEY: ${{ secrets.sixlabors }}
         run: dotnet build src/Acorn/Acorn.csproj --configuration Release --no-restore
 
       - name: Build test host
+        env:
+          SIXLABORS_LICENSE_KEY: ${{ secrets.sixlabors }}
         run: dotnet build src/Acorn.Core.Tests/Acorn.Core.Tests.csproj --configuration Release --no-restore
 
       - name: Test with Microsoft.Testing.Platform

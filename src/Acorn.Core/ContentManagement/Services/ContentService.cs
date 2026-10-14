@@ -18,19 +18,21 @@ internal sealed class ContentService : IContentService
     ApplicationDbContext dbContext,
     IEntityModelMapper<PostContent, Post> postMapper,
     IEntityModelMapper<NoteContent, Note> noteMapper,
-    IEntityModelMapper<BookmarkContent, Bookmark> bookmarkMapper)
+    IEntityModelMapper<BookmarkContent, Bookmark> bookmarkMapper
+  )
   {
     _dbContext = dbContext;
     _postMapper = postMapper;
     _noteMapper = noteMapper;
     _bookmarkMapper = bookmarkMapper;
   }
-
   public async Task<IEnumerable<Models.Content>> GetRecentPublishedContentAsync(int count = 10, CancellationToken cancellationToken = default)
   {
     ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
 
     var content = await _dbContext.Content
+      .Include(x => x.Attachments)
+      .ThenInclude(x => x.File)
       .Where(x => x.PublishedAt != null)
       .OrderByDescending(x => x.UpdatedAt)
       .ThenByDescending(x => x.Id)

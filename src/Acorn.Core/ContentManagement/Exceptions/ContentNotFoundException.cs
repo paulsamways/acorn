@@ -1,13 +1,23 @@
+using Acorn.Core.Exceptions;
+
 namespace Acorn.Core.ContentManagement.Exceptions;
 
 /// <summary>Represents a request for content that does not exist.</summary>
-public sealed class ContentNotFoundException : Exception
+public sealed class ContentNotFoundException : NotFoundException
 {
   /// <summary>Creates an exception for the missing content identifier.</summary>
   /// <param name="id">The identifier of the content that was not found.</param>
   public ContentNotFoundException(int id)
     : this(id, $"Content with Id={id} was not found")
   {
+  }
+
+  /// <summary>Creates an exception for the missing content public identifier.</summary>
+  /// <param name="publicId">The unavailable public identifier.</param>
+  public ContentNotFoundException(Guid publicId)
+    : base($"Content with PublicId={publicId} was not found")
+  {
+    PublicId = publicId;
   }
 
   /// <summary>Creates an exception with a custom message.</summary>
@@ -26,4 +36,7 @@ public sealed class ContentNotFoundException : Exception
 
   /// <summary>Gets the identifier of the content that was not found.</summary>
   public int Id { get; private set; }
+
+  /// <summary>Gets the unavailable public identifier, if the lookup used one.</summary>
+  public Guid? PublicId { get; private set; }
 }

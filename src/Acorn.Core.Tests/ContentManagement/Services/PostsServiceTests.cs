@@ -56,10 +56,12 @@ internal class PostsServiceTests : ServicesTestBase
     await PostAuthoringService.PublishPostAsync(publishedPost.Id);
     DbContext.ChangeTracker.Clear();
 
-    var visiblePost = await PostsService.GetPublishedPostAsync(publishedPost.Id);
+    var visiblePost = await PostsService.GetPublishedPostAsync(publishedPost.PublicId);
 
     await Assert.That(visiblePost.Title).IsEqualTo("Published post");
-    await AssertContentNotFoundAsync(async () => _ = await PostsService.GetPublishedPostAsync(draftPost.Id), draftPost.Id);
-    await AssertContentNotFoundAsync(async () => _ = await PostsService.GetPublishedPostAsync(42), 42);
+    await Assert.That(async () => await PostsService.GetPublishedPostAsync(draftPost.PublicId))
+      .Throws<Acorn.Core.ContentManagement.Exceptions.ContentNotFoundException>();
+    await Assert.That(async () => await PostsService.GetPublishedPostAsync(Guid.NewGuid()))
+      .Throws<Acorn.Core.ContentManagement.Exceptions.ContentNotFoundException>();
   }
 }

@@ -1,9 +1,12 @@
+using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.Data.Entities;
 using Acorn.Core.Extensions;
 using Acorn.Core.Mapping;
 using Acorn.Core.Security;
 using Markdig;
+using Markdig.Syntax;
+using Markdig.Syntax.Inlines;
 using DataContent = Acorn.Core.Data.Entities.Content;
 
 namespace Acorn.Core.ContentManagement.Services;
@@ -15,11 +18,16 @@ internal sealed class ContentModelMapper :
 {
   private readonly IUserContextService _userContextService;
   private readonly MarkdownPipeline _markdownPipeline;
+  private readonly IAttachmentUrlResolver _attachmentUrlResolver;
 
-  public ContentModelMapper(IUserContextService userContextService, MarkdownPipeline markdownPipeline)
+  public ContentModelMapper(
+    IUserContextService userContextService,
+    MarkdownPipeline markdownPipeline,
+    IAttachmentUrlResolver attachmentUrlResolver)
   {
     _userContextService = userContextService;
     _markdownPipeline = markdownPipeline;
+    _attachmentUrlResolver = attachmentUrlResolver;
   }
 
   public async Task<Post> MapAsync(PostContent content, CancellationToken cancellationToken = default)
@@ -28,15 +36,15 @@ internal sealed class ContentModelMapper :
 
     var timeZone = await _userContextService.GetUserTimeZoneAsync();
     var metadata = MapMetadata(content, timeZone);
-    var excerptHtml = RenderOptionalMarkdown(content.Excerpt);
 
     return new Post(
       content.Id,
+      content.PublicId,
       content.Title,
       content.Excerpt,
-      excerptHtml,
+      content.Excerpt is null ? null : await RenderMarkdownAsync(content.Excerpt, DerivationName.Images.Preview, cancellationToken),
       content.Body,
-      Markdown.ToHtml(content.Body, _markdownPipeline),
+      await RenderMarkdownAsync(content.Body, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
@@ -52,7 +60,7 @@ internal sealed class ContentModelMapper :
     return new Note(
       content.Id,
       content.Value,
-      Markdown.ToHtml(content.Value, _markdownPipeline),
+      await RenderMarkdownAsync(content.Value, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
@@ -70,15 +78,52 @@ internal sealed class ContentModelMapper :
       content.Url,
       content.Title,
       content.Description,
-      RenderOptionalMarkdown(content.Description),
+      content.Description is null ? null : await RenderMarkdownAsync(content.Description, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
       metadata.PublishedAt);
   }
 
-  private string? RenderOptionalMarkdown(string? markdown)
-    => string.IsNullOrWhiteSpace(markdown) ? null : Markdown.ToHtml(markdown, _markdownPipeline);
+  private async Task<string> RenderMarkdownAsync(string? markdown, string imageDerivation, CancellationToken cancellationToken = default)
+  {
+    if (string.IsNullOrWhiteSpace(markdown))
+      return string.Empty;
+
+    var document = Markdown.Parse(markdown, _markdownPipeline);
+    var fileImages = document.Descendants<LinkInline>()
+      .Where(link => link.IsImage && link.Url?.StartsWith("file:", StringComparison.OrdinalIgnoreCase) == true)
+      .ToArray();
+
+    foreach (var image in fileImages)
+    {
+      if (TryParseFileReference(image.Url, out var attachmentId))
+      {
+        try
+        {
+          image.Url = await _attachmentUrlResolver.ResolveUrlAsync(attachmentId, imageDerivation, cancellationToken);
+        }
+        catch (AttachmentNotFoundException)
+        {
+          _ = image.ReplaceBy(new LiteralInline("[Image unavailable]"), copyChildren: false);
+        }
+      }
+      else
+      {
+        _ = image.ReplaceBy(new LiteralInline("[Image unavailable]"), copyChildren: false);
+      }
+    }
+
+    return Markdown.ToHtml(document, _markdownPipeline);
+  }
+
+  private static bool TryParseFileReference(string? url, out Guid attachmentId)
+  {
+    attachmentId = Guid.Empty;
+    return url is not null &&
+      url.StartsWith("file:", StringComparison.OrdinalIgnoreCase) &&
+      Guid.TryParse(url.AsSpan("file:".Length), out attachmentId);
+  }
 
   private static ContentMetadata MapMetadata(DataContent content, TimeZoneInfo timeZone)
     => new(

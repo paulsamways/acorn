@@ -2,11 +2,12 @@ using Acorn.Core.ContentManagement;
 using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.Data;
 using Acorn.Core.Data.Entities;
-using Acorn.Core.Extensions;
 using Acorn.Core.Security;
+using Acorn.Core.Storage;
 using Markdig;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Cryptography;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
@@ -28,6 +29,8 @@ internal abstract class ServicesTestBase
   protected INotesService NotesService { get; private set; } = null!;
 
   protected IContentService ContentService { get; private set; } = null!;
+
+  protected IContentAttachmentService ContentAttachmentService { get; private set; } = null!;
 
   protected IBookmarksService BookmarksService { get; private set; } = null!;
 
@@ -51,13 +54,17 @@ internal abstract class ServicesTestBase
 
     var services = new ServiceCollection()
       .AddContentManagement()
+      .AddFileManagement()
+      .AddSingleton<IContentAddressedBlobStore, TestContentAddressedBlobStore>()
       .AddSingleton<IUserContextService>(new MockUserContextService(CurrentUserId, UserTimeZone))
+      .AddSingleton<IAttachmentUrlResolver, MockAttachmentUrlResolver>()
       .AddSingleton(new MarkdownPipelineBuilder().Build())
       .AddSingleton(DbContext);
 
     _serviceProvider = services.BuildServiceProvider();
     _serviceScope = _serviceProvider.CreateScope();
     ContentService = _serviceScope.ServiceProvider.GetRequiredService<IContentService>();
+    ContentAttachmentService = _serviceScope.ServiceProvider.GetRequiredService<IContentAttachmentService>();
     NotesService = _serviceScope.ServiceProvider.GetRequiredService<INotesService>();
     BookmarksService = _serviceScope.ServiceProvider.GetRequiredService<IBookmarksService>();
     PostsService = _serviceScope.ServiceProvider.GetRequiredService<IPostsService>();
@@ -101,5 +108,37 @@ internal abstract class ServicesTestBase
     public Task<TimeZoneInfo> GetUserTimeZoneAsync() => Task.FromResult(timeZone);
 
     public bool IsAuthenticated() => true;
+  }
+
+  private sealed class MockAttachmentUrlResolver : IAttachmentUrlResolver
+  {
+    public Task<string> ResolveUrlAsync(
+      Guid attachmentPublicId,
+      string? derivation,
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+      var url = $"/content/attachments/{attachmentPublicId:D}";
+      return Task.FromResult(derivation is null
+        ? url
+        : url + $"?derivation={derivation}");
+    }
+  }
+
+  private sealed class TestContentAddressedBlobStore : IContentAddressedBlobStore
+  {
+    public async Task<BlobInfo> PutBlobAsync(Stream stream, CancellationToken cancellationToken = default)
+    {
+      using var content = new MemoryStream();
+      await stream.CopyToAsync(content, cancellationToken);
+      var bytes = content.ToArray();
+      return new(SHA256.HashData(bytes), bytes.Length);
+    }
+
+    public Task<Stream> GetBlobAsync(byte[] digest, CancellationToken cancellationToken = default)
+      => Task.FromResult<Stream>(new MemoryStream([0], writable: false));
+
+    public Task DeleteBlobAsync(byte[] digest, CancellationToken cancellationToken = default)
+      => Task.CompletedTask;
   }
 }

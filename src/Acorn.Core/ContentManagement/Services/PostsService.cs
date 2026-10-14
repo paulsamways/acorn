@@ -51,6 +51,8 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
   {
     var posts = await _dbContext
       .Posts
+      .Include(x => x.Attachments)
+      .ThenInclude(x => x.File)
       .OrderByDescending(x => x.CreatedAt)
       .ToArrayAsync(cancellationToken);
 
@@ -61,6 +63,8 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
   {
     var posts = await _dbContext
       .Posts
+      .Include(x => x.Attachments)
+      .ThenInclude(x => x.File)
       .Where(x => x.PublishedAt != null)
       .OrderByDescending(x => x.PublishedAt)
       .ToArrayAsync(cancellationToken);
@@ -68,14 +72,16 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await Task.WhenAll(posts.Select(post => _postMapper.MapAsync(post, cancellationToken)));
   }
 
-  public async Task<Post> GetPublishedPostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<Post> GetPublishedPostAsync(Guid publicId, CancellationToken cancellationToken = default)
   {
     var post = await _dbContext
       .Posts
-      .FirstOrDefaultAsync(x => x.Id == id && x.PublishedAt != null, cancellationToken);
+      .Include(x => x.Attachments)
+      .ThenInclude(x => x.File)
+      .FirstOrDefaultAsync(x => x.PublicId == publicId && x.PublishedAt != null, cancellationToken);
 
     if (post is null)
-      throw new ContentNotFoundException(id);
+      throw new ContentNotFoundException(publicId);
 
     return await _postMapper.MapAsync(post, cancellationToken);
   }
@@ -111,7 +117,10 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
 
   private async Task<PostContent> GetPostContentAsync(int id, CancellationToken cancellationToken)
   {
-    var post = await _dbContext.Posts.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    var post = await _dbContext.Posts
+      .Include(x => x.Attachments)
+      .ThenInclude(x => x.File)
+      .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     if (post is null)
       throw new ContentNotFoundException(id);
 

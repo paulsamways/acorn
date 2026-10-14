@@ -28,11 +28,11 @@
       <span asp-validation-for="Tags" class="danger"></span>
 
       <label asp-for="Excerpt">Excerpt</label>
-      <textarea asp-for="Excerpt" rows="5"></textarea>
+      <markdown-editor id="Excerpt" name="Excerpt" rows="12" image-upload-url="@(Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id }))">@Model.Excerpt</markdown-editor>
       <span asp-validation-for="Excerpt" class="danger"></span>
 
       <label asp-for="Body">Body</label>
-      <textarea asp-for="Body" rows="24"></textarea>
+      <markdown-editor id="Body" name="Body" rows="24" image-upload-url="@(Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id }))">@Model.Body</markdown-editor>
       <span asp-validation-for="Body" class="danger"></span>
 
       <div class="f-row f-justify-space-between">

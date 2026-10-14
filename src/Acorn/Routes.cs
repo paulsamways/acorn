@@ -4,10 +4,19 @@ internal static class Routes
 {
   public const string HomeIndexUrlTemplate = "/";
   public const string HomeIndexGetRoute = nameof(HomeIndexGetRoute);
-  public const string PostsDetailsUrlTemplate = "/posts/{id:int}";
-  public const string PostsDetailsGetRoute = nameof(PostsDetailsGetRoute);
-  public const string BookmarksIndexUrlTemplate = "/bookmarks";
-  public const string BookmarksIndexGetRoute = nameof(BookmarksIndexGetRoute);
+
+  // Content Management
+
+  public const string ContentPostsDetailsUrlTemplate = "/content/posts/{publicId:guid}";
+  public const string ContentPostsDetailsGetRoute = nameof(ContentPostsDetailsGetRoute);
+
+  public const string ContentAttachmentsUrlTemplate = "/content/attachments/{attachmentId:guid}/{filename}";
+  public const string ContentAttachmentsGetRoute = nameof(ContentAttachmentsGetRoute);
+
+  public const string ContentBookmarksIndexUrlTemplate = "/content/bookmarks";
+  public const string ContentBookmarksIndexGetRoute = nameof(ContentBookmarksIndexGetRoute);
+
+  // Account
 
   public const string AccountSignInUrlTemplate = "/account/sign-in";
   public const string AccountSignInGetRoute = nameof(AccountSignInGetRoute);
@@ -52,6 +61,9 @@ internal static class Routes
     public const string PostsEditUrlTemplate = AreaUrlPrefix + "/posts/edit/{id}";
     public const string PostsEditGetRoute = nameof(Admin) + nameof(PostsEditGetRoute);
     public const string PostsEditPostRoute = nameof(Admin) + nameof(PostsEditPostRoute);
+
+    public const string PostFilesUrlTemplate = AreaUrlPrefix + "/posts/{id:int}/files";
+    public const string PostFilesPostRoute = nameof(Admin) + nameof(PostFilesPostRoute);
 
     public const string PostsPublishUrlTemplate = AreaUrlPrefix + "/posts/publish/{id}";
     public const string PostsPublishPostRoute = nameof(Admin) + nameof(PostsPublishPostRoute);

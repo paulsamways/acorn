@@ -1,4 +1,5 @@
 using System.Globalization;
+using Acorn.Core.Storage;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 
@@ -16,34 +17,31 @@ public sealed class SqliteDatabaseBackupService : ISqliteDatabaseBackupService
 
   /// <summary>Creates the backup service.</summary>
   /// <param name="connectionString">The SQLite database connection string.</param>
-  /// <param name="contentRootPath">The application content root used to resolve relative paths.</param>
-  /// <param name="options">Backup directory and retention settings.</param>
+  /// <param name="dataDirectoryService">Resolves paths beneath the application data directory.</param>
+  /// <param name="options">Backup retention settings.</param>
   /// <param name="logger">The service logger.</param>
   public SqliteDatabaseBackupService(
     string connectionString,
-    string contentRootPath,
+    IDataDirectoryService dataDirectoryService,
     SqliteDatabaseBackupOptions options,
     ILogger<SqliteDatabaseBackupService> logger)
   {
     ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
-    ArgumentException.ThrowIfNullOrWhiteSpace(contentRootPath);
+    ArgumentNullException.ThrowIfNull(dataDirectoryService);
     ArgumentNullException.ThrowIfNull(options);
 
     if (options.RetentionCount < 1)
       throw new ArgumentOutOfRangeException(nameof(options), "At least one backup must be retained.");
-
     var connection = new SqliteConnectionStringBuilder(connectionString);
     if (connection.Mode == SqliteOpenMode.Memory || connection.DataSource == ":memory:")
       throw new ArgumentException("SQLite backups require a file-backed database.", nameof(connectionString));
 
-    _databasePath = Path.GetFullPath(connection.DataSource, contentRootPath);
+    _databasePath = Path.GetFullPath(connection.DataSource);
     connection.DataSource = _databasePath;
     connection.Pooling = false;
     _connectionString = connection.ToString();
     _databaseName = Path.GetFileNameWithoutExtension(_databasePath);
-    _backupDirectory = string.IsNullOrWhiteSpace(options.BackupDirectory)
-      ? Path.Combine(Path.GetDirectoryName(_databasePath)!, "backups")
-      : Path.GetFullPath(options.BackupDirectory, contentRootPath);
+    _backupDirectory = dataDirectoryService.GetAbsolutePath(options.DirectoryPath);
     _options = options;
     _logger = logger;
   }

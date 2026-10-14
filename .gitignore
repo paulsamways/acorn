@@ -1,5 +1,9 @@
-acorn.db*
+/var
 .env
+**/sixlabors.lic
 [Tt]est[Rr]esults/
-[Bb]in/
-[Oo]bj/
+src/**/[Bb]in/
+src/**/[Oo]bj/
+node_modules/
+
+src/Acorn/wwwroot/js/pages/**
