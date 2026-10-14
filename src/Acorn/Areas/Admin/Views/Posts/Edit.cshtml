@@ -28,25 +28,11 @@
       <span asp-validation-for="Tags" class="danger"></span>
 
       <label asp-for="Excerpt">Excerpt</label>
-      <textarea asp-for="Excerpt" rows="5"></textarea>
+      <markdown-editor id="Excerpt" name="Excerpt" rows="12" image-upload-url="@(Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id }))">@Model.Excerpt</markdown-editor>
       <span asp-validation-for="Excerpt" class="danger"></span>
 
-      @if (Model.Id > 0)
-      {
-        <fieldset id="post-image-upload" data-upload-url="@Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id })">
-          <legend>Upload an inline image</legend>
-          <label for="post-image-file">Image file</label>
-          <input id="post-image-file" type="file" accept="image/png,image/jpeg,image/webp" />
-          <label for="post-image-alt">Alt text</label>
-          <input id="post-image-alt" type="text" maxlength="500" />
-          <button id="post-image-upload-button" type="button">Upload and insert</button>
-          <progress id="post-image-upload-progress" hidden></progress>
-          <span id="post-image-upload-status" role="status" aria-live="polite"></span>
-        </fieldset>
-      }
-
       <label asp-for="Body">Body</label>
-      <textarea asp-for="Body" rows="24"></textarea>
+      <markdown-editor id="Body" name="Body" rows="24" image-upload-url="@(Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id }))">@Model.Body</markdown-editor>
       <span asp-validation-for="Body" class="danger"></span>
 
       <div class="f-row f-justify-space-between">
@@ -59,7 +45,3 @@
     </form>
   </div>
 </main>
-
-@section Scripts {
-  <script src="~/js/post-file-upload.js" asp-append-version="true" defer></script>
-}
