@@ -99,7 +99,14 @@ internal sealed class ContentModelMapper :
     {
       if (TryParseFileReference(image.Url, out var attachmentId))
       {
-        image.Url = await _attachmentUrlResolver.ResolveUrlAsync(attachmentId, imageDerivation, cancellationToken);
+        try
+        {
+          image.Url = await _attachmentUrlResolver.ResolveUrlAsync(attachmentId, imageDerivation, cancellationToken);
+        }
+        catch (AttachmentNotFoundException)
+        {
+          _ = image.ReplaceBy(new LiteralInline("[Image unavailable]"), copyChildren: false);
+        }
       }
       else
       {
