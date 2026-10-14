@@ -76,10 +76,13 @@ internal class ContentAttachmentService : IContentAttachmentService
 
   public Task<AttachmentFileDescriptor> OpenAttachmentAsync(Guid attachmentId, string? derivationName, CancellationToken cancellationToken = default)
   {
+    var normalizedDerivationName = derivationName?.ToLowerInvariant();
     Expression<Func<ContentAttachment, bool>> predicate =
-      derivationName is null
+      normalizedDerivationName is null
         ? (x) => x.Id == attachmentId
-        : (x) => x.ParentId == attachmentId && x.DerivationName == derivationName;
+        : (x) => x.ParentId == attachmentId &&
+          x.DerivationName != null &&
+          x.DerivationName.ToLower() == normalizedDerivationName;
 
     return OpenAttachmentAsync(predicate, cancellationToken);
   }
@@ -94,10 +97,13 @@ internal class ContentAttachmentService : IContentAttachmentService
 
   public async Task<string> GetAttachmentFilenameAsync(Guid attachmentId, string? derivationName = null, CancellationToken cancellationToken = default)
   {
+    var normalizedDerivationName = derivationName?.ToLowerInvariant();
     Expression<Func<ContentAttachment, bool>> predicate =
-      derivationName is null
+      normalizedDerivationName is null
         ? (x) => x.Id == attachmentId
-        : (x) => x.ParentId == attachmentId && x.DerivationName == derivationName;
+        : (x) => x.ParentId == attachmentId &&
+          x.DerivationName != null &&
+          x.DerivationName.ToLower() == normalizedDerivationName;
 
     var filename = await _dbContext
       .ContentAttachments

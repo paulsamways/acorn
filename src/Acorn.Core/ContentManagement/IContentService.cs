@@ -2,7 +2,7 @@ using Acorn.Core.ContentManagement.Models;
 
 namespace Acorn.Core.ContentManagement;
 
-/// <summary>Provides queries for published content and operations for content attachments.</summary>
+/// <summary>Provides queries for published content.</summary>
 public interface IContentService
 {
   /// <summary>Gets recently updated published content, newest first.</summary>

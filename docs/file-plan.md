@@ -2,10 +2,12 @@
 
 This plan covers the database-backed metadata layer for files stored by Acorn's content-addressed blob store, the upload pipeline that validates and enriches files, derived files (thumbnails and similar), and the relationship needed for inline images in posts. It deliberately does not introduce a `FileContent` subtype of `Content`: a file is an independently owned record that can be attached to any `Content`.
 
+> **Status:** This is the original design proposal. The first implementation slice is complete, but some implementation details differ from this plan (including per-rendition producers, public originals, and filename-based attachment URLs). See [derivations.md](./derivations.md) for the authoritative description of current behavior; the design below remains planning material for unimplemented lifecycle work.
+
 ## Implementation Slices
 
-1. **Persistence and inline-image vertical slice — Implemented.** Add blob/file/image/attachment persistence and public UUIDs; backfill existing content IDs; validate and derive supported image uploads; upload and attach images to an owned post; serve authorized originals and derivatives; use public UUID post routes; render attached Markdown image references; and add the editor upload control. Core tests cover persistence, upload validation and ownership, rendering, and serving authorization.
-2. **File lifecycle and reusable management operations — Planned.** Implement owner-scoped attach/detach, soft-delete and restore with derivative cascades, and administrative purge. Keep attachment operations idempotent and enforce same-owner rules in core services. Add lifecycle, cascade, and authorization tests.
+1. **Persistence and inline-image vertical slice — Implemented.** Add blob/file/image/attachment persistence and public UUIDs; validate uploads and generate applicable image renditions; upload and attach images to owned content; serve originals and derivations through the filename-based attachment route; render attached Markdown image references; and add the editor upload control. See [derivations.md](./derivations.md) for current upload, URL, and access behavior.
+2. **File lifecycle and reusable management operations — Planned.** Add detach, soft-delete and restore with derivative cascades, and administrative purge. Keep lifecycle operations idempotent and enforce same-owner rules in core services. Add lifecycle, cascade, and authorization tests.
 3. **Web integration tests and closeout — Planned.** Add the Web test project and verify route behavior, upload size limits, antiforgery, authorization and cache headers, and editor insertion. Run the complete test/build/migration checks and update any remaining directly related documentation.
 
 ## Agreed Design

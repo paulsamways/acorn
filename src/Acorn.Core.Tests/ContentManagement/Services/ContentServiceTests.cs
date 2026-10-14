@@ -61,7 +61,7 @@ internal class ContentServiceTests : ServicesTestBase
     DbContext.Users.Add(new User("attachment-owner@example.test") { Id = ownerId });
     var attachment = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, publishedAt: null);
 
-    await Assert.That(async () => await ContentService.OpenAttachmentAsync(attachment.Id))
+    await Assert.That(async () => await ContentAttachmentService.OpenAttachmentAsync(attachment.Id))
       .Throws<Acorn.Core.Exceptions.UnauthorizedException>();
   }
 
@@ -70,7 +70,7 @@ internal class ContentServiceTests : ServicesTestBase
   {
     var attachment = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, publishedAt: null);
 
-    var result = await ContentService.OpenAttachmentAsync(attachment.Id);
+    var result = await ContentAttachmentService.OpenAttachmentAsync(attachment.Id);
     await using var stream = result.Stream;
 
     await Assert.That(result.IsPublic).IsFalse();
@@ -84,7 +84,7 @@ internal class ContentServiceTests : ServicesTestBase
       AttachmentVisibility.Authenticated,
       publishedAt: DateTime.UtcNow);
 
-    var result = await ContentService.OpenAttachmentAsync(attachment.Id);
+    var result = await ContentAttachmentService.OpenAttachmentAsync(attachment.Id);
     await using var stream = result.Stream;
 
     await Assert.That(result.IsPublic).IsFalse();
@@ -98,7 +98,7 @@ internal class ContentServiceTests : ServicesTestBase
       AttachmentVisibility.Public,
       publishedAt: DateTime.UtcNow);
 
-    var result = await ContentService.OpenAttachmentAsync(attachment.Id);
+    var result = await ContentAttachmentService.OpenAttachmentAsync(attachment.Id);
     await using var stream = result.Stream;
 
     await Assert.That(result.IsPublic).IsTrue();
@@ -112,7 +112,7 @@ internal class ContentServiceTests : ServicesTestBase
     var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, DateTime.UtcNow);
     _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
 
-    var result = await ContentService.OpenAttachmentAsync(parent.Id, derivationName: "MEDIUM");
+    var result = await ContentAttachmentService.OpenAttachmentAsync(parent.Id, derivationName: "MEDIUM");
     await using var stream = result.Stream;
 
     await Assert.That(result.IsPublic).IsTrue();
@@ -120,17 +120,16 @@ internal class ContentServiceTests : ServicesTestBase
   }
 
   [Test]
-  public async Task CreateAttachmentAsync_CreatesOwnerOriginalAndPublicWebpDerivations()
+  public async Task CreateAttachmentAsync_CreatesPublicOriginalAndWebpDerivations()
   {
     var post = await PostAuthoringService.CreatePostAsync("Attachment post", "Body");
     await using var stream = await CreatePngAsync(100, 50);
 
-    var attachmentId = await ContentService.CreateAttachmentAsync(
+    var attachmentId = await ContentAttachmentService.CreateAttachmentAsync(
       post.Id,
       stream,
       "photo.png",
-      "image/png",
-      ContentAttachmentDerivationPipelineNames.DefaultImageContentAttachment);
+      "image/png");
 
     var attachments = await DbContext.ContentAttachments
       .Include(x => x.File)
@@ -139,11 +138,11 @@ internal class ContentServiceTests : ServicesTestBase
     var original = attachments.Single(x => x.Id == attachmentId);
     var derivations = attachments.Where(x => x.ParentId == attachmentId).ToArray();
 
-    await Assert.That(original.Visibility).IsEqualTo(AttachmentVisibility.Owner);
+    await Assert.That(original.Visibility).IsEqualTo(AttachmentVisibility.Public);
     await Assert.That(original.DerivationName).IsNull();
     await Assert.That(derivations.Length).IsEqualTo(3);
     await Assert.That(derivations.Select(x => x.DerivationName ?? string.Empty).Order().ToArray())
-      .IsEquivalentTo(new[] { "large", "medium", "small" });
+      .IsEquivalentTo(new[] { "inline", "large", "preview" });
     await Assert.That(derivations.All(x => x.Visibility == AttachmentVisibility.Public)).IsTrue();
     await Assert.That(derivations.All(x => x.File.MediaType == "image/webp")).IsTrue();
     await Assert.That(derivations.Select(x => ((ImageFile)x.File).Width).Distinct().Count()).IsEqualTo(1);
@@ -154,12 +153,12 @@ internal class ContentServiceTests : ServicesTestBase
   }
 
   [Test]
-  public async Task CreateAttachmentAsync_WithoutPipelineCreatesPublicOriginalWithoutDerivations()
+  public async Task CreateAttachmentAsync_CreatesRenditionsForSupportedImages()
   {
     var post = await PostAuthoringService.CreatePostAsync("Attachment post", "Body");
     await using var stream = await CreatePngAsync(100, 50);
 
-    var attachmentId = await ContentService.CreateAttachmentAsync(
+    var attachmentId = await ContentAttachmentService.CreateAttachmentAsync(
       post.Id,
       stream,
       "photo.png",
@@ -173,7 +172,7 @@ internal class ContentServiceTests : ServicesTestBase
     await Assert.That(original.Visibility).IsEqualTo(AttachmentVisibility.Public);
     await Assert.That(original.ParentId).IsNull();
     await Assert.That(original.DerivationName).IsNull();
-    await Assert.That(attachments.Count(x => x.ParentId == attachmentId)).IsEqualTo(0);
+    await Assert.That(attachments.Count(x => x.ParentId == attachmentId)).IsEqualTo(3);
   }
 
   [Test]
@@ -183,12 +182,11 @@ internal class ContentServiceTests : ServicesTestBase
     await using var stream = await CreatePngAsync(100, 50);
     var filename = $"{new string('a', 251)}.png";
 
-    var attachmentId = await ContentService.CreateAttachmentAsync(
+    var attachmentId = await ContentAttachmentService.CreateAttachmentAsync(
       post.Id,
       stream,
       filename,
-      "image/png",
-      ContentAttachmentDerivationPipelineNames.DefaultImageContentAttachment);
+      "image/png");
 
     var derivationFilenames = await DbContext.ContentAttachments
       .Where(x => x.ParentId == attachmentId)
@@ -200,7 +198,26 @@ internal class ContentServiceTests : ServicesTestBase
   }
 
   [Test]
-  public async Task OpenAttachmentAsync_UsesPreferredPublicDerivationForNonOwner()
+  public async Task GetAttachmentFilenameAsync_ReturnsOriginalAndNamedDerivationFilenames()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Attachment post", "Body");
+    await using var stream = await CreatePngAsync(100, 50);
+    var attachmentId = await ContentAttachmentService.CreateAttachmentAsync(
+      post.Id,
+      stream,
+      "photo.png",
+      "image/png");
+
+    await Assert.That(await ContentAttachmentService.GetAttachmentFilenameAsync(attachmentId))
+      .IsEqualTo("photo.png");
+    await Assert.That(await ContentAttachmentService.GetAttachmentFilenameAsync(
+      attachmentId,
+      DerivationName.Images.Inline.ToUpperInvariant()))
+      .IsEqualTo("photo-inline.webp");
+  }
+
+  [Test]
+  public async Task OpenAttachmentByFilenameAsync_OpensNamedDerivationForNonOwner()
   {
     var ownerId = Guid.NewGuid();
     DbContext.Users.Add(new User("derivation-owner@example.test") { Id = ownerId });
@@ -208,7 +225,7 @@ internal class ContentServiceTests : ServicesTestBase
     _ = await AddDerivationAsync(parent, "large", AttachmentVisibility.Public);
     _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
 
-    var result = await ContentService.OpenAttachmentAsync(parent.Id);
+    var result = await ContentAttachmentService.OpenAttachmentByFilenameAsync(parent.Id, "attachment-medium.webp");
     await using var stream = result.Stream;
 
     await Assert.That(result.IsPublic).IsTrue();
@@ -221,7 +238,7 @@ internal class ContentServiceTests : ServicesTestBase
     var parent = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, DateTime.UtcNow);
     _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
 
-    var result = await ContentService.OpenAttachmentAsync(parent.Id);
+    var result = await ContentAttachmentService.OpenAttachmentAsync(parent.Id);
     await using var stream = result.Stream;
 
     await Assert.That(result.FileName).IsEqualTo("attachment.png");
@@ -229,14 +246,14 @@ internal class ContentServiceTests : ServicesTestBase
   }
 
   [Test]
-  public async Task OpenAttachmentAsync_UsesPublicOriginalBeforeDerivations()
+  public async Task OpenAttachmentByFilenameAsync_OpensPublicOriginalByFilename()
   {
     var ownerId = Guid.NewGuid();
     DbContext.Users.Add(new User("public-attachment-owner@example.test") { Id = ownerId });
     var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Public, DateTime.UtcNow);
     _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
 
-    var result = await ContentService.OpenAttachmentAsync(parent.Id);
+    var result = await ContentAttachmentService.OpenAttachmentByFilenameAsync(parent.Id, "attachment.png");
     await using var stream = result.Stream;
 
     await Assert.That(result.FileName).IsEqualTo("attachment.png");
@@ -249,25 +266,18 @@ internal class ContentServiceTests : ServicesTestBase
     var ownerId = Guid.NewGuid();
     DbContext.Users.Add(new User("draft-attachment-owner@example.test") { Id = ownerId });
     var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, publishedAt: null);
-    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
+    _ = await AddDerivationAsync(parent, DerivationName.Images.Inline, AttachmentVisibility.Public);
 
-    await Assert.That(async () => await ContentService.OpenAttachmentAsync(parent.Id))
+    await Assert.That(async () => await ContentAttachmentService.OpenAttachmentAsync(parent.Id, DerivationName.Images.Inline))
       .Throws<Acorn.Core.Exceptions.UnauthorizedException>();
   }
 
   [Test]
-  public async Task OpenAttachmentAsync_FallsBackToFirstPublicDerivationByName()
+  public async Task OpenAttachmentByFilenameAsync_ReturnsNotFoundForUnknownFilename()
   {
-    var ownerId = Guid.NewGuid();
-    DbContext.Users.Add(new User("derivation-owner@example.test") { Id = ownerId });
-    var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, DateTime.UtcNow);
-    _ = await AddDerivationAsync(parent, "small", AttachmentVisibility.Public);
-    _ = await AddDerivationAsync(parent, "large", AttachmentVisibility.Public);
-
-    var result = await ContentService.OpenAttachmentAsync(parent.Id);
-    await using var stream = result.Stream;
-
-    await Assert.That(result.FileName).IsEqualTo("attachment-large.webp");
+    var attachment = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, DateTime.UtcNow);
+    await Assert.That(async () => await ContentAttachmentService.OpenAttachmentByFilenameAsync(attachment.Id, "missing.webp"))
+      .Throws<AttachmentNotFoundException>();
   }
 
   [Test]
@@ -275,7 +285,7 @@ internal class ContentServiceTests : ServicesTestBase
   {
     var attachment = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, DateTime.UtcNow);
 
-    await Assert.That(async () => await ContentService.OpenAttachmentAsync(attachment.Id, derivationName: "missing"))
+    await Assert.That(async () => await ContentAttachmentService.OpenAttachmentAsync(attachment.Id, derivationName: "missing"))
       .Throws<AttachmentNotFoundException>();
   }
 

@@ -30,6 +30,8 @@ internal abstract class ServicesTestBase
 
   protected IContentService ContentService { get; private set; } = null!;
 
+  protected IContentAttachmentService ContentAttachmentService { get; private set; } = null!;
+
   protected IBookmarksService BookmarksService { get; private set; } = null!;
 
   protected IPostsService PostsService { get; private set; } = null!;
@@ -62,6 +64,7 @@ internal abstract class ServicesTestBase
     _serviceProvider = services.BuildServiceProvider();
     _serviceScope = _serviceProvider.CreateScope();
     ContentService = _serviceScope.ServiceProvider.GetRequiredService<IContentService>();
+    ContentAttachmentService = _serviceScope.ServiceProvider.GetRequiredService<IContentAttachmentService>();
     NotesService = _serviceScope.ServiceProvider.GetRequiredService<INotesService>();
     BookmarksService = _serviceScope.ServiceProvider.GetRequiredService<IBookmarksService>();
     PostsService = _serviceScope.ServiceProvider.GetRequiredService<IPostsService>();
@@ -109,12 +112,16 @@ internal abstract class ServicesTestBase
 
   private sealed class MockAttachmentUrlResolver : IAttachmentUrlResolver
   {
-    public string ResolveUrl(Guid attachmentPublicId, string? derivation)
+    public Task<string> ResolveUrlAsync(
+      Guid attachmentPublicId,
+      string? derivation,
+      CancellationToken cancellationToken = default)
     {
+      cancellationToken.ThrowIfCancellationRequested();
       var url = $"/content/attachments/{attachmentPublicId:D}";
-      return derivation is null
+      return Task.FromResult(derivation is null
         ? url
-        : url + $"?derivation={derivation}";
+        : url + $"?derivation={derivation}");
     }
   }
 

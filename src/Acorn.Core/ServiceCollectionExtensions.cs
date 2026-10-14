@@ -1,5 +1,4 @@
 using System.Net;
-using System.Reflection.Metadata.Ecma335;
 using Acorn.Core.ContentManagement;
 using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Models;
@@ -131,7 +130,7 @@ public static class ServiceCollectionExtensions
     return services;
   }
 
-  /// <summary>Registers the content-management services and their Markdown and bookmark-metadata dependencies.</summary>
+  /// <summary>Registers content-management services, Markdown and bookmark metadata, and image derivation producers.</summary>
   /// <param name="services">The service collection.</param>
   /// <returns>The service collection for chaining.</returns>
   public static IServiceCollection AddContentManagement(this IServiceCollection services)

@@ -58,7 +58,7 @@ internal sealed class WebpImageDerivationProducer : IDerivationProducer
 
       var output = new MemoryStream();
 
-      await rendition.SaveAsWebpAsync(output, new WebpEncoder { Quality = DefaultQuality }, cancellationToken);
+      await rendition.SaveAsWebpAsync(output, new WebpEncoder { Quality = Quality }, cancellationToken);
       output.Position = 0;
 
       return new Derivation(
