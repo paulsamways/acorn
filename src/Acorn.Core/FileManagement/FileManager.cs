@@ -49,7 +49,7 @@ internal sealed class FileManager : IFileManager
 
     if (blob is null)
     {
-      _ = await _dbContext.Database.ExecuteSqlInterpolatedAsync(
+      _ = await _dbContext.Database.ExecuteSqlAsync(
         $"INSERT INTO blob (digest, size, created_at) VALUES ({blobInfo.Digest}, {blobInfo.Size}, {DateTime.UtcNow}) ON CONFLICT(digest) DO NOTHING",
         cancellationToken);
       blob = await _dbContext.Blobs.SingleAsync(x => x.Digest == blobInfo.Digest, cancellationToken);

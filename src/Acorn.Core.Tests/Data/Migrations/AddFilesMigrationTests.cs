@@ -21,18 +21,18 @@ internal class AddFilesMigrationTests
     dbContext.Users.Add(author);
     await dbContext.SaveChangesAsync();
 
-    await dbContext.Database.ExecuteSqlInterpolatedAsync(
+    await dbContext.Database.ExecuteSqlAsync(
       $"""
       INSERT INTO content (
           created_at, updated_at, published_at, deleted_at, author_id, content_type,
-          note_value, post_title, post_body, post_excerpt, post_tags,
+          tags, note_value, post_title, post_body, post_excerpt,
           bookmark_description, bookmark_title, bookmark_url
       )
       VALUES
           ('2026-01-01', '2026-01-01', NULL, NULL, {author.Id}, 'Note',
-           'first', NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+           '[]', 'first', NULL, NULL, NULL, NULL, NULL, NULL),
           ('2026-01-02', '2026-01-02', NULL, NULL, {author.Id}, 'Note',
-           'second', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+           '[]', 'second', NULL, NULL, NULL, NULL, NULL, NULL);
       """);
 
     await dbContext.Database.MigrateAsync();
