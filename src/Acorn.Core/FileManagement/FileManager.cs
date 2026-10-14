@@ -49,13 +49,10 @@ internal sealed class FileManager : IFileManager
 
     if (blob is null)
     {
-      blob = new Blob()
-      {
-        Digest = blobInfo.Digest,
-        Size = blobInfo.Size,
-        CreatedAt = DateTime.UtcNow
-      };
-      _ = _dbContext.Blobs.Add(blob);
+      _ = await _dbContext.Database.ExecuteSqlInterpolatedAsync(
+        $"INSERT INTO blob (digest, size, created_at) VALUES ({blobInfo.Digest}, {blobInfo.Size}, {DateTime.UtcNow}) ON CONFLICT(digest) DO NOTHING",
+        cancellationToken);
+      blob = await _dbContext.Blobs.SingleAsync(x => x.Digest == blobInfo.Digest, cancellationToken);
     }
 
     var file = fileMetadata switch
