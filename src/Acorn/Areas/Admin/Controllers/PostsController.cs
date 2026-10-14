@@ -1,6 +1,5 @@
 using Acorn.Areas.Admin.Models.Posts;
 using Acorn.Core.ContentManagement;
-using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.FileManagement.Exceptions;
@@ -15,15 +14,15 @@ namespace Acorn.Areas.Admin.Controllers;
 public sealed class PostsController : Controller
 {
   private readonly IPostAuthoringService _postsService;
-  private readonly IContentService _contentService;
+  private readonly IContentAttachmentService _contentAttachmentService;
 
   /// <summary>Creates the posts controller.</summary>
   /// <param name="postsService">The post management service.</param>
-  /// <param name="contentService">The service used to create content attachments.</param>
-  public PostsController(IPostAuthoringService postsService, IContentService contentService)
+  /// <param name="contentAttachmentService">The service used to create content attachments.</param>
+  public PostsController(IPostAuthoringService postsService, IContentAttachmentService contentAttachmentService)
   {
     _postsService = postsService;
-    _contentService = contentService;
+    _contentAttachmentService = contentAttachmentService;
   }
 
   /// <summary>Displays all posts, including drafts.</summary>
@@ -108,12 +107,11 @@ public sealed class PostsController : Controller
     try
     {
       await using var stream = file.OpenReadStream();
-      var publicId = await _contentService.CreateAttachmentAsync(
+      var publicId = await _contentAttachmentService.CreateAttachmentAsync(
         id,
         stream,
         file.FileName,
         file.ContentType,
-        ContentAttachmentDerivationPipelineNames.DefaultImageContentAttachment,
         cancellationToken);
 
       return Ok(new { publicId });

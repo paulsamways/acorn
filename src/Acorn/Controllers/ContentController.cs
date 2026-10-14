@@ -9,26 +9,26 @@ namespace Acorn.Controllers;
 [AllowAnonymous]
 public sealed class ContentController : Controller
 {
-  private readonly IContentService _contentService;
+  private readonly IContentAttachmentService _contentAttachmentService;
 
   /// <summary>Creates the content controller.</summary>
-  /// <param name="contentService">The service used to open content attachments.</param>
-  public ContentController(IContentService contentService)
+  /// <param name="contentAttachmentService">The service used to open content attachments.</param>
+  public ContentController(IContentAttachmentService contentAttachmentService)
   {
-    _contentService = contentService;
+    _contentAttachmentService = contentAttachmentService;
   }
 
   /// <summary>Serves an attachment or named derivation when its access policy permits.</summary>
   /// <param name="attachmentId">The public UUID of the content attachment.</param>
-  /// <param name="derivation">The optional derivation name to serve.</param>
+  /// <param name="filename">The file to serve.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The file response, or not found when missing or unauthorized.</returns>
   [HttpGet(Routes.ContentAttachmentsUrlTemplate, Name = Routes.ContentAttachmentsGetRoute)]
-  public async Task<IActionResult> GetAttachmentAsync(Guid attachmentId, string? derivation, CancellationToken cancellationToken)
+  public async Task<IActionResult> GetAttachmentAsync(Guid attachmentId, string filename, CancellationToken cancellationToken)
   {
     try
     {
-      var result = await _contentService.OpenAttachmentAsync(attachmentId, derivation, cancellationToken);
+      var result = await _contentAttachmentService.OpenAttachmentByFilenameAsync(attachmentId, filename, cancellationToken);
 
       Response.Headers.CacheControl = result.IsPublic ? "public, max-age=300" : "private, no-store";
       Response.Headers.XContentTypeOptions = "nosniff";

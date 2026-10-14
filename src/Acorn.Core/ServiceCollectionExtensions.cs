@@ -1,4 +1,5 @@
 using System.Net;
+using System.Reflection.Metadata.Ecma335;
 using Acorn.Core.ContentManagement;
 using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Models;
@@ -160,12 +161,15 @@ public static class ServiceCollectionExtensions
       });
 
     return services
-      .AddSingleton<IContentAttachmentDerivationPipeline, DefaultImageContentAttachmentDerivationPipeline>()
+      .AddTransient<IDerivationProducer>(x => new WebpImageDerivationProducer(DerivationName.Images.Large, 4096))
+      .AddTransient<IDerivationProducer>(x => new WebpImageDerivationProducer(DerivationName.Images.Inline, 1200))
+      .AddTransient<IDerivationProducer>(x => new WebpImageDerivationProducer(DerivationName.Images.Preview, 320))
       .AddScoped<ContentModelMapper>()
       .AddScoped<IEntityModelMapper<PostContent, Post>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IEntityModelMapper<NoteContent, Note>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IEntityModelMapper<BookmarkContent, Bookmark>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IContentService, ContentService>()
+      .AddScoped<IContentAttachmentService, ContentAttachmentService>()
       .AddScoped<INotesService, NotesService>()
       .AddScoped<IBookmarksService, BookmarksService>()
       .AddScoped<PostsService>()

@@ -10,7 +10,7 @@ internal static class Routes
   public const string ContentPostsDetailsUrlTemplate = "/content/posts/{publicId:guid}";
   public const string ContentPostsDetailsGetRoute = nameof(ContentPostsDetailsGetRoute);
 
-  public const string ContentAttachmentsUrlTemplate = "/content/attachments/{attachmentId:guid}";
+  public const string ContentAttachmentsUrlTemplate = "/content/attachments/{attachmentId:guid}/{filename}";
   public const string ContentAttachmentsGetRoute = nameof(ContentAttachmentsGetRoute);
 
   public const string ContentBookmarksIndexUrlTemplate = "/content/bookmarks";

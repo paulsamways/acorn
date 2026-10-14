@@ -2,5 +2,5 @@
 .env
 **/sixlabors.lic
 [Tt]est[Rr]esults/
-[Bb]in/
-[Oo]bj/
+src/**/[Bb]in/
+src/**/[Oo]bj/

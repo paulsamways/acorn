@@ -15,7 +15,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261013042735_AddFiles";
+    public override string LastMigrationId => "20261013213032_AddFiles";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -120,10 +120,6 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("INTEGER")
                     .HasColumnName("file_id");
 
-                b.Property<bool?>("IsPreferredDerivation")
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("is_preferred_derivation");
-
                 b.Property<Guid?>("ParentId")
                     .HasColumnType("TEXT")
                     .HasColumnName("parent_id");
@@ -139,19 +135,10 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
                 b.HasIndex("FileId");
 
-                b.HasIndex("ParentId")
-                    .IsUnique()
-                    .HasFilter("is_preferred_derivation = 1");
-
                 b.HasIndex("ParentId", "DerivationName")
                     .IsUnique();
 
-                b.ToTable("content_attachment", t =>
-                    {
-                        t.HasCheckConstraint("ck_content_attachment_preferred_derivation_is_public", "is_preferred_derivation = 0 OR visibility = 'Public'");
-
-                        t.HasCheckConstraint("ck_content_attachment_preferred_derivation_requires_parent", "(parent_id IS NULL AND is_preferred_derivation IS NULL) OR (parent_id IS NOT NULL AND is_preferred_derivation IS NOT NULL)");
-                    });
+                b.ToTable("content_attachment");
             });
 
         modelBuilder.Entity("Acorn.Core.Data.Entities.File", b =>

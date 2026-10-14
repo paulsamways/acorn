@@ -109,8 +109,13 @@ internal abstract class ServicesTestBase
 
   private sealed class MockAttachmentUrlResolver : IAttachmentUrlResolver
   {
-    public string ResolveUrl(Guid attachmentPublicId)
-      => $"/content/attachments/{attachmentPublicId:D}";
+    public string ResolveUrl(Guid attachmentPublicId, string? derivation)
+    {
+      var url = $"/content/attachments/{attachmentPublicId:D}";
+      return derivation is null
+        ? url
+        : url + $"?derivation={derivation}";
+    }
   }
 
   private sealed class TestContentAddressedBlobStore : IContentAddressedBlobStore

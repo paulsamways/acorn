@@ -110,7 +110,7 @@ internal class ContentServiceTests : ServicesTestBase
     var ownerId = Guid.NewGuid();
     DbContext.Users.Add(new User("derivation-owner@example.test") { Id = ownerId });
     var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, DateTime.UtcNow);
-    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public, isPreferred: true);
+    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
 
     var result = await ContentService.OpenAttachmentAsync(parent.Id, derivationName: "MEDIUM");
     await using var stream = result.Stream;
@@ -141,13 +141,10 @@ internal class ContentServiceTests : ServicesTestBase
 
     await Assert.That(original.Visibility).IsEqualTo(AttachmentVisibility.Owner);
     await Assert.That(original.DerivationName).IsNull();
-    await Assert.That(original.IsPreferredDerivation is null).IsTrue();
     await Assert.That(derivations.Length).IsEqualTo(3);
     await Assert.That(derivations.Select(x => x.DerivationName ?? string.Empty).Order().ToArray())
       .IsEquivalentTo(new[] { "large", "medium", "small" });
     await Assert.That(derivations.All(x => x.Visibility == AttachmentVisibility.Public)).IsTrue();
-    await Assert.That(derivations.All(x => x.IsPreferredDerivation.HasValue)).IsTrue();
-    await Assert.That(derivations.Single(x => x.DerivationName == "medium").IsPreferredDerivation == true).IsTrue();
     await Assert.That(derivations.All(x => x.File.MediaType == "image/webp")).IsTrue();
     await Assert.That(derivations.Select(x => ((ImageFile)x.File).Width).Distinct().Count()).IsEqualTo(1);
     await Assert.That(derivations.Select(x => ((ImageFile)x.File).Height).Distinct().Count()).IsEqualTo(1);
@@ -176,7 +173,6 @@ internal class ContentServiceTests : ServicesTestBase
     await Assert.That(original.Visibility).IsEqualTo(AttachmentVisibility.Public);
     await Assert.That(original.ParentId).IsNull();
     await Assert.That(original.DerivationName).IsNull();
-    await Assert.That(original.IsPreferredDerivation is null).IsTrue();
     await Assert.That(attachments.Count(x => x.ParentId == attachmentId)).IsEqualTo(0);
   }
 
@@ -209,8 +205,8 @@ internal class ContentServiceTests : ServicesTestBase
     var ownerId = Guid.NewGuid();
     DbContext.Users.Add(new User("derivation-owner@example.test") { Id = ownerId });
     var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, DateTime.UtcNow);
-    _ = await AddDerivationAsync(parent, "large", AttachmentVisibility.Public, isPreferred: false);
-    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public, isPreferred: true);
+    _ = await AddDerivationAsync(parent, "large", AttachmentVisibility.Public);
+    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
 
     var result = await ContentService.OpenAttachmentAsync(parent.Id);
     await using var stream = result.Stream;
@@ -223,7 +219,7 @@ internal class ContentServiceTests : ServicesTestBase
   public async Task OpenAttachmentAsync_ReturnsOriginalToOwnerByDefault()
   {
     var parent = await CreateAttachmentAsync(CurrentUserId, AttachmentVisibility.Owner, DateTime.UtcNow);
-    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public, isPreferred: true);
+    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
 
     var result = await ContentService.OpenAttachmentAsync(parent.Id);
     await using var stream = result.Stream;
@@ -238,7 +234,7 @@ internal class ContentServiceTests : ServicesTestBase
     var ownerId = Guid.NewGuid();
     DbContext.Users.Add(new User("public-attachment-owner@example.test") { Id = ownerId });
     var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Public, DateTime.UtcNow);
-    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public, isPreferred: true);
+    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
 
     var result = await ContentService.OpenAttachmentAsync(parent.Id);
     await using var stream = result.Stream;
@@ -253,7 +249,7 @@ internal class ContentServiceTests : ServicesTestBase
     var ownerId = Guid.NewGuid();
     DbContext.Users.Add(new User("draft-attachment-owner@example.test") { Id = ownerId });
     var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, publishedAt: null);
-    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public, isPreferred: true);
+    _ = await AddDerivationAsync(parent, "medium", AttachmentVisibility.Public);
 
     await Assert.That(async () => await ContentService.OpenAttachmentAsync(parent.Id))
       .Throws<Acorn.Core.Exceptions.UnauthorizedException>();
@@ -265,8 +261,8 @@ internal class ContentServiceTests : ServicesTestBase
     var ownerId = Guid.NewGuid();
     DbContext.Users.Add(new User("derivation-owner@example.test") { Id = ownerId });
     var parent = await CreateAttachmentAsync(ownerId, AttachmentVisibility.Owner, DateTime.UtcNow);
-    _ = await AddDerivationAsync(parent, "small", AttachmentVisibility.Public, isPreferred: false);
-    _ = await AddDerivationAsync(parent, "large", AttachmentVisibility.Public, isPreferred: false);
+    _ = await AddDerivationAsync(parent, "small", AttachmentVisibility.Public);
+    _ = await AddDerivationAsync(parent, "large", AttachmentVisibility.Public);
 
     var result = await ContentService.OpenAttachmentAsync(parent.Id);
     await using var stream = result.Stream;
@@ -331,8 +327,7 @@ internal class ContentServiceTests : ServicesTestBase
   private async Task<ContentAttachment> AddDerivationAsync(
     ContentAttachment parent,
     string name,
-    AttachmentVisibility visibility,
-    bool isPreferred)
+    AttachmentVisibility visibility)
   {
     var digest = RandomNumberGenerator.GetBytes(32);
     var blob = new Blob
@@ -359,8 +354,7 @@ internal class ContentServiceTests : ServicesTestBase
       Parent = parent,
       ParentId = parent.Id,
       DerivationName = name,
-      Visibility = visibility,
-      IsPreferredDerivation = isPreferred
+      Visibility = visibility
     };
 
     DbContext.Blobs.Add(blob);

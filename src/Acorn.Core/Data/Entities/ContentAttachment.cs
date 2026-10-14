@@ -16,8 +16,6 @@ internal sealed class ContentAttachment
 
   public string? DerivationName { get; set; }
 
-  public bool? IsPreferredDerivation { get; set; }
-
   public Content Content { get; set; } = null!;
 
   public File File { get; set; } = null!;

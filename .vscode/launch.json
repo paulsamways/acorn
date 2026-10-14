@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/src/Acorn/bin/Debug/net10.0/Acorn.dll",
+            "program": "${workspaceFolder}/src/Acorn/bin/Debug/net11.0/Acorn.dll",
             "args": [],
             "cwd": "${workspaceFolder}/src/Acorn",
             "stopAtEntry": false,

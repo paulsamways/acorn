@@ -2,13 +2,13 @@ using Acorn.Core.FileManagement.Validation;
 
 namespace Acorn.Core.ContentManagement.Derivations;
 
-internal interface IContentAttachmentDerivationPipeline
+internal interface IDerivationProducer
 {
-  string Name { get; }
+  string DerivationName { get; }
 
   bool CanDerive(FileMetadata metadata);
 
-  Task<IReadOnlyList<ContentAttachmentDerivation>> RunAsync(
+  Task<Derivation> RunAsync(
     Stream stream,
     FileMetadata metadata,
     CancellationToken cancellationToken = default);

@@ -1,3 +1,4 @@
+using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.Data.Entities;
 using Acorn.Core.Extensions;
@@ -41,9 +42,9 @@ internal sealed class ContentModelMapper :
       content.PublicId,
       content.Title,
       content.Excerpt,
-      content.Excerpt is null ? null : RenderMarkdown(content.Excerpt, "small"),
+      content.Excerpt is null ? null : await RenderMarkdownAsync(content.Excerpt, DerivationName.Images.Preview, cancellationToken),
       content.Body,
-      RenderMarkdown(content.Body),
+      await RenderMarkdownAsync(content.Body, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
@@ -59,7 +60,7 @@ internal sealed class ContentModelMapper :
     return new Note(
       content.Id,
       content.Value,
-      RenderMarkdown(content.Value),
+      await RenderMarkdownAsync(content.Value, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
@@ -77,14 +78,14 @@ internal sealed class ContentModelMapper :
       content.Url,
       content.Title,
       content.Description,
-      content.Description is null ? null : RenderMarkdown(content.Description),
+      content.Description is null ? null : await RenderMarkdownAsync(content.Description, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
       metadata.PublishedAt);
   }
 
-  private string RenderMarkdown(string? markdown, string? imageDerivation = "medium")
+  private async Task<string> RenderMarkdownAsync(string? markdown, string imageDerivation, CancellationToken cancellationToken = default)
   {
     if (string.IsNullOrWhiteSpace(markdown))
       return string.Empty;
@@ -98,7 +99,7 @@ internal sealed class ContentModelMapper :
     {
       if (TryParseFileReference(image.Url, out var attachmentId))
       {
-        image.Url = _attachmentUrlResolver.ResolveUrl(attachmentId, imageDerivation);
+        image.Url = await _attachmentUrlResolver.ResolveUrlAsync(attachmentId, imageDerivation, cancellationToken);
       }
       else
       {

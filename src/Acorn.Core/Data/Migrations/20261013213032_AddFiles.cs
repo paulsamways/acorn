@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Acorn.Core.Data.Migrations;
 
 /// <inheritdoc />
-public partial class _20261013042735_AddFiles : Migration
+public partial class _20261013213032_AddFiles : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -76,14 +76,11 @@ public partial class _20261013042735_AddFiles : Migration
                 file_id = table.Column<int>(type: "INTEGER", nullable: false),
                 visibility = table.Column<string>(type: "TEXT", nullable: false),
                 parent_id = table.Column<Guid>(type: "TEXT", nullable: true),
-                derivation_name = table.Column<string>(type: "TEXT", nullable: true),
-                is_preferred_derivation = table.Column<bool>(type: "INTEGER", nullable: true)
+                derivation_name = table.Column<string>(type: "TEXT", nullable: true)
             },
             constraints: table =>
             {
                 table.PrimaryKey("PK_content_attachment", x => x.content_attachment_id);
-                table.CheckConstraint("ck_content_attachment_preferred_derivation_is_public", "is_preferred_derivation = 0 OR visibility = 'Public'");
-                table.CheckConstraint("ck_content_attachment_preferred_derivation_requires_parent", "(parent_id IS NULL AND is_preferred_derivation IS NULL) OR (parent_id IS NOT NULL AND is_preferred_derivation IS NOT NULL)");
                 table.ForeignKey(
                     name: "FK_content_attachment_content_attachment_parent_id",
                     column: x => x.parent_id,
@@ -119,13 +116,6 @@ public partial class _20261013042735_AddFiles : Migration
             name: "IX_content_attachment_file_id",
             table: "content_attachment",
             column: "file_id");
-
-        migrationBuilder.CreateIndex(
-            name: "IX_content_attachment_parent_id",
-            table: "content_attachment",
-            column: "parent_id",
-            unique: true,
-            filter: "is_preferred_derivation = 1");
 
         migrationBuilder.CreateIndex(
             name: "IX_content_attachment_parent_id_derivation_name",
