@@ -18,6 +18,17 @@ public partial class _20261013213032_AddFiles : Migration
             nullable: false,
             defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
+        migrationBuilder.Sql(
+            """
+            UPDATE content
+            SET public_id =
+                lower(hex(randomblob(4))) || '-' ||
+                lower(hex(randomblob(2))) || '-' ||
+                lower(hex(randomblob(2))) || '-' ||
+                lower(hex(randomblob(2))) || '-' ||
+                lower(hex(randomblob(6)));
+            """);
+
         migrationBuilder.CreateTable(
             name: "blob",
             columns: table => new
