@@ -23,7 +23,8 @@ RUN dotnet restore ./src/Acorn/Acorn.csproj
 COPY src ./src
 COPY --from=build-js /src/Acorn/wwwroot/js/pages ./src/Acorn/wwwroot/js/pages
 
-RUN dotnet publish ./src/Acorn/Acorn.csproj \
+RUN --mount=type=secret,id=sixlabors,env=SIXLABORS_LICENSE_KEY \
+  dotnet publish ./src/Acorn/Acorn.csproj \
   -c Release \
   -o /app/publish \
   /p:UseAppHost=false
