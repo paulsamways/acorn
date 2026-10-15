@@ -3,27 +3,41 @@
 
 <main class="f-column f-align-center">
 
-  <form class="f-column p-4 g-4 w-wide" asp-route="@Routes.Admin.NotesEditPostRoute" asp-route-id="@Model.Id" method="POST">
-    <div asp-validation-summary="All" class="danger"></div>
+  <div class="f-column w-wide g-4 p-4">
+    <header class="f-row f-justify-space-between f-align-center">
+      <h2>Note</h2>
+    </header>
 
-    <textarea asp-for="Value" rows="30"></textarea>
+    <form class="f-column g-3" asp-route="@Routes.Admin.NotesEditPostRoute" asp-route-id="@Model.Id" method="POST">
+      <div asp-validation-summary="All" class="danger"></div>
 
-    <label asp-for="Tags">Tags</label>
-    <input asp-for="Tags" />
-    <span asp-validation-for="Tags" class="danger"></span>
+      <markdown-editor id="Value" name="Value" rows="24" image-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))">@Model.Value</markdown-editor>
 
-    <label>
-      <input asp-for="Published" type="checkbox"" /> Published
-    </label>
+      <details>
+        <summary>Optional fields</summary>
+        <div class="f-column g-3 p-3">
+          <label asp-for="Tags">Tags</label>
+          <input asp-for="Tags" />
+          <span asp-validation-for="Tags" class="danger"></span>
 
-    <div class="f-row f-justify-space-between">
-      <div>
-        <a asp-route="@Routes.Admin.NotesDeleteGetRoute" asp-route-id="@Model.Id" role="button" class="danger">Delete</a>
+          <label>
+            <input asp-for="Published" type="checkbox"" /> Published
+          </label>
+
+        </div>
+      </details>
+
+
+
+
+      <div class="f-row f-justify-space-between">
+        <div>
+          <a asp-route="@Routes.Admin.NotesDeleteGetRoute" asp-route-id="@Model.Id" role="button" class="danger">Delete</a>
+        </div>
+        <div>
+          <button type="submit">Save changes</button>
+        </div>
       </div>
-      <div>
-        <button type="submit">Save changes</button>
-      </div>
-    </div>
-  </form>
-
+    </form>
+  </div>
 </main>

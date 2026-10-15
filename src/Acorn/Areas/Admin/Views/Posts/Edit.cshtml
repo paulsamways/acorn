@@ -3,7 +3,7 @@
 <main class="f-column f-align-center">
   <div class="f-column w-wide g-4 p-4">
     <header class="f-row f-justify-space-between f-align-center">
-      <h2>@(Model.Id == 0 ? "New post" : "Edit post")</h2>
+      <h2>Post</h2>
       @if (Model.PublishedAt is null)
       {
         <form asp-route="@Routes.Admin.PostsPublishPostRoute" asp-route-id="@Model.Id" method="POST">
@@ -23,23 +23,27 @@
       <input asp-for="Title" />
       <span asp-validation-for="Title" class="danger"></span>
 
-      <label asp-for="Tags">Tags</label>
-      <input asp-for="Tags" />
-      <span asp-validation-for="Tags" class="danger"></span>
-
-      <label asp-for="Excerpt">Excerpt</label>
-      <markdown-editor id="Excerpt" name="Excerpt" rows="12" image-upload-url="@(Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id }))">@Model.Excerpt</markdown-editor>
-      <span asp-validation-for="Excerpt" class="danger"></span>
-
       <label asp-for="Body">Body</label>
       <markdown-editor id="Body" name="Body" rows="24" image-upload-url="@(Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id }))">@Model.Body</markdown-editor>
       <span asp-validation-for="Body" class="danger"></span>
 
+      <details>
+        <summary>Optional fields</summary>
+        <div class="f-column g-3 p-3">
+          <label asp-for="Excerpt">Excerpt</label>
+          <markdown-editor id="Excerpt" name="Excerpt" rows="12" image-upload-url="@(Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id }))">@Model.Excerpt</markdown-editor>
+          <span asp-validation-for="Excerpt" class="danger"></span>
+
+          <label asp-for="Tags">Tags</label>
+          <input asp-for="Tags" />
+          <span asp-validation-for="Tags" class="danger"></span>
+        </div>
+      </details>
+
+
       <div class="f-row f-justify-space-between">
-        @if (Model.Id > 0)
-        {
-          <a asp-route="@Routes.Admin.PostsArchiveGetRoute" asp-route-id="@Model.Id" role="button" class="danger">Archive</a>
-        }
+        <a asp-route="@Routes.Admin.PostsArchiveGetRoute" asp-route-id="@Model.Id" role="button" class="danger">Archive</a>
+
         <button type="submit">Save changes</button>
       </div>
     </form>

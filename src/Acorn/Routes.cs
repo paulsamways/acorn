@@ -54,6 +54,10 @@ internal static class Routes
     public const string AreaName = "admin";
     private const string AreaUrlPrefix = "/admin";
 
+    public const string AttachFileUrlTemplate = AreaUrlPrefix + "/content/{id:int}/attachments";
+    public const string AttachFilePostRoute = nameof(Admin) + nameof(AttachFilePostRoute);
+
+
     public const string PostsIndexUrlTemplate = AreaUrlPrefix + "/posts";
     public const string PostsIndexGetRoute = nameof(Admin) + nameof(PostsIndexGetRoute);
     public const string PostsIndexPostRoute = nameof(Admin) + nameof(PostsIndexPostRoute);

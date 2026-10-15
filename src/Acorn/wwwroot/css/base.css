@@ -85,6 +85,16 @@
     display: inline;
   }
 
+  details>summary {
+    cursor: pointer;
+  }
+  details>summary::marker {
+    color: var(--text-color-highlight);
+  }
+  details>summary:hover::marker {
+    color: var(--text-color-highlight-hover);
+  }
+
   hr {
     border-color: var(--border-color);
   }
