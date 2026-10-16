@@ -11,7 +11,7 @@
     <form class="f-column g-3" asp-route="@Routes.Admin.NotesEditPostRoute" asp-route-id="@Model.Id" method="POST">
       <div asp-validation-summary="All" class="danger"></div>
 
-      <markdown-editor id="Value" name="Value" rows="24" image-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))">@Model.Value</markdown-editor>
+      <markdown-editor id="Value" name="Value" rows="24" image-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))" file-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))">@Model.Value</markdown-editor>
 
       <details>
         <summary>Optional fields</summary>

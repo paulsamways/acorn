@@ -14,7 +14,8 @@ internal sealed class FileEntityTypeConfiguration : IEntityTypeConfiguration<Fil
 
     builder
       .HasDiscriminator<string>("file_type")
-      .HasValue<ImageFile>("image");
+      .HasValue<ImageFile>("image")
+      .HasValue<BinaryFile>("binary");
 
     builder
       .HasKey(x => x.Id);

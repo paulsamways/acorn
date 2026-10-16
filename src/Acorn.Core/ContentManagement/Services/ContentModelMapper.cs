@@ -91,26 +91,33 @@ internal sealed class ContentModelMapper :
       return string.Empty;
 
     var document = Markdown.Parse(markdown, _markdownPipeline);
-    var fileImages = document.Descendants<LinkInline>()
-      .Where(link => link.IsImage && link.Url?.StartsWith("file:", StringComparison.OrdinalIgnoreCase) == true)
+    var fileLinks = document.Descendants<LinkInline>()
+      .Where(link => link.Url?.StartsWith("file:", StringComparison.OrdinalIgnoreCase) == true)
       .ToArray();
 
-    foreach (var image in fileImages)
+    foreach (var link in fileLinks)
     {
-      if (TryParseFileReference(image.Url, out var attachmentId))
+      if (TryParseFileReference(link.Url, out var attachmentId))
       {
         try
         {
-          image.Url = await _attachmentUrlResolver.ResolveUrlAsync(attachmentId, imageDerivation, cancellationToken);
+          link.Url = await _attachmentUrlResolver.ResolveUrlAsync(
+            attachmentId,
+            link.IsImage ? imageDerivation : null,
+            cancellationToken);
         }
         catch (AttachmentNotFoundException)
         {
-          _ = image.ReplaceBy(new LiteralInline("[Image unavailable]"), copyChildren: false);
+          _ = link.ReplaceBy(
+            new LiteralInline(link.IsImage ? "[Image unavailable]" : "[Attachment unavailable]"),
+            copyChildren: false);
         }
       }
       else
       {
-        _ = image.ReplaceBy(new LiteralInline("[Image unavailable]"), copyChildren: false);
+        _ = link.ReplaceBy(
+          new LiteralInline(link.IsImage ? "[Image unavailable]" : "[Attachment unavailable]"),
+          copyChildren: false);
       }
     }
 

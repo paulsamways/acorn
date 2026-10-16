@@ -24,14 +24,14 @@
       <span asp-validation-for="Title" class="danger"></span>
 
       <label asp-for="Body">Body</label>
-      <markdown-editor id="Body" name="Body" rows="24" image-upload-url="@(Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id }))">@Model.Body</markdown-editor>
+      <markdown-editor id="Body" name="Body" rows="24" image-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))" file-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))">@Model.Body</markdown-editor>
       <span asp-validation-for="Body" class="danger"></span>
 
       <details>
         <summary>Optional fields</summary>
         <div class="f-column g-3 p-3">
           <label asp-for="Excerpt">Excerpt</label>
-          <markdown-editor id="Excerpt" name="Excerpt" rows="12" image-upload-url="@(Url.RouteUrl(Routes.Admin.PostFilesPostRoute, new { id = Model.Id }))">@Model.Excerpt</markdown-editor>
+          <markdown-editor id="Excerpt" name="Excerpt" rows="12" image-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))" file-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))">@Model.Excerpt</markdown-editor>
           <span asp-validation-for="Excerpt" class="danger"></span>
 
           <label asp-for="Tags">Tags</label>

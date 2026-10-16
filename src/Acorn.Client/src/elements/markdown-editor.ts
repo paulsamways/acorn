@@ -6,7 +6,7 @@ type WrapAction = {
   suffix: string;
   // When set, a file is picked and uploaded first; "{url}" in the suffix receives the result.
   // `attribute` names the host attribute holding the upload endpoint.
-  upload?: { attribute: string; accept: string };
+  upload?: { attribute: string; accept: string; filenameAsText?: boolean };
 };
 
 type LineAction = { kind: "line"; label: string; icon: string; prefix: string };
@@ -186,6 +186,16 @@ const actions: MarkdownAction[][] = [
       suffix: "]({url})",
       upload: { attribute: "image-upload-url", accept: "image/*" },
     },
+    {
+      kind: "wrap",
+      label: "Attach file",
+      icon: icon(
+        "M18.375 12.739l-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94a3 3 0 0 1 4.243 4.243L8.56 18.313a1.5 1.5 0 0 1-2.122-2.122l8.485-8.485",
+      ),
+      prefix: "[",
+      suffix: "]({url})",
+      upload: { attribute: "file-upload-url", accept: "*/*", filenameAsText: true },
+    },
   ],
 ];
 
@@ -264,11 +274,14 @@ class MarkdownEditor extends HTMLElement {
 
     const start = textarea.selectionStart;
     const selectedText = textarea.value.slice(start, textarea.selectionEnd);
+    const linkText = selectedText || (action.upload?.filenameAsText && file
+      ? file.name.replace(/\\/g, "\\\\").replace(/\[/g, "\\[").replace(/\]/g, "\\]")
+      : "");
     const render = (url: string): string =>
-      action.prefix + selectedText + action.suffix.replace("{url}", url);
+      action.prefix + linkText + action.suffix.replace("{url}", url);
     const innerStart = start + action.prefix.length;
     const selectInner = () =>
-      textarea.setSelectionRange(innerStart, innerStart + selectedText.length);
+      textarea.setSelectionRange(innerStart, innerStart + linkText.length);
 
     const initial = render("Uploading...");
     textarea.focus();

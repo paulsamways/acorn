@@ -55,7 +55,7 @@ internal sealed class FileManager : IFileManager
       blob = await _dbContext.Blobs.SingleAsync(x => x.Digest == blobInfo.Digest, cancellationToken);
     }
 
-    var file = fileMetadata switch
+    Acorn.Core.Data.Entities.File file = fileMetadata switch
     {
       ImageFileMetadata m => new ImageFile()
       {
@@ -65,6 +65,15 @@ internal sealed class FileManager : IFileManager
         CreatedAt = DateTime.UtcNow,
         Width = m.Width,
         Height = m.Height,
+        Blob = blob,
+        BlobDigest = blobInfo.Digest
+      },
+      BinaryFileMetadata m => new BinaryFile()
+      {
+        OwnerId = _userContextService.GetCurrentUserId(),
+        Filename = m.Filename,
+        MediaType = m.MediaType,
+        CreatedAt = DateTime.UtcNow,
         Blob = blob,
         BlobDigest = blobInfo.Digest
       },

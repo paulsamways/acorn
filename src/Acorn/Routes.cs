@@ -66,9 +66,6 @@ internal static class Routes
     public const string PostsEditGetRoute = nameof(Admin) + nameof(PostsEditGetRoute);
     public const string PostsEditPostRoute = nameof(Admin) + nameof(PostsEditPostRoute);
 
-    public const string PostFilesUrlTemplate = AreaUrlPrefix + "/posts/{id:int}/files";
-    public const string PostFilesPostRoute = nameof(Admin) + nameof(PostFilesPostRoute);
-
     public const string PostsPublishUrlTemplate = AreaUrlPrefix + "/posts/publish/{id}";
     public const string PostsPublishPostRoute = nameof(Admin) + nameof(PostsPublishPostRoute);
 

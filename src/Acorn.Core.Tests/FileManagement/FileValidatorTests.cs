@@ -20,4 +20,30 @@ internal sealed class FileValidatorTests
     await Assert.That(async () => await validator.ValidateAsync(stream, "image.png", "image/jpeg"))
       .Throws<FileValidationException>();
   }
+
+  [Test]
+  public async Task ValidateAsync_AcceptsOpaqueFileAndDiscardsDeclaredMediaType()
+  {
+    using var stream = new MemoryStream([0, 1, 2, 3]);
+    var validator = new FileValidator();
+
+    var metadata = await validator.ValidateAsync(stream, "folder\\report.html", "text/html");
+
+    await Assert.That(metadata is BinaryFileMetadata).IsTrue();
+    await Assert.That(metadata.Filename).IsEqualTo("report.html");
+    await Assert.That(metadata.MediaType).IsEqualTo("application/octet-stream");
+    await Assert.That(stream.Position).IsEqualTo(0);
+  }
+
+  [Test]
+  public async Task ValidateAsync_AcceptsOpaqueFileWhenDeclaredMediaTypeIsMalformed()
+  {
+    using var stream = new MemoryStream([0, 1, 2, 3]);
+    var validator = new FileValidator();
+
+    var metadata = await validator.ValidateAsync(stream, "report.bin", "not a media type");
+
+    await Assert.That(metadata is BinaryFileMetadata).IsTrue();
+    await Assert.That(metadata.MediaType).IsEqualTo("application/octet-stream");
+  }
 }

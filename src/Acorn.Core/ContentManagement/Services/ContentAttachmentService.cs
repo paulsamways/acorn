@@ -155,7 +155,10 @@ internal class ContentAttachmentService : IContentAttachmentService
     var fileDescriptor = await _fileManager.OpenFileAsync(attachment.File.Id, cancellationToken);
 
     var isPublic = contentPublished && attachment.Visibility == AttachmentVisibility.Public;
-    return new(fileDescriptor, isPublic);
+    var disposition = attachment.File is ImageFile
+      ? AttachmentDisposition.Inline
+      : AttachmentDisposition.Attachment;
+    return new(fileDescriptor, isPublic, disposition);
   }
 
   private async Task CreateAttachmentDerivationsAsync(

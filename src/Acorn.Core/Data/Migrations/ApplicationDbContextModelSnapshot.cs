@@ -15,12 +15,12 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261013213032_AddFiles";
+    public override string LastMigrationId => "20261016183357_AddBinaryFileSupport";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-rc.1.26425.128");
+        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-rc.2.26504.105");
 
         modelBuilder.Entity("Acorn.Core.Data.Entities.Blob", b =>
             {
@@ -183,7 +183,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
                 b.Property<string>("file_type")
                     .IsRequired()
-                    .HasMaxLength(5)
+                    .HasMaxLength(8)
                     .HasColumnType("TEXT");
 
                 b.HasKey("Id");
@@ -514,6 +514,13 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("content");
 
                 b.HasDiscriminator().HasValue("post");
+            });
+
+        modelBuilder.Entity("Acorn.Core.Data.Entities.BinaryFile", b =>
+            {
+                b.HasBaseType("Acorn.Core.Data.Entities.File");
+
+                b.HasDiscriminator().HasValue("binary");
             });
 
         modelBuilder.Entity("Acorn.Core.Data.Entities.ImageFile", b =>

@@ -102,6 +102,29 @@ internal class ContentServiceTests : ServicesTestBase
     await using var stream = result.Stream;
 
     await Assert.That(result.IsPublic).IsTrue();
+    await Assert.That(result.Disposition).IsEqualTo(AttachmentDisposition.Inline);
+  }
+
+  [Test]
+  public async Task CreateAttachmentAsync_StoresOpaqueFileAndReturnsDownloadDisposition()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Attachment post", "Body");
+    await using var stream = new MemoryStream([0, 1, 2, 3]);
+
+    var attachmentId = await ContentAttachmentService.CreateAttachmentAsync(
+      post.Id,
+      stream,
+      "report.html",
+      "text/html");
+    var attachment = await DbContext.ContentAttachments
+      .Include(x => x.File)
+      .SingleAsync(x => x.Id == attachmentId);
+    var result = await ContentAttachmentService.OpenAttachmentAsync(attachmentId);
+    await using var resultStream = result.Stream;
+
+    await Assert.That(attachment.File is BinaryFile).IsTrue();
+    await Assert.That(attachment.File.MediaType).IsEqualTo("application/octet-stream");
+    await Assert.That(result.Disposition).IsEqualTo(AttachmentDisposition.Attachment);
   }
 
   [Test]

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.Exceptions;
 
 namespace Acorn.Controllers;
@@ -32,7 +33,11 @@ public sealed class ContentController : Controller
 
       Response.Headers.CacheControl = result.IsPublic ? "public, max-age=300" : "private, no-store";
       Response.Headers.XContentTypeOptions = "nosniff";
-      return File(result.Stream, result.MediaType);
+      // Supplying a download name makes MVC set Content-Disposition: attachment; null leaves inline responses at the browser default.
+      var fileDownloadName = result.Disposition == AttachmentDisposition.Attachment
+        ? result.FileName
+        : null;
+      return File(result.Stream, result.MediaType, fileDownloadName);
     }
     catch (NotFoundException)
     {

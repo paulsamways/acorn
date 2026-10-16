@@ -20,6 +20,21 @@ internal class PostImageRenderingTests : ServicesTestBase
   }
 
   [Test]
+  public async Task FileAttachmentReferenceRendersAsLinkToOriginalAttachment()
+  {
+    var filePublicId = Guid.NewGuid();
+    var post = await PostAuthoringService.CreatePostAsync(
+      "Attachment post",
+      $"[Project brief.pdf](file:{filePublicId:D})");
+
+    var rendered = await PostAuthoringService.GetPostAsync(post.Id);
+
+    await Assert.That(rendered.BodyHtml).Contains($"href=\"/content/attachments/{filePublicId:D}\"");
+    await Assert.That(rendered.BodyHtml).Contains(">Project brief.pdf</a>");
+    await Assert.That(rendered.BodyHtml).DoesNotContain("derivation=");
+  }
+
+  [Test]
   public async Task ExistingFileReferenceRendersUsingItsAttachmentId()
   {
     var post = await PostAuthoringService.CreatePostAsync("Image post", "Body");

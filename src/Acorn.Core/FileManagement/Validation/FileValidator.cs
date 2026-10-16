@@ -18,19 +18,23 @@ internal sealed class FileValidator : IFileValidator
   {
     var filename = NormalizeFilename(unsafeFilename);
 
-    if (!MediaTypeHeaderValue.TryParse(mediaTypeHint, out var mediaType))
-      throw new FileValidationException("Unsupported media type.");
-
-    switch (mediaType.MediaType?.ToLowerOrdinal())
+    if (MediaTypeHeaderValue.TryParse(mediaTypeHint, out var mediaType))
     {
-      case MediaTypeNames.Image.Jpeg:
-      case MediaTypeNames.Image.Png:
-      case MediaTypeNames.Image.Webp:
-        return await ValidateImageFileAsync(stream, filename, mediaType, cancellationToken);
-
-      default:
-        throw new FileValidationException($"Unsupported media type: {mediaType.MediaType}");
+      switch (mediaType.MediaType?.ToLowerOrdinal())
+      {
+        case MediaTypeNames.Image.Jpeg:
+        case MediaTypeNames.Image.Png:
+        case MediaTypeNames.Image.Webp:
+          return await ValidateImageFileAsync(stream, filename, mediaType, cancellationToken);
+      }
     }
+
+    stream.Position = 0;
+    return new BinaryFileMetadata
+    {
+      Filename = filename,
+      MediaType = MediaTypeNames.Application.Octet
+    };
   }
 
   private async Task<ImageFileMetadata> ValidateImageFileAsync(Stream stream, string filename, MediaTypeHeaderValue mediaType, CancellationToken cancellationToken = default)

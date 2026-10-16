@@ -29,7 +29,7 @@ public sealed class ContentController : Controller
   [HttpPost(Routes.Admin.AttachFileUrlTemplate, Name = Routes.Admin.AttachFilePostRoute)]
   [RequestSizeLimit(10L * 1024 * 1024)]
   [RequestFormLimits(MultipartBodyLengthLimit = 10L * 1024 * 1024)]
-  public async Task<IActionResult> AttachFilePostAsync(int id, IFormFile? file, CancellationToken cancellationToken)
+  public async Task<IActionResult> AttachFilePostAsync(int id, [FromForm] IFormFile? file, CancellationToken cancellationToken)
   {
     if (file is null || file.Length == 0)
       return BadRequest(new { error = "Select a file to attach." });
