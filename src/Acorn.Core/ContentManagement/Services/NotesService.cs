@@ -1,7 +1,7 @@
+using Acorn.Core.ContentManagement.Database.Entities;
 using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
-using Acorn.Core.Data;
-using Acorn.Core.Data.Entities;
+using Acorn.Core.Database;
 using Acorn.Core.Mapping;
 using Acorn.Core.Security;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +13,12 @@ internal sealed class NotesService : INotesService
   private readonly ApplicationDbContext _dbContext;
 
   private readonly IUserContextService _userContextService;
-  private readonly IEntityModelMapper<NoteContent, Note> _noteMapper;
+  private readonly IEntityModelMapper<NoteContentEntity, Note> _noteMapper;
 
   public NotesService(
     ApplicationDbContext dbContext,
     IUserContextService userContextService,
-    IEntityModelMapper<NoteContent, Note> noteMapper)
+    IEntityModelMapper<NoteContentEntity, Note> noteMapper)
   {
     _dbContext = dbContext;
     _userContextService = userContextService;
@@ -28,7 +28,7 @@ internal sealed class NotesService : INotesService
   public async Task<Note> CreateNoteAsync(string value, TagSet? tags = null, CancellationToken cancellationToken = default)
   {
     var authorId = _userContextService.GetCurrentUserId();
-    var noteContent = new NoteContent()
+    var noteContent = new NoteContentEntity()
     {
       Value = value,
       AuthorId = authorId,
@@ -95,7 +95,7 @@ internal sealed class NotesService : INotesService
     return await _noteMapper.MapAsync(note, cancellationToken);
   }
 
-  private async Task<NoteContent> GetNoteContentAsync(int id, CancellationToken cancellationToken = default)
+  private async Task<NoteContentEntity> GetNoteContentAsync(int id, CancellationToken cancellationToken = default)
   {
     var note = await _dbContext.Notes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     if (note is null)

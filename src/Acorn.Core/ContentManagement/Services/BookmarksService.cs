@@ -1,7 +1,7 @@
+using Acorn.Core.ContentManagement.Database.Entities;
 using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
-using Acorn.Core.Data;
-using Acorn.Core.Data.Entities;
+using Acorn.Core.Database;
 using Acorn.Core.Mapping;
 using Acorn.Core.Security;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +12,12 @@ internal sealed class BookmarksService : IBookmarksService
 {
   private readonly ApplicationDbContext _dbContext;
   private readonly IUserContextService _userContextService;
-  private readonly IEntityModelMapper<BookmarkContent, Bookmark> _bookmarkMapper;
+  private readonly IEntityModelMapper<BookmarkContentEntity, Bookmark> _bookmarkMapper;
 
   public BookmarksService(
     ApplicationDbContext dbContext,
     IUserContextService userContextService,
-    IEntityModelMapper<BookmarkContent, Bookmark> bookmarkMapper)
+    IEntityModelMapper<BookmarkContentEntity, Bookmark> bookmarkMapper)
   {
     _dbContext = dbContext;
     _userContextService = userContextService;
@@ -31,7 +31,7 @@ internal sealed class BookmarksService : IBookmarksService
     TagSet? tags = null,
     CancellationToken cancellationToken = default)
   {
-    var bookmark = new BookmarkContent
+    var bookmark = new BookmarkContentEntity
     {
       AuthorId = _userContextService.GetCurrentUserId(),
       Url = ValidateUrl(url, allowEmpty: true),
@@ -110,7 +110,7 @@ internal sealed class BookmarksService : IBookmarksService
     return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
   }
 
-  private async Task<BookmarkContent> GetBookmarkContentAsync(int id, CancellationToken cancellationToken)
+  private async Task<BookmarkContentEntity> GetBookmarkContentAsync(int id, CancellationToken cancellationToken)
   {
     var bookmark = await _dbContext.Bookmarks.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     if (bookmark is null)

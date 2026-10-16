@@ -1,0 +1,54 @@
+using Acorn.Core.Database;
+using Acorn.Core.Database.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace Acorn.Core.Tests.Database.Migrations;
+
+internal class AddFilesMigrationTests
+{
+  [Test]
+  public async Task Up_BackfillsDistinctPublicIdsForExistingContent()
+  {
+    var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+      .UseSqlite("Data Source=:memory:")
+      .Options;
+
+    await using var dbContext = new ApplicationDbContext(options);
+    await dbContext.Database.OpenConnectionAsync();
+    await dbContext.Database.MigrateAsync("20261001203912_AddBookmarkContent");
+
+    var author = new User("migration-author@example.test") { Id = Guid.NewGuid() };
+    dbContext.Users.Add(author);
+    await dbContext.SaveChangesAsync();
+
+    await dbContext.Database.ExecuteSqlAsync(
+      $"""
+      INSERT INTO content (
+          created_at, updated_at, published_at, deleted_at, author_id, content_type,
+          tags, note_value, post_title, post_body, post_excerpt,
+          bookmark_description, bookmark_title, bookmark_url
+      )
+      VALUES
+          ('2026-01-01', '2026-01-01', NULL, NULL, {author.Id}, 'Note',
+           '[]', 'first', NULL, NULL, NULL, NULL, NULL, NULL),
+          ('2026-01-02', '2026-01-02', NULL, NULL, {author.Id}, 'Note',
+           '[]', 'second', NULL, NULL, NULL, NULL, NULL, NULL);
+      """);
+
+    await dbContext.Database.MigrateAsync();
+
+    await using var command = dbContext.Database.GetDbConnection().CreateCommand();
+    command.CommandText = "SELECT public_id FROM content ORDER BY content_id";
+    await using var reader = await command.ExecuteReaderAsync();
+
+    var publicIds = new List<Guid>();
+    while (await reader.ReadAsync())
+    {
+      publicIds.Add(Guid.Parse(reader.GetString(0)));
+    }
+
+    await Assert.That(publicIds).Count().IsEqualTo(2);
+    await Assert.That(publicIds.Distinct()).Count().IsEqualTo(2);
+    await Assert.That(publicIds).DoesNotContain(Guid.Empty);
+  }
+}

@@ -10,15 +10,15 @@ The entities use EF Core table-per-hierarchy (TPH) mapping: every type is stored
 
 Each content item also has a server-generated, immutable `public_id` UUID. Keep `content_id` for internal relationships; public routes and references use `public_id`, which is an identifier and not an authorization token.
 
-Soft-deleted content is excluded by the global query filter in `ContentEntityTypeConfiguration`. Normal list and lookup queries should rely on this filter. Public listing queries must additionally require `PublishedAt != null`.
+Soft-deleted content is excluded by the global query filter in `ContentEntityConfiguration`. Normal list and lookup queries should rely on this filter. Public listing queries must additionally require `PublishedAt != null`.
 
 ## Add a Content Type
 
-1. **Create the entity.** Add an internal sealed class under `Acorn.Core/Data/Entities` deriving from `Content`. Declare type-specific properties as required or nullable according to the domain. Shared tags already come from `Content`; do not redeclare them.
+1. **Create the entity.** Add an internal sealed class under `Acorn.Core/ContentManagement/Database/Entities` deriving from `ContentEntity`. Declare type-specific properties as required or nullable according to the domain. Shared tags already come from `Content`; do not redeclare them.
 
-2. **Add the discriminator value.** Add `.HasValue<YourContent>("your_content")` to the discriminator in `ContentEntityTypeConfiguration`. Use a stable, lowercase discriminator string.
+2. **Add the discriminator value.** Add `.HasValue<YourContent>("your_content")` to the discriminator in `ContentEntityConfiguration`. Use a stable, lowercase discriminator string.
 
-3. **Configure the entity.** Add an `IEntityTypeConfiguration<YourContent>` in `Acorn.Core/Data/EntityTypeConfigurations`. Map it to `content` and explicitly name every derived column in lowercase snake case, usually prefixed with the content type. Mark required properties with `.IsRequired()`. Keep the shared `content_id` and inherited column mappings in `ContentEntityTypeConfiguration`.
+3. **Configure the entity.** Add an `IEntityTypeConfiguration<YourContentEntity>` in `Acorn.Core/ContentManagement/Database/EntityTypeConfigurations`. Map it to `content` and explicitly name every derived column in lowercase snake case, usually prefixed with the content type. Mark required properties with `.IsRequired()`. Keep the shared `content_id` and inherited column mappings in `ContentEntityConfiguration`.
 
 4. **Expose a DbSet.** Add an internal `DbSet<YourContent>` property to `ApplicationDbContext`. This makes the intended query surface clear even though all types share one physical table.
 

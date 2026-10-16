@@ -1,13 +1,13 @@
+using System.Security.Cryptography;
 using Acorn.Core.ContentManagement;
 using Acorn.Core.ContentManagement.Exceptions;
-using Acorn.Core.Data;
-using Acorn.Core.Data.Entities;
+using Acorn.Core.Database;
+using Acorn.Core.Database.Entities;
 using Acorn.Core.Security;
 using Acorn.Core.Storage;
 using Markdig;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Security.Cryptography;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 

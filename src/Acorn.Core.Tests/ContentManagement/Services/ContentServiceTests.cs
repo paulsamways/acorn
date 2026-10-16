@@ -1,9 +1,11 @@
-using Acorn.Core.ContentManagement.Models;
-using Acorn.Core.ContentManagement;
-using Acorn.Core.ContentManagement.Derivations;
-using Acorn.Core.Data.Entities;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Database.Entities;
+using Acorn.Core.ContentManagement.Derivations;
+using Acorn.Core.ContentManagement.Models;
+using Acorn.Core.Database.Entities;
+using Acorn.Core.FileManagement.Database.Entities;
+using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
@@ -122,7 +124,7 @@ internal class ContentServiceTests : ServicesTestBase
     var result = await ContentAttachmentService.OpenAttachmentAsync(attachmentId);
     await using var resultStream = result.Stream;
 
-    await Assert.That(attachment.File is BinaryFile).IsTrue();
+    await Assert.That(attachment.File is BinaryFileEntity).IsTrue();
     await Assert.That(attachment.File.MediaType).IsEqualTo("application/octet-stream");
     await Assert.That(result.Disposition).IsEqualTo(AttachmentDisposition.Attachment);
   }
@@ -168,10 +170,10 @@ internal class ContentServiceTests : ServicesTestBase
       .IsEquivalentTo(new[] { "inline", "large", "preview" });
     await Assert.That(derivations.All(x => x.Visibility == AttachmentVisibility.Public)).IsTrue();
     await Assert.That(derivations.All(x => x.File.MediaType == "image/webp")).IsTrue();
-    await Assert.That(derivations.Select(x => ((ImageFile)x.File).Width).Distinct().Count()).IsEqualTo(1);
-    await Assert.That(derivations.Select(x => ((ImageFile)x.File).Height).Distinct().Count()).IsEqualTo(1);
-    await Assert.That(derivations.Select(x => ((ImageFile)x.File).BlobDigest)
-      .All(digest => digest.SequenceEqual(((ImageFile)derivations[0].File).BlobDigest))).IsTrue();
+    await Assert.That(derivations.Select(x => ((ImageFileEntity)x.File).Width).Distinct().Count()).IsEqualTo(1);
+    await Assert.That(derivations.Select(x => ((ImageFileEntity)x.File).Height).Distinct().Count()).IsEqualTo(1);
+    await Assert.That(derivations.Select(x => ((ImageFileEntity)x.File).BlobDigest)
+      .All(digest => digest.SequenceEqual(((ImageFileEntity)derivations[0].File).BlobDigest))).IsTrue();
     await Assert.That(await DbContext.Blobs.CountAsync()).IsEqualTo(2);
   }
 
@@ -312,19 +314,19 @@ internal class ContentServiceTests : ServicesTestBase
       .Throws<AttachmentNotFoundException>();
   }
 
-  private async Task<ContentAttachment> CreateAttachmentAsync(
+  private async Task<ContentAttachmentEntity> CreateAttachmentAsync(
     Guid ownerId,
     AttachmentVisibility visibility,
     DateTime? publishedAt)
   {
     var digest = RandomNumberGenerator.GetBytes(32);
-    var blob = new Blob
+    var blob = new BlobEntity
     {
       Digest = digest,
       Size = 1,
       CreatedAt = DateTime.UtcNow
     };
-    var file = new ImageFile
+    var file = new ImageFileEntity
     {
       BlobDigest = digest,
       Blob = blob,
@@ -335,14 +337,14 @@ internal class ContentServiceTests : ServicesTestBase
       Width = 1,
       Height = 1
     };
-    var content = new PostContent
+    var content = new PostContentEntity
     {
       AuthorId = ownerId,
       Title = "Attachment post",
       Body = "Body",
       PublishedAt = publishedAt
     };
-    var attachment = new ContentAttachment
+    var attachment = new ContentAttachmentEntity
     {
       Content = content,
       File = file,
@@ -357,19 +359,19 @@ internal class ContentServiceTests : ServicesTestBase
     return attachment;
   }
 
-  private async Task<ContentAttachment> AddDerivationAsync(
-    ContentAttachment parent,
+  private async Task<ContentAttachmentEntity> AddDerivationAsync(
+    ContentAttachmentEntity parent,
     string name,
     AttachmentVisibility visibility)
   {
     var digest = RandomNumberGenerator.GetBytes(32);
-    var blob = new Blob
+    var blob = new BlobEntity
     {
       Digest = digest,
       Size = 1,
       CreatedAt = DateTime.UtcNow
     };
-    var file = new ImageFile
+    var file = new ImageFileEntity
     {
       BlobDigest = digest,
       Blob = blob,
@@ -380,7 +382,7 @@ internal class ContentServiceTests : ServicesTestBase
       Width = 1,
       Height = 1
     };
-    var derivation = new ContentAttachment
+    var derivation = new ContentAttachmentEntity
     {
       Content = parent.Content,
       File = file,

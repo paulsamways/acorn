@@ -1,6 +1,6 @@
 using System.Net;
-using AngleSharp.Html.Parser;
 using Acorn.Core.ContentManagement.Models;
+using AngleSharp.Html.Parser;
 
 namespace Acorn.Core.ContentManagement.Services;
 

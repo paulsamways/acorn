@@ -1,4 +1,4 @@
-using Acorn.Core.Data.Entities;
+using Acorn.Core.Database.Entities;
 using Acorn.Core.Email;
 using Acorn.Core.Email.Messages;
 using Acorn.Models.AccountViewModels;

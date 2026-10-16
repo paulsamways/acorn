@@ -1,5 +1,5 @@
-using Acorn.Core.Data;
-using Acorn.Core.Data.Entities;
+using Acorn.Core.Database;
+using Acorn.Core.FileManagement.Database.Entities;
 using Acorn.Core.FileManagement.Validation;
 using Acorn.Core.Security;
 using Acorn.Core.Storage;
@@ -40,7 +40,7 @@ internal sealed class FileManager : IFileManager
     return new(stream, metadata.Size, metadata.Filename, metadata.MediaType);
   }
 
-  public async Task<Data.Entities.File> WriteFileAsync(Stream stream, FileMetadata fileMetadata, CancellationToken cancellationToken = default)
+  public async Task<FileEntity> WriteFileAsync(Stream stream, FileMetadata fileMetadata, CancellationToken cancellationToken = default)
   {
     var blobInfo = await _blobStore.PutBlobAsync(stream, cancellationToken);
 
@@ -55,9 +55,9 @@ internal sealed class FileManager : IFileManager
       blob = await _dbContext.Blobs.SingleAsync(x => x.Digest == blobInfo.Digest, cancellationToken);
     }
 
-    Acorn.Core.Data.Entities.File file = fileMetadata switch
+    FileEntity file = fileMetadata switch
     {
-      ImageFileMetadata m => new ImageFile()
+      ImageFileMetadata m => new ImageFileEntity()
       {
         OwnerId = _userContextService.GetCurrentUserId(),
         Filename = m.Filename,
@@ -68,7 +68,7 @@ internal sealed class FileManager : IFileManager
         Blob = blob,
         BlobDigest = blobInfo.Digest
       },
-      BinaryFileMetadata m => new BinaryFile()
+      BinaryFileMetadata m => new BinaryFileEntity()
       {
         OwnerId = _userContextService.GetCurrentUserId(),
         Filename = m.Filename,

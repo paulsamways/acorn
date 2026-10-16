@@ -1,20 +1,19 @@
+using Acorn.Core.ContentManagement.Database.Entities;
 using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Models;
-using Acorn.Core.Data.Entities;
 using Acorn.Core.Extensions;
 using Acorn.Core.Mapping;
 using Acorn.Core.Security;
 using Markdig;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
-using DataContent = Acorn.Core.Data.Entities.Content;
 
 namespace Acorn.Core.ContentManagement.Services;
 
 internal sealed class ContentModelMapper :
-  IEntityModelMapper<PostContent, Post>,
-  IEntityModelMapper<NoteContent, Note>,
-  IEntityModelMapper<BookmarkContent, Bookmark>
+  IEntityModelMapper<PostContentEntity, Post>,
+  IEntityModelMapper<NoteContentEntity, Note>,
+  IEntityModelMapper<BookmarkContentEntity, Bookmark>
 {
   private readonly IUserContextService _userContextService;
   private readonly MarkdownPipeline _markdownPipeline;
@@ -30,7 +29,7 @@ internal sealed class ContentModelMapper :
     _attachmentUrlResolver = attachmentUrlResolver;
   }
 
-  public async Task<Post> MapAsync(PostContent content, CancellationToken cancellationToken = default)
+  public async Task<Post> MapAsync(PostContentEntity content, CancellationToken cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
 
@@ -51,7 +50,7 @@ internal sealed class ContentModelMapper :
       metadata.PublishedAt);
   }
 
-  public async Task<Note> MapAsync(NoteContent content, CancellationToken cancellationToken = default)
+  public async Task<Note> MapAsync(NoteContentEntity content, CancellationToken cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
     var timeZone = await _userContextService.GetUserTimeZoneAsync();
@@ -67,7 +66,7 @@ internal sealed class ContentModelMapper :
       metadata.PublishedAt);
   }
 
-  public async Task<Bookmark> MapAsync(BookmarkContent content, CancellationToken cancellationToken = default)
+  public async Task<Bookmark> MapAsync(BookmarkContentEntity content, CancellationToken cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
     var timeZone = await _userContextService.GetUserTimeZoneAsync();
@@ -132,7 +131,7 @@ internal sealed class ContentModelMapper :
       Guid.TryParse(url.AsSpan("file:".Length), out attachmentId);
   }
 
-  private static ContentMetadata MapMetadata(DataContent content, TimeZoneInfo timeZone)
+  private static ContentMetadata MapMetadata(ContentEntity content, TimeZoneInfo timeZone)
     => new(
       content.Tags.ToArray(),
       content.CreatedAt.ConvertUtcToLocal(timeZone),

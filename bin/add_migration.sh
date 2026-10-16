@@ -9,7 +9,7 @@ fi
 
 NAME="$1"
 EF_PROJECT="$PROJECT_DIR/src/Acorn.Core"
-EF_OUTPUT_DIR="Data/Migrations"
+EF_OUTPUT_DIR="Database/Migrations"
 STARTUP_PROJECT="$PROJECT_DIR/src/Acorn"
 
 dotnet ef migrations add "$NAME" --project "$EF_PROJECT" --output-dir "$EF_OUTPUT_DIR" --startup-project "$STARTUP_PROJECT"

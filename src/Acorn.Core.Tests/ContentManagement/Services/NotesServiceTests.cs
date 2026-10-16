@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Acorn.Core.ContentManagement.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 

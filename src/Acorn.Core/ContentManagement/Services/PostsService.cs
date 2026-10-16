@@ -1,7 +1,7 @@
+using Acorn.Core.ContentManagement.Database.Entities;
 using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
-using Acorn.Core.Data;
-using Acorn.Core.Data.Entities;
+using Acorn.Core.Database;
 using Acorn.Core.Mapping;
 using Acorn.Core.Security;
 using Microsoft.EntityFrameworkCore;
@@ -12,12 +12,12 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
 {
   private readonly ApplicationDbContext _dbContext;
   private readonly IUserContextService _userContextService;
-  private readonly IEntityModelMapper<PostContent, Post> _postMapper;
+  private readonly IEntityModelMapper<PostContentEntity, Post> _postMapper;
 
   public PostsService(
     ApplicationDbContext dbContext,
     IUserContextService userContextService,
-    IEntityModelMapper<PostContent, Post> postMapper)
+    IEntityModelMapper<PostContentEntity, Post> postMapper)
   {
     _dbContext = dbContext;
     _userContextService = userContextService;
@@ -26,7 +26,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
 
   public async Task<Post> CreatePostAsync(string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
   {
-    var postContent = new PostContent
+    var postContent = new PostContentEntity
     {
       AuthorId = _userContextService.GetCurrentUserId(),
       Title = title,
@@ -115,7 +115,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await _postMapper.MapAsync(post, cancellationToken);
   }
 
-  private async Task<PostContent> GetPostContentAsync(int id, CancellationToken cancellationToken)
+  private async Task<PostContentEntity> GetPostContentAsync(int id, CancellationToken cancellationToken)
   {
     var post = await _dbContext.Posts
       .Include(x => x.Attachments)

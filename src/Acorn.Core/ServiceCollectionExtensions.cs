@@ -1,11 +1,11 @@
 using System.Net;
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Database.Entities;
 using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.ContentManagement.Services;
-using Acorn.Core.Data;
-using Acorn.Core.Data.Backups;
-using Acorn.Core.Data.Entities;
+using Acorn.Core.Database;
+using Acorn.Core.Database.Backups;
 using Acorn.Core.Email;
 using Acorn.Core.FileManagement;
 using Acorn.Core.FileManagement.Validation;
@@ -164,9 +164,9 @@ public static class ServiceCollectionExtensions
       .AddTransient<IDerivationProducer>(x => new WebpImageDerivationProducer(DerivationName.Images.Inline, 1200))
       .AddTransient<IDerivationProducer>(x => new WebpImageDerivationProducer(DerivationName.Images.Preview, 320))
       .AddScoped<ContentModelMapper>()
-      .AddScoped<IEntityModelMapper<PostContent, Post>>(provider => provider.GetRequiredService<ContentModelMapper>())
-      .AddScoped<IEntityModelMapper<NoteContent, Note>>(provider => provider.GetRequiredService<ContentModelMapper>())
-      .AddScoped<IEntityModelMapper<BookmarkContent, Bookmark>>(provider => provider.GetRequiredService<ContentModelMapper>())
+      .AddScoped<IEntityModelMapper<PostContentEntity, Post>>(provider => provider.GetRequiredService<ContentModelMapper>())
+      .AddScoped<IEntityModelMapper<NoteContentEntity, Note>>(provider => provider.GetRequiredService<ContentModelMapper>())
+      .AddScoped<IEntityModelMapper<BookmarkContentEntity, Bookmark>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IContentService, ContentService>()
       .AddScoped<IContentAttachmentService, ContentAttachmentService>()
       .AddScoped<INotesService, NotesService>()

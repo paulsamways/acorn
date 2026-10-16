@@ -1,11 +1,12 @@
 using System.Linq.Expressions;
+using Acorn.Core.ContentManagement.Database.Entities;
 using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
-using Acorn.Core.Data;
-using Acorn.Core.Data.Entities;
+using Acorn.Core.Database;
 using Acorn.Core.Exceptions;
 using Acorn.Core.FileManagement;
+using Acorn.Core.FileManagement.Database.Entities;
 using Acorn.Core.FileManagement.Validation;
 using Acorn.Core.Security;
 using Microsoft.EntityFrameworkCore;
@@ -59,7 +60,7 @@ internal class ContentAttachmentService : IContentAttachmentService
     stream.Position = 0;
     var originalFile = await _fileManager.WriteFileAsync(stream, metadata, cancellationToken);
 
-    var attachment = new ContentAttachment
+    var attachment = new ContentAttachmentEntity
     {
       Content = content,
       File = originalFile,
@@ -77,7 +78,7 @@ internal class ContentAttachmentService : IContentAttachmentService
   public Task<AttachmentFileDescriptor> OpenAttachmentAsync(Guid attachmentId, string? derivationName, CancellationToken cancellationToken = default)
   {
     var normalizedDerivationName = derivationName?.ToLowerInvariant();
-    Expression<Func<ContentAttachment, bool>> predicate =
+    Expression<Func<ContentAttachmentEntity, bool>> predicate =
       normalizedDerivationName is null
         ? (x) => x.Id == attachmentId
         : (x) => x.ParentId == attachmentId &&
@@ -89,7 +90,7 @@ internal class ContentAttachmentService : IContentAttachmentService
 
   public Task<AttachmentFileDescriptor> OpenAttachmentByFilenameAsync(Guid attachmentId, string filename, CancellationToken cancellationToken = default)
   {
-    Expression<Func<ContentAttachment, bool>> predicate = (x) =>
+    Expression<Func<ContentAttachmentEntity, bool>> predicate = (x) =>
       (x.ParentId == null && x.Id == attachmentId || x.ParentId == attachmentId)
         && x.File.Filename == filename;
     return OpenAttachmentAsync(predicate, cancellationToken);
@@ -98,7 +99,7 @@ internal class ContentAttachmentService : IContentAttachmentService
   public async Task<string> GetAttachmentFilenameAsync(Guid attachmentId, string? derivationName = null, CancellationToken cancellationToken = default)
   {
     var normalizedDerivationName = derivationName?.ToLowerInvariant();
-    Expression<Func<ContentAttachment, bool>> predicate =
+    Expression<Func<ContentAttachmentEntity, bool>> predicate =
       normalizedDerivationName is null
         ? (x) => x.Id == attachmentId
         : (x) => x.ParentId == attachmentId &&
@@ -118,7 +119,7 @@ internal class ContentAttachmentService : IContentAttachmentService
     return filename;
   }
 
-  private async Task<AttachmentFileDescriptor> OpenAttachmentAsync(Expression<Func<ContentAttachment, bool>> predicate, CancellationToken cancellationToken = default)
+  private async Task<AttachmentFileDescriptor> OpenAttachmentAsync(Expression<Func<ContentAttachmentEntity, bool>> predicate, CancellationToken cancellationToken = default)
   {
     var attachment = await _dbContext
       .ContentAttachments
@@ -155,7 +156,7 @@ internal class ContentAttachmentService : IContentAttachmentService
     var fileDescriptor = await _fileManager.OpenFileAsync(attachment.File.Id, cancellationToken);
 
     var isPublic = contentPublished && attachment.Visibility == AttachmentVisibility.Public;
-    var disposition = attachment.File is ImageFile
+    var disposition = attachment.File is ImageFileEntity
       ? AttachmentDisposition.Inline
       : AttachmentDisposition.Attachment;
     return new(fileDescriptor, isPublic, disposition);
@@ -164,7 +165,7 @@ internal class ContentAttachmentService : IContentAttachmentService
   private async Task CreateAttachmentDerivationsAsync(
     Stream stream,
     FileMetadata metadata,
-    ContentAttachment parent,
+    ContentAttachmentEntity parent,
     CancellationToken cancellationToken)
   {
     foreach (var producer in _derivationProducers.Where(x => x.CanDerive(metadata)))
@@ -176,7 +177,7 @@ internal class ContentAttachmentService : IContentAttachmentService
       {
         var file = await _fileManager.WriteFileAsync(derivation.Stream, derivation.Metadata, cancellationToken);
 
-        var child = new ContentAttachment
+        var child = new ContentAttachmentEntity
         {
           Content = parent.Content,
           ContentId = parent.ContentId,

@@ -1,4 +1,5 @@
-using Acorn.Core.Data.Entities;
+using Acorn.Core.ContentManagement.Database.Entities;
+using Acorn.Core.FileManagement.Database.Entities;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
@@ -40,14 +41,14 @@ internal class PostImageRenderingTests : ServicesTestBase
     var post = await PostAuthoringService.CreatePostAsync("Image post", "Body");
     var postEntity = await DbContext.Posts.FindAsync(post.Id);
     var digest = new byte[32];
-    DbContext.Blobs.Add(new Blob
+    DbContext.Blobs.Add(new BlobEntity
     {
       Digest = digest,
       Size = 1,
       CreatedAt = DateTime.UtcNow
     });
 
-    var file = new ImageFile
+    var file = new ImageFileEntity
     {
       BlobDigest = digest,
       OwnerId = CurrentUserId,
@@ -57,7 +58,7 @@ internal class PostImageRenderingTests : ServicesTestBase
       Width = 1,
       Height = 1
     };
-    var attachment = new ContentAttachment
+    var attachment = new ContentAttachmentEntity
     {
       Content = postEntity!,
       File = file
