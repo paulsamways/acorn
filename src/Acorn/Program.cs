@@ -143,13 +143,16 @@ internal class Program
     }
 
     app.UseRouting();
+    app.UseStaticFiles();
 
     app.UseAuthentication();
     app.UseAuthorization();
 
     app.UseSession();
 
-    app.MapStaticAssets().AllowAnonymous();
+    // No longer works due to https://github.com/dotnet/sdk/issues/52301 - TypeScript compiler runs after asset file generation
+    // Using app.UseStaticFiles as a workaround until bug is resolved.
+    // app.MapStaticAssets().AllowAnonymous();
 
     app.MapControllerRoute(
       name: "admin",
