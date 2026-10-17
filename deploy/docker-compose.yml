@@ -8,6 +8,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
       DataDirectory: /app/data
+      ForwardedHeaders__KnownProxyHost: caddy
       SenderName: ${SENDER_NAME}
       SenderEmailAddress: ${SENDER_EMAIL_ADDRESS}
       SmtpServer: ${SMTP_SERVER}

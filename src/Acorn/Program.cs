@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using Acorn;
 using Acorn.Core;
@@ -22,7 +23,10 @@ internal class Program
   private static async Task Main(string[] args)
   {
     var builder = WebApplication.CreateBuilder(args);
+
     var configuredDataDirectory = builder.Configuration["DataDirectory"];
+    var knownProxyHost = builder.Configuration["ForwardedHeaders:KnownProxyHost"];
+
     ArgumentException.ThrowIfNullOrWhiteSpace(configuredDataDirectory);
     var dataDirectoryService = new DataDirectoryService(configuredDataDirectory, builder.Environment.ContentRootPath);
     dataDirectoryService.EnsureCreated();
@@ -99,9 +103,20 @@ internal class Program
 
     builder.Services.AddProblemDetails();
 
-    builder.Services.Configure<ForwardedHeadersOptions>(options =>
-      options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
-    );
+    if (!builder.Environment.IsDevelopment() && knownProxyHost is not null)
+    {
+      builder.Services.Configure<ForwardedHeadersOptions>(options =>
+      {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+
+        var proxyAddresses = Dns.GetHostAddresses(knownProxyHost);
+        if (proxyAddresses.Length == 0)
+          throw new InvalidOperationException($"No IP addresses were found for forwarded-header proxy '{knownProxyHost}'.");
+
+        foreach (var proxyAddress in proxyAddresses)
+          options.KnownProxies.Add(proxyAddress);
+      });
+    }
 
     var app = builder.Build();
     app.Logger.LogInformation(
@@ -115,7 +130,8 @@ internal class Program
     {
       app.UseExceptionHandler("/Home/Error");
 
-      app.UseForwardedHeaders();
+      if (knownProxyHost is not null)
+        app.UseForwardedHeaders();
 
       // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
       app.UseHsts();

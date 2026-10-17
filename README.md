@@ -40,4 +40,6 @@ The app creates one SQLite online backup each day at 04:00 Sydney time (AEST/AED
 
 To restore, stop the app, replace the database file with a selected backup, and restart. Startup migrations will run against the restored database. The UUID primary-key migration baseline intentionally starts from an empty schema and does not upgrade the former schema; databases and backups created before this baseline are incompatible and must not be opened by the new version. Export any data that must be retained before recreating the database. Local backups share the database volume and are not protection from loss of that volume; copy them elsewhere for off-host disaster recovery.
 
+In production, `ForwardedHeaders__KnownProxyHost` must name the trusted reverse proxy. The Docker Compose deployment sets it to `caddy`; the app resolves that hostname at startup and trusts only its resolved IP addresses when processing forwarded headers. Restart the app after recreating the proxy container so it can pick up any changed address.
+
 ## Attributions
