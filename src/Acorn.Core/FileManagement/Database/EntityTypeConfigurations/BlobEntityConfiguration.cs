@@ -1,4 +1,5 @@
 using Acorn.Core.FileManagement.Database.Entities;
+using Acorn.Core.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,6 +15,7 @@ internal sealed class BlobEntityConfiguration : IEntityTypeConfiguration<BlobEnt
       table.HasCheckConstraint("ck_blob_digest_length", "length(digest) = 32");
       table.HasCheckConstraint("ck_blob_size", "size >= 0");
     });
+    builder.HasAnnotation(SqliteTableAnnotations.WithoutRowid, true);
 
     builder
       .HasKey(x => x.Digest);

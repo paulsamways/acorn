@@ -46,7 +46,8 @@ internal class BookmarksServiceTests : ServicesTestBase
     var bookmark = await BookmarksService.GetBookmarkAsync(created.Id);
 
     await Assert.That(bookmark.Title).IsEqualTo("Example");
-    await AssertContentNotFoundAsync(async () => _ = await BookmarksService.GetBookmarkAsync(42), 42);
+    var missingId = Guid.CreateVersion7();
+    await AssertContentNotFoundAsync(async () => _ = await BookmarksService.GetBookmarkAsync(missingId), missingId);
   }
 
   [Test]

@@ -85,7 +85,7 @@ internal abstract class ServicesTestBase
     return TimeZoneInfo.ConvertTime(new DateTimeOffset(utc), UserTimeZone);
   }
 
-  protected async Task AssertContentNotFoundAsync(Func<Task> action, int id)
+  protected async Task AssertContentNotFoundAsync(Func<Task> action, Guid id)
   {
     ContentNotFoundException? exception = null;
     try
@@ -113,12 +113,12 @@ internal abstract class ServicesTestBase
   private sealed class MockAttachmentUrlResolver : IAttachmentUrlResolver
   {
     public Task<string> ResolveUrlAsync(
-      Guid attachmentPublicId,
+      Guid attachmentId,
       string? derivation,
       CancellationToken cancellationToken = default)
     {
       cancellationToken.ThrowIfCancellationRequested();
-      var url = $"/content/attachments/{attachmentPublicId:D}";
+      var url = $"/content/attachments/{attachmentId:D}";
       return Task.FromResult(derivation is null
         ? url
         : url + $"?derivation={derivation}");

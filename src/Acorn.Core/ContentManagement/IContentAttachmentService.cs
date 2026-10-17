@@ -16,7 +16,7 @@ public interface IContentAttachmentService
   /// <exception cref="Acorn.Core.FileManagement.Exceptions.FileValidationException">The uploaded file is invalid or unsupported.</exception>
   /// <exception cref="Acorn.Core.Exceptions.UnauthorizedException">The current user does not own the content item.</exception>
   Task<Guid> CreateAttachmentAsync(
-    int contentId,
+    Guid contentId,
     Stream stream,
     string filename,
     string mediaType,

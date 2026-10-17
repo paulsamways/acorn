@@ -23,7 +23,7 @@ internal sealed class FileManager : IFileManager
     _userContextService = userContextService;
   }
 
-  public async Task<FileDescriptor> OpenFileAsync(int fileId, CancellationToken cancellationToken = default)
+  public async Task<FileDescriptor> OpenFileAsync(Guid fileId, CancellationToken cancellationToken = default)
   {
     var metadata = await _dbContext
       .Files

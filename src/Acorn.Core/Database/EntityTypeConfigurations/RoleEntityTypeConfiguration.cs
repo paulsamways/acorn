@@ -11,7 +11,7 @@ internal sealed class RoleEntityTypeConfiguration : IEntityTypeConfiguration<Rol
   {
     builder.ToTable("role");
 
-    builder.Property(x => x.Id).HasColumnName("role_id");
+    builder.Property(x => x.Id).HasColumnName("role_id").ValueGeneratedNever();
     builder.Property(x => x.Name).HasColumnName("name");
     builder.Property(x => x.NormalizedName).HasColumnName("normalized_name");
     builder.Property(x => x.ConcurrencyStamp).HasColumnName("concurrency_stamp");

@@ -5,9 +5,7 @@ namespace Acorn.Core.FileManagement.Database.Entities;
 
 internal abstract class FileEntity
 {
-  public int Id { get; set; }
-
-  public Guid PublicId { get; private set; } = Guid.NewGuid();
+  public Guid Id { get; private set; } = Guid.CreateVersion7();
 
   public required byte[] BlobDigest { get; set; }
 

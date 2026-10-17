@@ -61,7 +61,7 @@ public sealed class BookmarksController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The bookmark edit page.</returns>
   [HttpGet(Routes.Admin.BookmarksEditUrlTemplate, Name = Routes.Admin.BookmarksEditGetRoute)]
-  public async Task<IActionResult> EditGetAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditGetAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var bookmark = await _bookmarksService.GetBookmarkAsync(id, cancellationToken);
     return View("Edit", MapToEditViewModel(bookmark));
@@ -73,7 +73,7 @@ public sealed class BookmarksController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the bookmark list or the edit page with validation errors.</returns>
   [HttpPost(Routes.Admin.BookmarksEditUrlTemplate, Name = Routes.Admin.BookmarksEditPostRoute)]
-  public async Task<IActionResult> EditPostAsync(int id, EditViewModel model, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditPostAsync(Guid id, EditViewModel model, CancellationToken cancellationToken = default)
   {
     if (!ModelState.IsValid)
     {
@@ -119,7 +119,7 @@ public sealed class BookmarksController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the edit page.</returns>
   [HttpPost(Routes.Admin.BookmarksPublishUrlTemplate, Name = Routes.Admin.BookmarksPublishPostRoute)]
-  public async Task<IActionResult> PublishPostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> PublishPostAsync(Guid id, CancellationToken cancellationToken = default)
   {
     try
     {
@@ -138,7 +138,7 @@ public sealed class BookmarksController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The archive confirmation page.</returns>
   [HttpGet(Routes.Admin.BookmarksArchiveUrlTemplate, Name = Routes.Admin.BookmarksArchiveGetRoute)]
-  public async Task<IActionResult> ArchiveGetAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> ArchiveGetAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var bookmark = await _bookmarksService.GetBookmarkAsync(id, cancellationToken);
     return View("Archive", bookmark);
@@ -149,7 +149,7 @@ public sealed class BookmarksController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the bookmark list.</returns>
   [HttpPost(Routes.Admin.BookmarksArchiveUrlTemplate, Name = Routes.Admin.BookmarksArchivePostRoute)]
-  public async Task<IActionResult> ArchivePostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> ArchivePostAsync(Guid id, CancellationToken cancellationToken = default)
   {
     await _bookmarksService.DeleteBookmarkAsync(id, cancellationToken);
     return RedirectToRoute(Routes.Admin.BookmarksIndexGetRoute);

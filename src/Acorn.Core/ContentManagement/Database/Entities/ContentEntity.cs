@@ -5,9 +5,7 @@ namespace Acorn.Core.ContentManagement.Database.Entities;
 
 internal abstract class ContentEntity : IAuditable
 {
-  public int Id { get; set; }
-
-  public Guid PublicId { get; private set; } = Guid.NewGuid();
+  public Guid Id { get; private set; } = Guid.CreateVersion7();
 
   public DateTime CreatedAt { get; set; }
 

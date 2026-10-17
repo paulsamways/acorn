@@ -38,7 +38,6 @@ internal sealed class ContentModelMapper :
 
     return new Post(
       content.Id,
-      content.PublicId,
       content.Title,
       content.Excerpt,
       content.Excerpt is null ? null : await RenderMarkdownAsync(content.Excerpt, DerivationName.Images.Preview, cancellationToken),

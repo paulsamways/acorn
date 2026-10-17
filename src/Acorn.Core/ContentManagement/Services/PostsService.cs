@@ -41,7 +41,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await _postMapper.MapAsync(postContent, cancellationToken);
   }
 
-  public async Task<Post> GetPostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<Post> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var postContent = await GetPostContentAsync(id, cancellationToken);
     return await _postMapper.MapAsync(postContent, cancellationToken);
@@ -72,21 +72,21 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await Task.WhenAll(posts.Select(post => _postMapper.MapAsync(post, cancellationToken)));
   }
 
-  public async Task<Post> GetPublishedPostAsync(Guid publicId, CancellationToken cancellationToken = default)
+  public async Task<Post> GetPublishedPostAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var post = await _dbContext
       .Posts
       .Include(x => x.Attachments)
       .ThenInclude(x => x.File)
-      .FirstOrDefaultAsync(x => x.PublicId == publicId && x.PublishedAt != null, cancellationToken);
+      .FirstOrDefaultAsync(x => x.Id == id && x.PublishedAt != null, cancellationToken);
 
     if (post is null)
-      throw new ContentNotFoundException(publicId);
+      throw new ContentNotFoundException(id);
 
     return await _postMapper.MapAsync(post, cancellationToken);
   }
 
-  public async Task<Post> UpdatePostAsync(int id, string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
+  public async Task<Post> UpdatePostAsync(Guid id, string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
   {
     var post = await GetPostContentAsync(id, cancellationToken);
     post.Title = title;
@@ -98,7 +98,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await _postMapper.MapAsync(post, cancellationToken);
   }
 
-  public async Task DeletePostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task DeletePostAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var post = await GetPostContentAsync(id, cancellationToken);
     post.DeletedAt = DateTime.UtcNow;
@@ -106,7 +106,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
   }
 
-  public async Task<Post> PublishPostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<Post> PublishPostAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var post = await GetPostContentAsync(id, cancellationToken);
     post.PublishedAt = DateTime.UtcNow;
@@ -115,7 +115,7 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await _postMapper.MapAsync(post, cancellationToken);
   }
 
-  private async Task<PostContentEntity> GetPostContentAsync(int id, CancellationToken cancellationToken)
+  private async Task<PostContentEntity> GetPostContentAsync(Guid id, CancellationToken cancellationToken)
   {
     var post = await _dbContext.Posts
       .Include(x => x.Attachments)

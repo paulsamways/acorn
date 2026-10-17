@@ -40,7 +40,7 @@ internal class PostAuthoringServiceTests : ServicesTestBase
   [Test]
   public async Task GetPostAsync_ThrowsWhenPostDoesNotExist()
   {
-    const int id = 42;
+    var id = Guid.CreateVersion7();
 
     await AssertContentNotFoundAsync(async () => _ = await PostAuthoringService.GetPostAsync(id), id);
   }

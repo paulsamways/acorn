@@ -36,7 +36,7 @@ internal class ContentAttachmentService : IContentAttachmentService
     _derivationProducers = derivationProducers;
   }
   public async Task<Guid> CreateAttachmentAsync(
-    int contentId,
+    Guid contentId,
     Stream stream,
     string filename,
     string mediaType,

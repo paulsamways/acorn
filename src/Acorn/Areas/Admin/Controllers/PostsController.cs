@@ -45,7 +45,7 @@ public sealed class PostsController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The post edit page.</returns>
   [HttpGet(Routes.Admin.PostsEditUrlTemplate, Name = Routes.Admin.PostsEditGetRoute)]
-  public async Task<IActionResult> EditGetAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditGetAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var post = await _postsService.GetPostAsync(id, cancellationToken);
     return View("Edit", MapToEditViewModel(post));
@@ -57,7 +57,7 @@ public sealed class PostsController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The edit page with validation errors or a redirect to the posts index.</returns>
   [HttpPost(Routes.Admin.PostsEditUrlTemplate, Name = Routes.Admin.PostsEditPostRoute)]
-  public async Task<IActionResult> EditPostAsync(int id, EditViewModel model, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditPostAsync(Guid id, EditViewModel model, CancellationToken cancellationToken = default)
   {
     if (!ModelState.IsValid)
     {
@@ -86,7 +86,7 @@ public sealed class PostsController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the post edit page.</returns>
   [HttpPost(Routes.Admin.PostsPublishUrlTemplate, Name = Routes.Admin.PostsPublishPostRoute)]
-  public async Task<IActionResult> PublishPostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> PublishPostAsync(Guid id, CancellationToken cancellationToken = default)
   {
     _ = await _postsService.PublishPostAsync(id, cancellationToken);
     return RedirectToRoute(Routes.Admin.PostsEditGetRoute, new { id });
@@ -97,7 +97,7 @@ public sealed class PostsController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The archive confirmation page.</returns>
   [HttpGet(Routes.Admin.PostsArchiveUrlTemplate, Name = Routes.Admin.PostsArchiveGetRoute)]
-  public async Task<IActionResult> ArchiveGetAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> ArchiveGetAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var post = await _postsService.GetPostAsync(id, cancellationToken);
     return View("Archive", post);
@@ -108,7 +108,7 @@ public sealed class PostsController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the posts index.</returns>
   [HttpPost(Routes.Admin.PostsArchiveUrlTemplate, Name = Routes.Admin.PostsArchivePostRoute)]
-  public async Task<IActionResult> ArchivePostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> ArchivePostAsync(Guid id, CancellationToken cancellationToken = default)
   {
     await _postsService.DeletePostAsync(id, cancellationToken);
     return RedirectToRoute(Routes.Admin.PostsIndexGetRoute);

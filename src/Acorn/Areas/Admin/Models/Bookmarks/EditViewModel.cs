@@ -6,7 +6,7 @@ namespace Acorn.Areas.Admin.Models.Bookmarks;
 public sealed class EditViewModel
 {
   /// <summary>Gets or sets the bookmark identifier.</summary>
-  public int Id { get; init; }
+  public Guid Id { get; init; }
 
   /// <summary>Gets or sets the bookmark URL.</summary>
   [Required]

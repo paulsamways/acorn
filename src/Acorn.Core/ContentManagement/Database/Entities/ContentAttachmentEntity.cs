@@ -4,11 +4,11 @@ namespace Acorn.Core.ContentManagement.Database.Entities;
 
 internal sealed class ContentAttachmentEntity
 {
-  public Guid Id { get; private set; } = Guid.NewGuid();
+  public Guid Id { get; private set; } = Guid.CreateVersion7();
 
-  public int ContentId { get; set; }
+  public Guid ContentId { get; set; }
 
-  public int FileId { get; set; }
+  public Guid FileId { get; set; }
 
   public AttachmentVisibility Visibility { get; set; }
 

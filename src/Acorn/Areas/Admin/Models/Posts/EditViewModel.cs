@@ -6,7 +6,7 @@ namespace Acorn.Areas.Admin.Models.Posts;
 public sealed class EditViewModel
 {
   /// <summary>Gets or sets the post identifier.</summary>
-  public int Id { get; init; }
+  public Guid Id { get; init; }
 
   /// <summary>Gets or sets the post title.</summary>
   [Required]

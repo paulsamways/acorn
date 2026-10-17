@@ -7,7 +7,7 @@ internal static class Routes
 
   // Content Management
 
-  public const string ContentPostsDetailsUrlTemplate = "/content/posts/{publicId:guid}";
+  public const string ContentPostsDetailsUrlTemplate = "/content/posts/{id:guid}";
   public const string ContentPostsDetailsGetRoute = nameof(ContentPostsDetailsGetRoute);
 
   public const string ContentAttachmentsUrlTemplate = "/content/attachments/{attachmentId:guid}/{filename}";
@@ -54,7 +54,7 @@ internal static class Routes
     public const string AreaName = "admin";
     private const string AreaUrlPrefix = "/admin";
 
-    public const string AttachFileUrlTemplate = AreaUrlPrefix + "/content/{id:int}/attachments";
+    public const string AttachFileUrlTemplate = AreaUrlPrefix + "/content/{id:guid}/attachments";
     public const string AttachFilePostRoute = nameof(Admin) + nameof(AttachFilePostRoute);
 
 
@@ -62,14 +62,14 @@ internal static class Routes
     public const string PostsIndexGetRoute = nameof(Admin) + nameof(PostsIndexGetRoute);
     public const string PostsIndexPostRoute = nameof(Admin) + nameof(PostsIndexPostRoute);
 
-    public const string PostsEditUrlTemplate = AreaUrlPrefix + "/posts/edit/{id}";
+    public const string PostsEditUrlTemplate = AreaUrlPrefix + "/posts/edit/{id:guid}";
     public const string PostsEditGetRoute = nameof(Admin) + nameof(PostsEditGetRoute);
     public const string PostsEditPostRoute = nameof(Admin) + nameof(PostsEditPostRoute);
 
-    public const string PostsPublishUrlTemplate = AreaUrlPrefix + "/posts/publish/{id}";
+    public const string PostsPublishUrlTemplate = AreaUrlPrefix + "/posts/publish/{id:guid}";
     public const string PostsPublishPostRoute = nameof(Admin) + nameof(PostsPublishPostRoute);
 
-    public const string PostsArchiveUrlTemplate = AreaUrlPrefix + "/posts/archive/{id}";
+    public const string PostsArchiveUrlTemplate = AreaUrlPrefix + "/posts/archive/{id:guid}";
     public const string PostsArchiveGetRoute = nameof(Admin) + nameof(PostsArchiveGetRoute);
     public const string PostsArchivePostRoute = nameof(Admin) + nameof(PostsArchivePostRoute);
 
@@ -77,11 +77,11 @@ internal static class Routes
     public const string NotesIndexGetRoute = nameof(Admin) + nameof(NotesIndexGetRoute);
     public const string NotesIndexPostRoute = nameof(Admin) + nameof(NotesIndexPostRoute);
 
-    public const string NotesEditUrlTemplate = AreaUrlPrefix + "/notes/edit/{id}";
+    public const string NotesEditUrlTemplate = AreaUrlPrefix + "/notes/edit/{id:guid}";
     public const string NotesEditGetRoute = nameof(Admin) + nameof(NotesEditGetRoute);
     public const string NotesEditPostRoute = nameof(Admin) + nameof(NotesEditPostRoute);
 
-    public const string NotesDeleteUrlTemplate = AreaUrlPrefix + "/notes/delete/{id}";
+    public const string NotesDeleteUrlTemplate = AreaUrlPrefix + "/notes/delete/{id:guid}";
     public const string NotesDeleteGetRoute = nameof(Admin) + nameof(NotesDeleteGetRoute);
     public const string NotesDeletePostRoute = nameof(Admin) + nameof(NotesDeletePostRoute);
 
@@ -92,14 +92,14 @@ internal static class Routes
     public const string BookmarksMetadataUrlTemplate = AreaUrlPrefix + "/bookmarks/metadata";
     public const string BookmarksMetadataPostRoute = nameof(Admin) + nameof(BookmarksMetadataPostRoute);
 
-    public const string BookmarksEditUrlTemplate = AreaUrlPrefix + "/bookmarks/edit/{id}";
+    public const string BookmarksEditUrlTemplate = AreaUrlPrefix + "/bookmarks/edit/{id:guid}";
     public const string BookmarksEditGetRoute = nameof(Admin) + nameof(BookmarksEditGetRoute);
     public const string BookmarksEditPostRoute = nameof(Admin) + nameof(BookmarksEditPostRoute);
 
-    public const string BookmarksPublishUrlTemplate = AreaUrlPrefix + "/bookmarks/publish/{id}";
+    public const string BookmarksPublishUrlTemplate = AreaUrlPrefix + "/bookmarks/publish/{id:guid}";
     public const string BookmarksPublishPostRoute = nameof(Admin) + nameof(BookmarksPublishPostRoute);
 
-    public const string BookmarksArchiveUrlTemplate = AreaUrlPrefix + "/bookmarks/archive/{id}";
+    public const string BookmarksArchiveUrlTemplate = AreaUrlPrefix + "/bookmarks/archive/{id:guid}";
     public const string BookmarksArchiveGetRoute = nameof(Admin) + nameof(BookmarksArchiveGetRoute);
     public const string BookmarksArchivePostRoute = nameof(Admin) + nameof(BookmarksArchivePostRoute);
   }

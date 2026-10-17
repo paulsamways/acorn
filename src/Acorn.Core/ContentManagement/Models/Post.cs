@@ -2,7 +2,6 @@ namespace Acorn.Core.ContentManagement.Models;
 
 /// <summary>Represents a blog post prepared for display.</summary>
 /// <param name="Id">The post identifier.</param>
-/// <param name="PublicId">The post's public UUID.</param>
 /// <param name="Title">The post title.</param>
 /// <param name="Excerpt">The optional Markdown excerpt.</param>
 /// <param name="ExcerptHtml">The rendered excerpt, if one was authored.</param>
@@ -13,8 +12,7 @@ namespace Acorn.Core.ContentManagement.Models;
 /// <param name="UpdatedAt">The most recent update time in the user's time zone.</param>
 /// <param name="PublishedAt">The publication time in the user's time zone, if published.</param>
 public record Post(
-  int Id,
-  Guid PublicId,
+  Guid Id,
   string Title,
   string? Excerpt,
   string? ExcerptHtml,

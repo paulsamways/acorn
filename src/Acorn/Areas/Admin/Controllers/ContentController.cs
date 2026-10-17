@@ -29,7 +29,7 @@ public sealed class ContentController : Controller
   [HttpPost(Routes.Admin.AttachFileUrlTemplate, Name = Routes.Admin.AttachFilePostRoute)]
   [RequestSizeLimit(10L * 1024 * 1024)]
   [RequestFormLimits(MultipartBodyLengthLimit = 10L * 1024 * 1024)]
-  public async Task<IActionResult> AttachFilePostAsync(int id, [FromForm] IFormFile? file, CancellationToken cancellationToken)
+  public async Task<IActionResult> AttachFilePostAsync(Guid id, [FromForm] IFormFile? file, CancellationToken cancellationToken)
   {
     if (file is null || file.Length == 0)
       return BadRequest(new { error = "Select a file to attach." });
@@ -40,14 +40,14 @@ public sealed class ContentController : Controller
     try
     {
       await using var stream = file.OpenReadStream();
-      var publicId = await _contentAttachmentService.CreateAttachmentAsync(
+      var attachmentId = await _contentAttachmentService.CreateAttachmentAsync(
         id,
         stream,
         file.FileName,
         file.ContentType,
         cancellationToken);
 
-      return Ok(new { publicId });
+      return Ok(new { id = attachmentId });
     }
     catch (ContentNotFoundException)
     {

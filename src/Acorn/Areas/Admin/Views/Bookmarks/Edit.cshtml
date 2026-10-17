@@ -3,7 +3,7 @@
 <main class="f-column f-align-center">
   <div class="f-column w-wide g-4 p-4">
     <header class="f-row f-justify-space-between f-align-center">
-      <h2>@(Model.Id == 0 ? "New bookmark" : "Edit bookmark")</h2>
+      <h2>@(Model.Id == Guid.Empty ? "New bookmark" : "Edit bookmark")</h2>
       @if (Model.PublishedAt is null)
       {
         <form asp-route="@Routes.Admin.BookmarksPublishPostRoute" asp-route-id="@Model.Id" method="POST">
@@ -37,7 +37,7 @@
       <span asp-validation-for="Tags" class="danger"></span>
 
       <div class="f-row f-justify-space-between">
-        @if (Model.Id > 0)
+        @if (Model.Id != Guid.Empty)
         {
           <a asp-route="@Routes.Admin.BookmarksArchiveGetRoute" asp-route-id="@Model.Id" role="button" class="danger">Archive</a>
         }

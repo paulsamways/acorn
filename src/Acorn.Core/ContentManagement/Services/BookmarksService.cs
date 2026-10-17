@@ -46,7 +46,7 @@ internal sealed class BookmarksService : IBookmarksService
     return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
   }
 
-  public async Task<Bookmark> GetBookmarkAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<Bookmark> GetBookmarkAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var bookmark = await GetBookmarkContentAsync(id, cancellationToken);
     return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
@@ -74,7 +74,7 @@ internal sealed class BookmarksService : IBookmarksService
   }
 
   public async Task<Bookmark> UpdateBookmarkAsync(
-    int id,
+    Guid id,
     string url,
     string title,
     string? description = null,
@@ -91,7 +91,7 @@ internal sealed class BookmarksService : IBookmarksService
     return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
   }
 
-  public async Task DeleteBookmarkAsync(int id, CancellationToken cancellationToken = default)
+  public async Task DeleteBookmarkAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var bookmark = await GetBookmarkContentAsync(id, cancellationToken);
     bookmark.DeletedAt = DateTime.UtcNow;
@@ -99,7 +99,7 @@ internal sealed class BookmarksService : IBookmarksService
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
   }
 
-  public async Task<Bookmark> PublishBookmarkAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<Bookmark> PublishBookmarkAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var bookmark = await GetBookmarkContentAsync(id, cancellationToken);
     bookmark.Url = ValidateUrl(bookmark.Url);
@@ -110,7 +110,7 @@ internal sealed class BookmarksService : IBookmarksService
     return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
   }
 
-  private async Task<BookmarkContentEntity> GetBookmarkContentAsync(int id, CancellationToken cancellationToken)
+  private async Task<BookmarkContentEntity> GetBookmarkContentAsync(Guid id, CancellationToken cancellationToken)
   {
     var bookmark = await _dbContext.Bookmarks.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     if (bookmark is null)

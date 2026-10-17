@@ -28,9 +28,9 @@ internal class ContentServiceTests : ServicesTestBase
     await PostAuthoringService.DeletePostAsync(deleted.Id);
 
     DbContext.ChangeTracker.Clear();
-    await DbContext.Database.ExecuteSqlAsync($"UPDATE content SET updated_at = {new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {post.Id}");
-    await DbContext.Database.ExecuteSqlAsync($"UPDATE content SET updated_at = {new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {note.Id}");
-    await DbContext.Database.ExecuteSqlAsync($"UPDATE content SET updated_at = {new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {bookmark.Id}");
+    await DbContext.Database.ExecuteSqlAsync($"UPDATE content SET updated_at = {new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {post.Id.ToByteArray(bigEndian: true)}");
+    await DbContext.Database.ExecuteSqlAsync($"UPDATE content SET updated_at = {new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {note.Id.ToByteArray(bigEndian: true)}");
+    await DbContext.Database.ExecuteSqlAsync($"UPDATE content SET updated_at = {new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {bookmark.Id.ToByteArray(bigEndian: true)}");
 
     var content = (await ContentService.GetRecentPublishedContentAsync()).ToArray();
 
