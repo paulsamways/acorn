@@ -8,6 +8,7 @@ using Acorn.Core.Storage;
 using Acorn.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -98,6 +99,9 @@ internal class Program
 
     builder.Services.AddProblemDetails();
 
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+      options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+    );
 
     var app = builder.Build();
     app.Logger.LogInformation(
@@ -111,11 +115,17 @@ internal class Program
     {
       app.UseExceptionHandler("/Home/Error");
 
+      app.UseForwardedHeaders();
+
       // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
       app.UseHsts();
     }
+    else
+    {
+      // Production uses Caddy which terminates TLS.
+      app.UseHttpsRedirection();
+    }
 
-    app.UseHttpsRedirection();
     app.UseRouting();
 
     app.UseAuthentication();
