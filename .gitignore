@@ -6,4 +6,4 @@ src/**/[Bb]in/
 src/**/[Oo]bj/
 node_modules/
 
-src/Acorn/wwwroot/js/pages/**
+src/Acorn/wwwroot/js/**

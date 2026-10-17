@@ -32,15 +32,6 @@ cd src
 dotnet build
 ```
 
-Build the frontend bundle from `src/Acorn.Client`:
-
-```sh
-cd src/Acorn.Client
-npx webpack --mode development
-```
-
-The frontend build writes `all.js` and its source map to `src/Acorn/wwwroot/js/pages/`. Install the npm dependencies in `src/Acorn.Client` before building if they are not already present.
-
 ## SQLite Backups
 
 All application data is stored beneath `DataDirectory` (default `data`, relative to the app content root). Development overrides this to `../../var`, placing data in the repository-root `var` directory. The SQLite database is `acorn.db`; backups and content-addressed blobs are stored in configurable relative directories, defaulting to `backups` and `blobs`. Configure `DatabaseBackup__DirectoryPath` and `FileSystemContentAddressedBlobStore__DirectoryPath` to change those paths. Nested relative paths are allowed, but paths must remain under `DataDirectory`. Set `DataDirectory` to an absolute path to choose another location. The Docker Compose deployment sets it to `/app/data`, which is backed by the persistent `acorn-data` volume.

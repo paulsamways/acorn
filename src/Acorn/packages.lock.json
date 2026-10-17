@@ -80,6 +80,12 @@
         "resolved": "3.10.2",
         "contentHash": "qzg4a3WmgQm28Azaporbnsu+KHA+vq5sgpQQFLiJgB06Rra2S+kzGAU7pzUB8/UIwZJCSCY2JEE/M5e0hQ2K8w=="
       },
+      "Microsoft.TypeScript.MSBuild": {
+        "type": "Direct",
+        "requested": "[7.0.1, )",
+        "resolved": "7.0.1",
+        "contentHash": "C7tSjjLX0LZGu9BQ/xShsfuKujOqkWrRrko3qm8BT39NR1CuqywEDEFuu8grS90u9mhwdr+EW4j/lWtekvlHQQ=="
+      },
       "BouncyCastle.Cryptography": {
         "type": "Transitive",
         "resolved": "2.7.0",

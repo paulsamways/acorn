@@ -2,31 +2,20 @@
   "compilerOptions": {
     /* Type Checking - Strict Mode (all enabled by strict:true) */
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
 
     /* Additional Type Checking */
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
-    "allowUnusedLabels": false,
     "allowUnreachableCode": false,
 
     /* Emit */
     "removeComments": true,
     "preserveConstEnums": true,
-    "rootDir": ".",
-    "outDir": "../Acorn/wwwroot/js/pages/",
-    "sourceMap": true,
+    "rootDir": "Client/Scripts",
+    "outDir": "wwwroot/js/",
     "noEmitOnError": true,
 
     /* Interop Constraints */
@@ -36,6 +25,7 @@
 
     /* Language and Environment */
     "target": "ES6",
+    "module": "ES2020",
     "jsx": "react",
 
     /* Modules */
@@ -45,7 +35,6 @@
     "skipLibCheck": true
   },
   "include": [
-    "src/**/*"
-  ],
-  "exclude": [],
+    "Client/Scripts/**/*"
+  ]
 }

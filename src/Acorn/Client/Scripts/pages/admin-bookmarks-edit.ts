@@ -1,16 +1,19 @@
 (() => {
-  const form = document.querySelector("[data-bookmark-metadata-url]");
+  const form = document.querySelector<HTMLFormElement>("[data-bookmark-metadata-url]");
   if (!form) return;
 
-  const urlInput = form.querySelector('[name="Url"]');
-  const titleInput = form.querySelector('[name="Title"]');
-  const descriptionInput = form.querySelector('[name="Description"]');
-  const status = form.querySelector("[data-bookmark-metadata-status]");
-  const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
-  let timeoutId;
-  let activeRequest;
+  const urlInput = form.querySelector<HTMLInputElement>('[name="Url"]');
+  const titleInput = form.querySelector<HTMLInputElement>('[name="Title"]');
+  const descriptionInput = form.querySelector<HTMLTextAreaElement>('[name="Description"]');
+  const status = form.querySelector<HTMLElement>("[data-bookmark-metadata-status]");
+  const token = form.querySelector<HTMLInputElement>('input[name="__RequestVerificationToken"]')?.value;
+  const metadataUrl = form.dataset["bookmarkMetadataUrl"];
+  if (!urlInput || !titleInput || !descriptionInput || !status || !metadataUrl) return;
 
-  urlInput?.addEventListener("input", () => {
+  let timeoutId: number | undefined;
+  let activeRequest: AbortController | undefined;
+
+  urlInput.addEventListener("input", () => {
     window.clearTimeout(timeoutId);
     activeRequest?.abort();
 
@@ -26,7 +29,7 @@
       status.textContent = "Checking page...";
 
       try {
-        const response = await fetch(form.dataset.bookmarkMetadataUrl, {
+        const response = await fetch(metadataUrl, {
           method: "POST",
           credentials: "same-origin",
           headers: {
