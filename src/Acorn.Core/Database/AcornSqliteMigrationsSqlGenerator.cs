@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -15,7 +14,6 @@ internal sealed class AcornSqliteMigrationsSqlGenerator : SqliteMigrationsSqlGen
   {
   }
 
-  [SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "Migration SQL builder is a fluent API.")]
   protected override void Generate(
     CreateTableOperation operation,
     IModel? model,
