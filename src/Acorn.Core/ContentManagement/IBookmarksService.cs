@@ -9,7 +9,7 @@ public interface IBookmarksService
   /// <param name="id">The bookmark identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The requested bookmark.</returns>
-  Task<Bookmark> GetBookmarkAsync(int id, CancellationToken cancellationToken = default);
+  Task<Bookmark> GetBookmarkAsync(Guid id, CancellationToken cancellationToken = default);
 
   /// <summary>Gets all bookmarks, ordered by creation date.</summary>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
@@ -38,16 +38,16 @@ public interface IBookmarksService
   /// <param name="tags">Replacement tags.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The updated bookmark.</returns>
-  Task<Bookmark> UpdateBookmarkAsync(int id, string url, string title, string? description = null, TagSet? tags = null, CancellationToken cancellationToken = default);
+  Task<Bookmark> UpdateBookmarkAsync(Guid id, string url, string title, string? description = null, TagSet? tags = null, CancellationToken cancellationToken = default);
 
   /// <summary>Soft-deletes a bookmark.</summary>
   /// <param name="id">The bookmark identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
-  Task DeleteBookmarkAsync(int id, CancellationToken cancellationToken = default);
+  Task DeleteBookmarkAsync(Guid id, CancellationToken cancellationToken = default);
 
   /// <summary>Publishes a bookmark.</summary>
   /// <param name="id">The bookmark identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The published bookmark.</returns>
-  Task<Bookmark> PublishBookmarkAsync(int id, CancellationToken cancellationToken = default);
+  Task<Bookmark> PublishBookmarkAsync(Guid id, CancellationToken cancellationToken = default);
 }

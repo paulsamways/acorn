@@ -1,4 +1,5 @@
 using Acorn.Core.ContentManagement.Database.Entities;
+using Acorn.Core.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,6 +11,7 @@ internal sealed class ContentEntityConfiguration : IEntityTypeConfiguration<Cont
   public void Configure(EntityTypeBuilder<ContentEntity> builder)
   {
     builder.ToTable("content");
+    builder.HasAnnotation(SqliteTableAnnotations.WithoutRowid, true);
 
     builder
       .HasDiscriminator<string>("content_type")
@@ -23,11 +25,7 @@ internal sealed class ContentEntityConfiguration : IEntityTypeConfiguration<Cont
     builder
       .Property(x => x.Id)
       .HasColumnName("content_id")
-      .IsRequired();
-
-    builder
-      .Property(x => x.PublicId)
-      .HasColumnName("public_id")
+      .ValueGeneratedNever()
       .IsRequired();
 
     builder
@@ -63,10 +61,6 @@ internal sealed class ContentEntityConfiguration : IEntityTypeConfiguration<Cont
       .WithMany()
       .HasForeignKey(x => x.AuthorId)
       .OnDelete(DeleteBehavior.Cascade);
-
-    builder
-      .HasIndex(x => x.PublicId)
-      .IsUnique();
 
     builder
       .HasQueryFilter(x => x.DeletedAt == null);

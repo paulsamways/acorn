@@ -9,7 +9,7 @@ namespace Acorn.Core.ContentManagement.Models;
 /// <param name="UpdatedAt">The most recent update time in the user's time zone.</param>
 /// <param name="PublishedAt">The publication time in the user's time zone, if published.</param>
 public record Note(
-    int Id,
+    Guid Id,
     string Value,
     string ValueHtml,
     IReadOnlyList<string> Tags,

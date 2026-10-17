@@ -17,6 +17,7 @@ internal sealed class ContentAttachmentEntityConfiguration : IEntityTypeConfigur
     builder
       .Property(x => x.Id)
       .HasColumnName("content_attachment_id")
+      .ValueGeneratedNever()
       .IsRequired();
 
     builder

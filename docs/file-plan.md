@@ -2,7 +2,7 @@
 
 This plan covers the database-backed metadata layer for files stored by Acorn's content-addressed blob store, the upload pipeline that validates and enriches files, derived files (thumbnails and similar), and the relationship needed for inline images in posts. It deliberately does not introduce a `FileContent` subtype of `Content`: a file is an independently owned record that can be attached to any `Content`.
 
-> **Status:** This is the original design proposal. The first implementation slice is complete, but some implementation details differ from this plan (including per-rendition producers, public originals, and filename-based attachment URLs). See [derivations.md](./derivations.md) for the authoritative description of current behavior; the design below remains planning material for unimplemented lifecycle work.
+> **Status:** This is the original design proposal. The first implementation slice is complete, but some implementation details differ from this plan (including per-rendition producers, public originals, and filename-based attachment URLs). Its integer-primary-key plus `PublicId` strategy is superseded by the UUID primary-key decision in [pk-uuid-plan.md](./plan/pk-uuid-plan.md). See [derivations.md](./derivations.md) for the authoritative description of current file behavior; the remaining design below is planning material for unimplemented lifecycle work.
 
 ## Implementation Slices
 

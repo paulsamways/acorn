@@ -5,7 +5,7 @@ namespace Acorn.Core.FileManagement;
 
 internal interface IFileManager
 {
-  Task<FileDescriptor> OpenFileAsync(int fileId, CancellationToken cancellationToken = default);
+  Task<FileDescriptor> OpenFileAsync(Guid fileId, CancellationToken cancellationToken = default);
 
   Task<FileEntity> WriteFileAsync(Stream stream, FileMetadata fileMetadata, CancellationToken cancellationToken = default);
 }

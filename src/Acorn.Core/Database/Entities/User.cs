@@ -18,6 +18,7 @@ public sealed class User : IdentityUser<Guid>
   public User(string email, TimeZoneInfo timeZoneInfo)
     : base(email)
   {
+    Id = Guid.CreateVersion7();
     Email = email;
     TimeZone = timeZoneInfo.Id;
   }

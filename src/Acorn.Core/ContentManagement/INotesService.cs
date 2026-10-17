@@ -9,7 +9,7 @@ public interface INotesService
   /// <param name="id">The note identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The requested note.</returns>
-  Task<Note> GetNoteAsync(int id, CancellationToken cancellationToken = default);
+  Task<Note> GetNoteAsync(Guid id, CancellationToken cancellationToken = default);
 
   /// <summary>Gets all notes, ordered by creation date.</summary>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
@@ -35,16 +35,16 @@ public interface INotesService
   /// <param name="tags">Optional replacement tags.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The updated note.</returns>
-  Task<Note> UpdateNoteAsync(int id, string note, TagSet? tags = null, CancellationToken cancellationToken = default);
+  Task<Note> UpdateNoteAsync(Guid id, string note, TagSet? tags = null, CancellationToken cancellationToken = default);
 
   /// <summary>Soft-deletes a note.</summary>
   /// <param name="id">The note identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
-  Task DeleteNoteAsync(int id, CancellationToken cancellationToken = default);
+  Task DeleteNoteAsync(Guid id, CancellationToken cancellationToken = default);
 
   /// <summary>Publishes a note.</summary>
   /// <param name="id">The note identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The published note.</returns>
-  Task<Note> PublishNoteAsync(int id, CancellationToken cancellationToken = default);
+  Task<Note> PublishNoteAsync(Guid id, CancellationToken cancellationToken = default);
 }

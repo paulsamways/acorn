@@ -18,16 +18,16 @@ public sealed class PostsController : Controller
   }
 
   /// <summary>Displays a published post.</summary>
-  /// <param name="publicId">The post's public UUID.</param>
+  /// <param name="id">The post's UUID.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The post page, or not found if the post is unpublished or unavailable.</returns>
   [AllowAnonymous]
   [HttpGet(Routes.ContentPostsDetailsUrlTemplate, Name = Routes.ContentPostsDetailsGetRoute)]
-  public async Task<IActionResult> Details(Guid publicId, CancellationToken cancellationToken)
+  public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
   {
     try
     {
-      var post = await _postsService.GetPublishedPostAsync(publicId, cancellationToken);
+      var post = await _postsService.GetPublishedPostAsync(id, cancellationToken);
       return View(post);
     }
     catch (ContentNotFoundException)

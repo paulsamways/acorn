@@ -49,8 +49,8 @@ internal class FileEntityTests : EntitiesTestBase
     await DbContext.SaveChangesAsync();
 
     DbContext.ChangeTracker.Clear();
-    var savedFile = await DbContext.ImageFiles.SingleAsync(x => x.PublicId == file.PublicId);
-    await Assert.That(savedFile.PublicId).IsNotEqualTo(Guid.Empty);
+    var savedFile = await DbContext.ImageFiles.SingleAsync(x => x.Id == file.Id);
+    await Assert.That(savedFile.Id).IsNotEqualTo(Guid.Empty);
     await Assert.That(savedFile.BlobDigest).IsEquivalentTo(digest);
     await Assert.That(savedFile.Width).IsEqualTo(16);
     await Assert.That(savedFile.Height).IsEqualTo(12);
@@ -58,7 +58,7 @@ internal class FileEntityTests : EntitiesTestBase
     var savedPost = await DbContext.Posts
       .Include(x => x.Attachments)
       .SingleAsync(x => x.Id == post.Id);
-    await Assert.That(savedPost.PublicId).IsNotEqualTo(Guid.Empty);
+    await Assert.That(savedPost.Id).IsNotEqualTo(Guid.Empty);
     await Assert.That(savedPost.Attachments).Count().IsEqualTo(1);
   }
 

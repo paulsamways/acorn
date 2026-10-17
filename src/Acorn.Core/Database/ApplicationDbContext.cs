@@ -4,6 +4,7 @@ using Acorn.Core.FileManagement.Database.Entities;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Acorn.Core.Database;
 
@@ -27,6 +28,17 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
     builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
   }
 
+  /// <summary>Configures the SQLite representation of UUID values.</summary>
+  /// <param name="configurationBuilder">The convention builder.</param>
+  protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+  {
+    base.ConfigureConventions(configurationBuilder);
+    _ = configurationBuilder
+      .Properties<Guid>()
+      .HaveConversion<Converters.GuidToRfcBytesConverter>()
+      .HaveColumnType("BLOB");
+  }
+
   /// <summary>Configures context options and save-change interceptors.</summary>
   /// <param name="optionsBuilder">The options builder.</param>
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -34,6 +46,7 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
     base.OnConfiguring(optionsBuilder);
 
     _ = optionsBuilder.AddInterceptors(new AuditableSaveChangesInterceptor());
+    _ = optionsBuilder.ReplaceService<IMigrationsSqlGenerator, AcornSqliteMigrationsSqlGenerator>();
   }
 
   internal DbSet<ContentEntity> Content => Set<ContentEntity>();

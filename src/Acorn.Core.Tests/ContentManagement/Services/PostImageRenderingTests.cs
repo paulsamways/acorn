@@ -8,29 +8,28 @@ internal class PostImageRenderingTests : ServicesTestBase
   [Test]
   public async Task AttachmentReferenceRendersUrlWithoutContentQuery()
   {
-    var filePublicId = Guid.NewGuid();
+    var attachmentId = Guid.CreateVersion7();
     var post = await PostAuthoringService.CreatePostAsync(
       "Image post",
-      $"![A photo](file:{filePublicId:D})");
+      $"![A photo](file:{attachmentId:D})");
 
     var rendered = await PostAuthoringService.GetPostAsync(post.Id);
 
-    await Assert.That(rendered.BodyHtml).Contains($"/content/attachments/{filePublicId:D}");
-    await Assert.That(rendered.BodyHtml).DoesNotContain("contentPublicId");
+    await Assert.That(rendered.BodyHtml).Contains($"/content/attachments/{attachmentId:D}");
     await Assert.That(rendered.BodyHtml).Contains("alt=\"A photo\"");
   }
 
   [Test]
   public async Task FileAttachmentReferenceRendersAsLinkToOriginalAttachment()
   {
-    var filePublicId = Guid.NewGuid();
+    var attachmentId = Guid.CreateVersion7();
     var post = await PostAuthoringService.CreatePostAsync(
       "Attachment post",
-      $"[Project brief.pdf](file:{filePublicId:D})");
+      $"[Project brief.pdf](file:{attachmentId:D})");
 
     var rendered = await PostAuthoringService.GetPostAsync(post.Id);
 
-    await Assert.That(rendered.BodyHtml).Contains($"href=\"/content/attachments/{filePublicId:D}\"");
+    await Assert.That(rendered.BodyHtml).Contains($"href=\"/content/attachments/{attachmentId:D}\"");
     await Assert.That(rendered.BodyHtml).Contains(">Project brief.pdf</a>");
     await Assert.That(rendered.BodyHtml).DoesNotContain("derivation=");
   }
@@ -71,7 +70,7 @@ internal class PostImageRenderingTests : ServicesTestBase
     var rendered = await PostAuthoringService.GetPostAsync(post.Id);
 
     await Assert.That(rendered.BodyHtml).Contains($"/content/attachments/{attachment.Id:D}");
-    await Assert.That(rendered.BodyHtml).DoesNotContain(file.PublicId.ToString("D"));
+    await Assert.That(rendered.BodyHtml).DoesNotContain(file.Id.ToString("D"));
   }
 
   [Test]

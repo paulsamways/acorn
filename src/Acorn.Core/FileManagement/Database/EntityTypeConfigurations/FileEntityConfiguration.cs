@@ -1,4 +1,5 @@
 using Acorn.Core.FileManagement.Database.Entities;
+using Acorn.Core.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,6 +11,7 @@ internal sealed class FileEntityConfiguration : IEntityTypeConfiguration<FileEnt
   public void Configure(EntityTypeBuilder<FileEntity> builder)
   {
     builder.ToTable("file");
+    builder.HasAnnotation(SqliteTableAnnotations.WithoutRowid, true);
 
     builder
       .HasDiscriminator<string>("file_type")
@@ -22,11 +24,7 @@ internal sealed class FileEntityConfiguration : IEntityTypeConfiguration<FileEnt
     builder
       .Property(x => x.Id)
       .HasColumnName("file_id")
-      .IsRequired();
-
-    builder
-      .Property(x => x.PublicId)
-      .HasColumnName("public_id")
+      .ValueGeneratedNever()
       .IsRequired();
 
     builder
@@ -72,10 +70,6 @@ internal sealed class FileEntityConfiguration : IEntityTypeConfiguration<FileEnt
       .WithMany()
       .HasForeignKey(x => x.OwnerId)
       .OnDelete(DeleteBehavior.Cascade);
-
-    builder
-      .HasIndex(x => x.PublicId)
-      .IsUnique();
 
     builder
       .HasIndex(x => new { x.OwnerId, x.DeletedAt });

@@ -37,7 +37,7 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task GetNoteAsync_ThrowsWhenNoteDoesNotExist()
   {
-    const int id = 42;
+    var id = Guid.CreateVersion7();
 
     await AssertContentNotFoundAsync(async () => _ = await NotesService.GetNoteAsync(id), id);
   }

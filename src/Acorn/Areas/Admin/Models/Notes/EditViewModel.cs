@@ -6,7 +6,7 @@ namespace Acorn.Areas.Admin.Models.Notes;
 public sealed class EditViewModel
 {
   /// <summary>Gets or sets the note identifier.</summary>
-  public int Id { get; init; }
+  public Guid Id { get; init; }
 
   /// <summary>Gets or sets the note's Markdown value.</summary>
   [DisplayFormat(ConvertEmptyStringToNull = true)]

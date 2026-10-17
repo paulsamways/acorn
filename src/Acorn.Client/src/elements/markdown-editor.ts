@@ -27,7 +27,7 @@ const pickFile = (accept: string): Promise<File | undefined> =>
     input.click();
   });
 
-// Accepts a plain-text URL or JSON ({ error } / { publicId }) response
+// Accepts a plain-text URL or JSON ({ error } / { id }) response
 const uploadFile = async (uploadUrl: string, file: File): Promise<string> => {
   const token = document.querySelector<HTMLInputElement>(
     'input[name="__RequestVerificationToken"]',
@@ -59,9 +59,9 @@ const uploadFile = async (uploadUrl: string, file: File): Promise<string> => {
   if (typeof result === "string" && result) {
     return result;
   }
-  const publicId = (result as { publicId?: string } | null)?.publicId;
-  if (publicId) {
-    return `file:${publicId}`;
+  const id = (result as { id?: string } | null)?.id;
+  if (id) {
+    return `file:${id}`;
   }
   throw new Error("The upload response did not contain a URL.");
 };

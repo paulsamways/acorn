@@ -15,113 +15,35 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261016183357_AddBinaryFileSupport";
+    public override string LastMigrationId => "20261016210311_InitialUuidSchema";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
         modelBuilder.HasAnnotation("ProductVersion", "11.0.0-rc.2.26504.105");
 
-        modelBuilder.Entity("Acorn.Core.FileManagement.Database.Entities.BlobEntity", b =>
-            {
-                b.Property<byte[]>("Digest")
-                    .HasColumnType("BLOB")
-                    .HasColumnName("digest");
-
-                b.Property<DateTime>("CreatedAt")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("created_at");
-
-                b.Property<long>("Size")
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("size");
-
-                b.HasKey("Digest");
-
-                b.ToTable("blob", t =>
-                    {
-                        t.HasCheckConstraint("ck_blob_digest_length", "length(digest) = 32");
-
-                        t.HasCheckConstraint("ck_blob_size", "size >= 0");
-                    });
-            });
-
-        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", b =>
-            {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("content_id");
-
-                b.Property<Guid>("AuthorId")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("author_id");
-
-                b.Property<DateTime>("CreatedAt")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("created_at");
-
-                b.Property<DateTime?>("DeletedAt")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("deleted_at");
-
-                b.Property<Guid>("PublicId")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("public_id");
-
-                b.Property<DateTime?>("PublishedAt")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("published_at");
-
-                b.Property<string>("Tags")
-                    .IsRequired()
-                    .HasColumnType("TEXT")
-                    .HasColumnName("tags");
-
-                b.Property<DateTime>("UpdatedAt")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("updated_at");
-
-                b.Property<string>("content_type")
-                    .IsRequired()
-                    .HasMaxLength(8)
-                    .HasColumnType("TEXT");
-
-                b.HasKey("Id");
-
-                b.HasIndex("AuthorId");
-
-                b.HasIndex("PublicId")
-                    .IsUnique();
-
-                b.ToTable("content");
-
-                b.HasDiscriminator<string>("content_type").HasValue("Content");
-
-                b.UseTphMappingStrategy();
-            });
-
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentAttachmentEntity", b =>
             {
-                b.Property<Guid>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("Id")
+                    .HasColumnType("BLOB")
                     .HasColumnName("content_attachment_id");
 
-                b.Property<int>("ContentId")
-                    .HasColumnType("INTEGER")
+                b.Property<byte[]>("ContentId")
+                    .IsRequired()
+                    .HasColumnType("BLOB")
                     .HasColumnName("content_id");
 
                 b.Property<string>("DerivationName")
                     .HasColumnType("TEXT")
                     .HasColumnName("derivation_name");
 
-                b.Property<int>("FileId")
-                    .HasColumnType("INTEGER")
+                b.Property<byte[]>("FileId")
+                    .IsRequired()
+                    .HasColumnType("BLOB")
                     .HasColumnName("file_id");
 
-                b.Property<Guid?>("ParentId")
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("ParentId")
+                    .HasColumnType("BLOB")
                     .HasColumnName("parent_id");
 
                 b.Property<string>("Visibility")
@@ -141,17 +63,16 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("content_attachment");
             });
 
-        modelBuilder.Entity("Acorn.Core.FileManagement.Database.Entities.FileEntity", b =>
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", b =>
             {
-                b.Property<int>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("INTEGER")
-                    .HasColumnName("file_id");
+                b.Property<byte[]>("Id")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("content_id");
 
-                b.Property<byte[]>("BlobDigest")
+                b.Property<byte[]>("AuthorId")
                     .IsRequired()
                     .HasColumnType("BLOB")
-                    .HasColumnName("blob_digest");
+                    .HasColumnName("author_id");
 
                 b.Property<DateTime>("CreatedAt")
                     .HasColumnType("TEXT")
@@ -161,52 +82,41 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("deleted_at");
 
-                b.Property<string>("Filename")
+                b.Property<DateTime?>("PublishedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("published_at");
+
+                b.Property<string>("Tags")
                     .IsRequired()
-                    .HasMaxLength(255)
                     .HasColumnType("TEXT")
-                    .HasColumnName("filename");
+                    .HasColumnName("tags");
 
-                b.Property<string>("MediaType")
+                b.Property<DateTime>("UpdatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("updated_at");
+
+                b.Property<string>("content_type")
                     .IsRequired()
-                    .HasMaxLength(255)
-                    .HasColumnType("TEXT")
-                    .HasColumnName("media_type");
-
-                b.Property<Guid>("OwnerId")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("owner_id");
-
-                b.Property<Guid>("PublicId")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("public_id");
-
-                b.Property<string>("file_type")
-                    .IsRequired()
-                    .HasMaxLength(8)
+                    .HasMaxLength(13)
                     .HasColumnType("TEXT");
 
                 b.HasKey("Id");
 
-                b.HasIndex("BlobDigest");
+                b.HasIndex("AuthorId");
 
-                b.HasIndex("PublicId")
-                    .IsUnique();
+                b.ToTable("content");
 
-                b.HasIndex("OwnerId", "DeletedAt");
+                b.HasDiscriminator<string>("content_type").HasValue("ContentEntity");
 
-                b.ToTable("file");
-
-                b.HasDiscriminator<string>("file_type").HasValue("File");
-
-                b.UseTphMappingStrategy();
+                b
+                    .UseTphMappingStrategy()
+                    .HasAnnotation("Acorn:WithoutRowid", true);
             });
 
         modelBuilder.Entity("Acorn.Core.Database.Entities.Role", b =>
             {
-                b.Property<Guid>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("Id")
+                    .HasColumnType("BLOB")
                     .HasColumnName("role_id");
 
                 b.Property<string>("ConcurrencyStamp")
@@ -235,9 +145,8 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Acorn.Core.Database.Entities.User", b =>
             {
-                b.Property<Guid>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("Id")
+                    .HasColumnType("BLOB")
                     .HasColumnName("user_id");
 
                 b.Property<int>("AccessFailedCount")
@@ -319,6 +228,88 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.ToTable("user");
             });
 
+        modelBuilder.Entity("Acorn.Core.FileManagement.Database.Entities.BlobEntity", b =>
+            {
+                b.Property<byte[]>("Digest")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("digest");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("created_at");
+
+                b.Property<long>("Size")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("size");
+
+                b.HasKey("Digest");
+
+                b.ToTable("blob", t =>
+                    {
+                        t.HasCheckConstraint("ck_blob_digest_length", "length(digest) = 32");
+
+                        t.HasCheckConstraint("ck_blob_size", "size >= 0");
+                    });
+
+                b.HasAnnotation("Acorn:WithoutRowid", true);
+            });
+
+        modelBuilder.Entity("Acorn.Core.FileManagement.Database.Entities.FileEntity", b =>
+            {
+                b.Property<byte[]>("Id")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("file_id");
+
+                b.Property<byte[]>("BlobDigest")
+                    .IsRequired()
+                    .HasColumnType("BLOB")
+                    .HasColumnName("blob_digest");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("created_at");
+
+                b.Property<DateTime?>("DeletedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("deleted_at");
+
+                b.Property<string>("Filename")
+                    .IsRequired()
+                    .HasMaxLength(255)
+                    .HasColumnType("TEXT")
+                    .HasColumnName("filename");
+
+                b.Property<string>("MediaType")
+                    .IsRequired()
+                    .HasMaxLength(255)
+                    .HasColumnType("TEXT")
+                    .HasColumnName("media_type");
+
+                b.Property<byte[]>("OwnerId")
+                    .IsRequired()
+                    .HasColumnType("BLOB")
+                    .HasColumnName("owner_id");
+
+                b.Property<string>("file_type")
+                    .IsRequired()
+                    .HasMaxLength(13)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("BlobDigest");
+
+                b.HasIndex("OwnerId", "DeletedAt");
+
+                b.ToTable("file");
+
+                b.HasDiscriminator<string>("file_type").HasValue("FileEntity");
+
+                b
+                    .UseTphMappingStrategy()
+                    .HasAnnotation("Acorn:WithoutRowid", true);
+            });
+
         modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
             {
                 b.Property<int>("Id")
@@ -354,8 +345,9 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("claim_value");
 
-                b.Property<Guid>("RoleId")
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("RoleId")
+                    .IsRequired()
+                    .HasColumnType("BLOB")
                     .HasColumnName("role_id");
 
                 b.HasKey("Id");
@@ -380,8 +372,9 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("claim_value");
 
-                b.Property<Guid>("UserId")
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("UserId")
+                    .IsRequired()
+                    .HasColumnType("BLOB")
                     .HasColumnName("user_id");
 
                 b.HasKey("Id");
@@ -405,8 +398,9 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("provider_display_name");
 
-                b.Property<Guid>("UserId")
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("UserId")
+                    .IsRequired()
+                    .HasColumnType("BLOB")
                     .HasColumnName("user_id");
 
                 b.HasKey("LoginProvider", "ProviderKey");
@@ -418,12 +412,12 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
             {
-                b.Property<Guid>("UserId")
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("UserId")
+                    .HasColumnType("BLOB")
                     .HasColumnName("user_id");
 
-                b.Property<Guid>("RoleId")
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("RoleId")
+                    .HasColumnType("BLOB")
                     .HasColumnName("role_id");
 
                 b.HasKey("UserId", "RoleId");
@@ -435,8 +429,8 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
         modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
             {
-                b.Property<Guid>("UserId")
-                    .HasColumnType("TEXT")
+                b.Property<byte[]>("UserId")
+                    .HasColumnType("BLOB")
                     .HasColumnName("user_id");
 
                 b.Property<string>("LoginProvider")
@@ -540,17 +534,6 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.HasDiscriminator().HasValue("image");
             });
 
-        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", b =>
-            {
-                b.HasOne("Acorn.Core.Database.Entities.User", "Author")
-                    .WithMany()
-                    .HasForeignKey("AuthorId")
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .IsRequired();
-
-                b.Navigation("Author");
-            });
-
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentAttachmentEntity", b =>
             {
                 b.HasOne("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", "Content")
@@ -575,6 +558,17 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.Navigation("File");
 
                 b.Navigation("Parent");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", b =>
+            {
+                b.HasOne("Acorn.Core.Database.Entities.User", "Author")
+                    .WithMany()
+                    .HasForeignKey("AuthorId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("Author");
             });
 
         modelBuilder.Entity("Acorn.Core.FileManagement.Database.Entities.FileEntity", b =>
@@ -647,9 +641,9 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .IsRequired();
             });
 
-        modelBuilder.Entity("Acorn.Core.FileManagement.Database.Entities.BlobEntity", b =>
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentAttachmentEntity", b =>
             {
-                b.Navigation("Files");
+                b.Navigation("Derivations");
             });
 
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", b =>
@@ -657,9 +651,9 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.Navigation("Attachments");
             });
 
-        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentAttachmentEntity", b =>
+        modelBuilder.Entity("Acorn.Core.FileManagement.Database.Entities.BlobEntity", b =>
             {
-                b.Navigation("Derivations");
+                b.Navigation("Files");
             });
 
         modelBuilder.Entity("Acorn.Core.FileManagement.Database.Entities.FileEntity", b =>

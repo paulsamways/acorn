@@ -41,7 +41,7 @@ internal sealed class NotesService : INotesService
     return await _noteMapper.MapAsync(noteContent, cancellationToken);
   }
 
-  public async Task<Note> GetNoteAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<Note> GetNoteAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var noteContent = await GetNoteContentAsync(id, cancellationToken);
     return await _noteMapper.MapAsync(noteContent, cancellationToken);
@@ -68,7 +68,7 @@ internal sealed class NotesService : INotesService
     return await Task.WhenAll(notes.Select(note => _noteMapper.MapAsync(note, cancellationToken)));
   }
 
-  public async Task<Note> UpdateNoteAsync(int id, string value, TagSet? tags = null, CancellationToken cancellationToken = default)
+  public async Task<Note> UpdateNoteAsync(Guid id, string value, TagSet? tags = null, CancellationToken cancellationToken = default)
   {
     var note = await GetNoteContentAsync(id, cancellationToken);
     note.Value = value;
@@ -78,7 +78,7 @@ internal sealed class NotesService : INotesService
     return await _noteMapper.MapAsync(note, cancellationToken);
   }
 
-  public async Task DeleteNoteAsync(int id, CancellationToken cancellationToken = default)
+  public async Task DeleteNoteAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var note = await GetNoteContentAsync(id, cancellationToken);
     note.DeletedAt = DateTime.UtcNow;
@@ -86,7 +86,7 @@ internal sealed class NotesService : INotesService
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
   }
 
-  public async Task<Note> PublishNoteAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<Note> PublishNoteAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var note = await GetNoteContentAsync(id, cancellationToken);
     note.PublishedAt = DateTime.UtcNow;
@@ -95,7 +95,7 @@ internal sealed class NotesService : INotesService
     return await _noteMapper.MapAsync(note, cancellationToken);
   }
 
-  private async Task<NoteContentEntity> GetNoteContentAsync(int id, CancellationToken cancellationToken = default)
+  private async Task<NoteContentEntity> GetNoteContentAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var note = await _dbContext.Notes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     if (note is null)

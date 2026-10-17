@@ -9,7 +9,7 @@ public interface IPostAuthoringService
   /// <param name="id">The post identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The requested post.</returns>
-  Task<Post> GetPostAsync(int id, CancellationToken cancellationToken = default);
+  Task<Post> GetPostAsync(Guid id, CancellationToken cancellationToken = default);
 
   /// <summary>Gets all posts, ordered by creation date.</summary>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
@@ -33,16 +33,16 @@ public interface IPostAuthoringService
   /// <param name="excerpt">Optional replacement Markdown excerpt.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The updated post.</returns>
-  Task<Post> UpdatePostAsync(int id, string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default);
+  Task<Post> UpdatePostAsync(Guid id, string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default);
 
   /// <summary>Soft-deletes a post.</summary>
   /// <param name="id">The post identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
-  Task DeletePostAsync(int id, CancellationToken cancellationToken = default);
+  Task DeletePostAsync(Guid id, CancellationToken cancellationToken = default);
 
   /// <summary>Publishes a post.</summary>
   /// <param name="id">The post identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The published post.</returns>
-  Task<Post> PublishPostAsync(int id, CancellationToken cancellationToken = default);
+  Task<Post> PublishPostAsync(Guid id, CancellationToken cancellationToken = default);
 }

@@ -47,7 +47,7 @@ public sealed class NotesController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The note edit page.</returns>
   [HttpGet(Routes.Admin.NotesEditUrlTemplate, Name = Routes.Admin.NotesEditGetRoute)]
-  public async Task<IActionResult> EditGetAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditGetAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var note = await _notesService.GetNoteAsync(id, cancellationToken);
 
@@ -60,7 +60,7 @@ public sealed class NotesController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the notes index.</returns>
   [HttpPost(Routes.Admin.NotesEditUrlTemplate, Name = Routes.Admin.NotesEditPostRoute)]
-  public async Task<IActionResult> EditPostAsync(int id, EditViewModel model, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditPostAsync(Guid id, EditViewModel model, CancellationToken cancellationToken = default)
   {
     if (!ModelState.IsValid)
     {
@@ -82,7 +82,7 @@ public sealed class NotesController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The note deletion confirmation page.</returns>
   [HttpGet(Routes.Admin.NotesDeleteUrlTemplate, Name = Routes.Admin.NotesDeleteGetRoute)]
-  public async Task<IActionResult> DeleteGetAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> DeleteGetAsync(Guid id, CancellationToken cancellationToken = default)
   {
     var note = await _notesService.GetNoteAsync(id, cancellationToken);
 
@@ -94,7 +94,7 @@ public sealed class NotesController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the notes index.</returns>
   [HttpPost(Routes.Admin.NotesDeleteUrlTemplate, Name = Routes.Admin.NotesDeletePostRoute)]
-  public async Task<IActionResult> DeletePostAsync(int id, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> DeletePostAsync(Guid id, CancellationToken cancellationToken = default)
   {
     await _notesService.DeleteNoteAsync(id, cancellationToken);
 
