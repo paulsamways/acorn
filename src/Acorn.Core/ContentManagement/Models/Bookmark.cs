@@ -2,6 +2,7 @@ namespace Acorn.Core.ContentManagement.Models;
 
 /// <summary>Represents a saved site prepared for display.</summary>
 /// <param name="Id">The bookmark identifier.</param>
+/// <param name="ConcurrencyToken">The token identifying the bookmark version.</param>
 /// <param name="Url">The saved site's URL.</param>
 /// <param name="Title">The bookmark title.</param>
 /// <param name="Description">An optional description.</param>
@@ -12,6 +13,7 @@ namespace Acorn.Core.ContentManagement.Models;
 /// <param name="PublishedAt">The publication time in the user's time zone, if published.</param>
 public record Bookmark(
   Guid Id,
+  Guid ConcurrencyToken,
   string Url,
   string Title,
   string? Description,
@@ -20,4 +22,4 @@ public record Bookmark(
   DateTimeOffset CreatedAt,
   DateTimeOffset UpdatedAt,
   DateTimeOffset? PublishedAt)
-  : Content(Id, Tags, CreatedAt, UpdatedAt, PublishedAt);
+  : Content(Id, ConcurrencyToken, Tags, CreatedAt, UpdatedAt, PublishedAt);

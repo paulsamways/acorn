@@ -68,13 +68,29 @@ internal sealed class NotesService : INotesService
     return await Task.WhenAll(notes.Select(note => _noteMapper.MapAsync(note, cancellationToken)));
   }
 
-  public async Task<Note> UpdateNoteAsync(Guid id, string value, TagSet? tags = null, CancellationToken cancellationToken = default)
+  public async Task<Note> UpdateNoteAsync(
+    Guid id,
+    string value,
+    TagSet? tags = null,
+    Guid? concurrencyToken = null,
+    CancellationToken cancellationToken = default)
   {
     var note = await GetNoteContentAsync(id, cancellationToken);
     note.Value = value;
     note.Tags = tags?.ToList() ?? [];
 
-    _ = await _dbContext.SaveChangesAsync(cancellationToken);
+    if (concurrencyToken.HasValue)
+      _dbContext.Entry(note).Property(x => x.ConcurrencyToken).OriginalValue = concurrencyToken.Value;
+
+    try
+    {
+      _ = await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+    catch (DbUpdateConcurrencyException exception)
+    {
+      throw new ContentConcurrencyException(note.Id, exception);
+    }
+
     return await _noteMapper.MapAsync(note, cancellationToken);
   }
 

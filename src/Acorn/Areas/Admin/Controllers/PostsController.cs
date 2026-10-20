@@ -1,5 +1,6 @@
 using Acorn.Areas.Admin.Models.Posts;
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -52,17 +53,15 @@ public sealed class PostsController : Controller
   }
 
   /// <summary>Updates a post's title, body, and tags.</summary>
-  /// <param name="id">The post identifier.</param>
   /// <param name="model">The submitted post fields.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The edit page with validation errors or a redirect to the posts index.</returns>
   [HttpPost(Routes.Admin.PostsEditUrlTemplate, Name = Routes.Admin.PostsEditPostRoute)]
-  public async Task<IActionResult> EditPostAsync(Guid id, EditViewModel model, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditPostAsync(EditInputModel model, CancellationToken cancellationToken = default)
   {
     if (!ModelState.IsValid)
     {
-      model.PublishedAt = (await _postsService.GetPostAsync(id, cancellationToken)).PublishedAt;
-      return View("Edit", model);
+      return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
     }
 
     TagSet tags;
@@ -73,11 +72,25 @@ public sealed class PostsController : Controller
     catch (ArgumentException exception)
     {
       ModelState.AddModelError(nameof(model.Tags), exception.Message);
-      model.PublishedAt = (await _postsService.GetPostAsync(id, cancellationToken)).PublishedAt;
-      return View("Edit", model);
+      return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
     }
 
-    _ = await _postsService.UpdatePostAsync(id, model.Title, model.Body, tags, model.Excerpt, cancellationToken);
+    try
+    {
+      _ = await _postsService.UpdatePostAsync(
+        model.Id,
+        model.Title,
+        model.Body,
+        tags,
+        model.Excerpt,
+        concurrencyToken: model.ConcurrencyToken,
+        cancellationToken: cancellationToken);
+    }
+    catch (ContentConcurrencyException)
+    {
+      return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
+    }
+
     return RedirectToRoute(Routes.Admin.PostsIndexGetRoute);
   }
 
@@ -116,14 +129,24 @@ public sealed class PostsController : Controller
 
   private static EditViewModel MapToEditViewModel(Post post)
   {
-    return new EditViewModel
-    {
-      Id = post.Id,
-      Title = post.Title,
-      Body = post.Body,
-      Excerpt = post.Excerpt ?? string.Empty,
-      Tags = string.Join(", ", post.Tags.OrderBy(tag => tag, StringComparer.Ordinal)),
-      PublishedAt = post.PublishedAt
-    };
+    return new EditViewModel(
+      new EditInputModel
+      {
+        Id = post.Id,
+        ConcurrencyToken = post.ConcurrencyToken,
+        Title = post.Title,
+        Body = post.Body,
+        Excerpt = post.Excerpt ?? string.Empty,
+        Tags = string.Join(", ", post.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
+      },
+      post);
+  }
+
+  private async Task<EditViewModel> MapToEditViewModelAsync(
+    EditInputModel model,
+    CancellationToken cancellationToken)
+  {
+    var post = await _postsService.GetPostAsync(model.Id, cancellationToken);
+    return new EditViewModel(model, post);
   }
 }

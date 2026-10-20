@@ -1,5 +1,6 @@
 using Acorn.Areas.Admin.Models.Bookmarks;
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -68,17 +69,15 @@ public sealed class BookmarksController : Controller
   }
 
   /// <summary>Updates a bookmark.</summary>
-  /// <param name="id">The bookmark identifier.</param>
   /// <param name="model">The submitted bookmark fields.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the bookmark list or the edit page with validation errors.</returns>
   [HttpPost(Routes.Admin.BookmarksEditUrlTemplate, Name = Routes.Admin.BookmarksEditPostRoute)]
-  public async Task<IActionResult> EditPostAsync(Guid id, EditViewModel model, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditPostAsync(EditInputModel model, CancellationToken cancellationToken = default)
   {
     if (!ModelState.IsValid)
     {
-      model.PublishedAt = (await _bookmarksService.GetBookmarkAsync(id, cancellationToken)).PublishedAt;
-      return View("Edit", model);
+      return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
     }
 
     TagSet tags;
@@ -89,26 +88,29 @@ public sealed class BookmarksController : Controller
     catch (ArgumentException exception)
     {
       ModelState.AddModelError(nameof(model.Tags), exception.Message);
-      model.PublishedAt = (await _bookmarksService.GetBookmarkAsync(id, cancellationToken)).PublishedAt;
-      return View("Edit", model);
+      return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
     }
 
     try
     {
       _ = await _bookmarksService.UpdateBookmarkAsync(
-        id,
+        model.Id,
         model.Url,
         model.Title,
         model.Description,
         tags,
-        cancellationToken);
+        concurrencyToken: model.ConcurrencyToken,
+        cancellationToken: cancellationToken);
     }
     catch (ArgumentException exception)
     {
       var field = exception.ParamName == "title" ? nameof(model.Title) : nameof(model.Url);
       ModelState.AddModelError(field, exception.Message);
-      model.PublishedAt = (await _bookmarksService.GetBookmarkAsync(id, cancellationToken)).PublishedAt;
-      return View("Edit", model);
+      return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
+    }
+    catch (ContentConcurrencyException)
+    {
+      return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
     }
 
     return RedirectToRoute(Routes.Admin.BookmarksIndexGetRoute);
@@ -156,13 +158,23 @@ public sealed class BookmarksController : Controller
   }
 
   private static EditViewModel MapToEditViewModel(Bookmark bookmark)
-    => new()
-    {
-      Id = bookmark.Id,
-      Url = bookmark.Url,
-      Title = bookmark.Title,
-      Description = bookmark.Description ?? string.Empty,
-      Tags = string.Join(", ", bookmark.Tags.OrderBy(tag => tag, StringComparer.Ordinal)),
-      PublishedAt = bookmark.PublishedAt
-    };
+    => new(
+      new EditInputModel
+      {
+        Id = bookmark.Id,
+        ConcurrencyToken = bookmark.ConcurrencyToken,
+        Url = bookmark.Url,
+        Title = bookmark.Title,
+        Description = bookmark.Description ?? string.Empty,
+        Tags = string.Join(", ", bookmark.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
+      },
+      bookmark);
+
+  private async Task<EditViewModel> MapToEditViewModelAsync(
+    EditInputModel model,
+    CancellationToken cancellationToken)
+  {
+    var bookmark = await _bookmarksService.GetBookmarkAsync(model.Id, cancellationToken);
+    return new EditViewModel(model, bookmark);
+  }
 }

@@ -1,0 +1,7 @@
+@model Acorn.Areas.Admin.Models.ConcurrencyErrorDisplayModel
+
+<div class="danger bg-raised p-3" role="alert">
+  Your changes were not saved because this content changed after you opened it.
+  <a href="@Model.LatestVersionUrl" target="_blank" rel="noopener">Open the latest version</a>
+  to review the current version before reapplying your changes.
+</div>

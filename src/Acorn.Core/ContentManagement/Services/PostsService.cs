@@ -86,7 +86,14 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     return await _postMapper.MapAsync(post, cancellationToken);
   }
 
-  public async Task<Post> UpdatePostAsync(Guid id, string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
+  public async Task<Post> UpdatePostAsync(
+    Guid id,
+    string title,
+    string body,
+    TagSet? tags = null,
+    string? excerpt = null,
+    Guid? concurrencyToken = null,
+    CancellationToken cancellationToken = default)
   {
     var post = await GetPostContentAsync(id, cancellationToken);
     post.Title = title;
@@ -94,7 +101,18 @@ internal sealed class PostsService : IPostsService, IPostAuthoringService
     post.Excerpt = NormalizeExcerpt(excerpt);
     post.Tags = tags?.ToList() ?? [];
 
-    _ = await _dbContext.SaveChangesAsync(cancellationToken);
+    if (concurrencyToken.HasValue)
+      _dbContext.Entry(post).Property(x => x.ConcurrencyToken).OriginalValue = concurrencyToken.Value;
+
+    try
+    {
+      _ = await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+    catch (DbUpdateConcurrencyException exception)
+    {
+      throw new ContentConcurrencyException(post.Id, exception);
+    }
+
     return await _postMapper.MapAsync(post, cancellationToken);
   }
 

@@ -23,6 +23,14 @@ Persist GUID-valued primary and foreign keys as 16-byte SQLite `BLOB`s using one
 
 Keep natural keys where they are the domain identity: `Blob` remains keyed by its SHA-256 digest. Framework-owned dependent Identity tables may retain their integer or composite keys; GUID user/role keys and their foreign keys use the same BLOB representation. The rationale, entity inventory, migration approach, and verification gates are in [docs/plan/pk-uuid-plan.md](docs/plan/pk-uuid-plan.md).
 
+### Optimistic concurrency
+
+Content entities use an application-managed GUID concurrency token. EF Core includes the token's original value when updating an entity; if another save has changed it, the update affects no row and EF reports a concurrency conflict. `ConcurrencySaveChangesInterceptor` assigns a new UUIDv7 token whenever an `IConcurrencyTracked` entity is added or modified. Content services translate EF's concurrency exception into `ContentConcurrencyException`.
+
+Update services accept an optional expected token. Supplying the token from the edit form detects changes made since that form was loaded. Omitting it uses the token from the entity fetched by the service, allowing a client-wins update relative to the form while still detecting a concurrent save between the service's fetch and its save.
+
+This is currently implemented for content, but `IConcurrencyTracked` and the interceptor provide a persistence pattern that can be applied to other entities that need optimistic concurrency. Such entities must also configure their token as an EF Core concurrency token.
+
 ## Building
 
 Build the .NET solution from the `src` directory:

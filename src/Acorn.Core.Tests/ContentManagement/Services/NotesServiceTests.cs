@@ -1,4 +1,5 @@
 using Acorn.Core.ContentManagement.Models;
+using Acorn.Core.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
@@ -73,7 +74,11 @@ internal class NotesServiceTests : ServicesTestBase
     var note = await NotesService.CreateNoteAsync("Original note", TagSet.Parse("old-tag"));
     DbContext.ChangeTracker.Clear();
 
-    var updatedNote = await NotesService.UpdateNoteAsync(note.Id, "Updated note", TagSet.Parse("New Note"));
+    var updatedNote = await NotesService.UpdateNoteAsync(
+      note.Id,
+      "Updated note",
+      TagSet.Parse("New Note"),
+      concurrencyToken: note.ConcurrencyToken);
 
     await Assert.That(updatedNote.Value).IsEqualTo("Updated note");
     await Assert.That(updatedNote.Tags).IsEquivalentTo(["new", "note"]);
@@ -81,6 +86,48 @@ internal class NotesServiceTests : ServicesTestBase
     var savedNote = await DbContext.Notes.SingleAsync(x => x.Id == note.Id);
     await Assert.That(savedNote.Value).IsEqualTo("Updated note");
     await Assert.That(savedNote.Tags).IsEquivalentTo(["new", "note"]);
+  }
+
+  [Test]
+  public async Task UpdateNoteAsync_RejectsStaleVersion()
+  {
+    var note = await NotesService.CreateNoteAsync("Original note");
+    _ = await NotesService.UpdateNoteAsync(note.Id, "First update", concurrencyToken: note.ConcurrencyToken);
+
+    await Assert.That(async () =>
+      await NotesService.UpdateNoteAsync(note.Id, "Stale update", concurrencyToken: note.ConcurrencyToken))
+      .Throws<Acorn.Core.ContentManagement.Exceptions.ContentConcurrencyException>();
+  }
+
+  [Test]
+  public async Task UpdateNoteAsync_UsesLatestVersionWhenConcurrencyTokenIsOmitted()
+  {
+    var note = await NotesService.CreateNoteAsync("Original note");
+    _ = await NotesService.UpdateNoteAsync(note.Id, "First update", concurrencyToken: note.ConcurrencyToken);
+    DbContext.ChangeTracker.Clear();
+
+    var updatedNote = await NotesService.UpdateNoteAsync(note.Id, "Client wins update");
+
+    await Assert.That(updatedNote.Value).IsEqualTo("Client wins update");
+  }
+
+  [Test]
+  public async Task UpdateNoteAsync_RejectsConcurrentUpdate()
+  {
+    var note = await NotesService.CreateNoteAsync("Original note");
+    var competingOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
+      .UseSqlite(DbContext.Database.GetDbConnection())
+      .Options;
+    await using var competingContext = new ApplicationDbContext(competingOptions);
+    var currentNote = await DbContext.Notes.SingleAsync(x => x.Id == note.Id);
+    var staleNote = await competingContext.Notes.SingleAsync(x => x.Id == note.Id);
+
+    currentNote.Value = "First update";
+    await DbContext.SaveChangesAsync();
+
+    staleNote.Value = "Stale update";
+    await Assert.That(async () => await competingContext.SaveChangesAsync())
+      .Throws<DbUpdateConcurrencyException>();
   }
 
   [Test]

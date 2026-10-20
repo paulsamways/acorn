@@ -33,9 +33,15 @@ public interface INotesService
   /// <param name="id">The note identifier.</param>
   /// <param name="note">The replacement Markdown content.</param>
   /// <param name="tags">Optional replacement tags.</param>
+  /// <param name="concurrencyToken">The note version returned when it was read, if stale updates should be rejected.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The updated note.</returns>
-  Task<Note> UpdateNoteAsync(Guid id, string note, TagSet? tags = null, CancellationToken cancellationToken = default);
+  Task<Note> UpdateNoteAsync(
+    Guid id,
+    string note,
+    TagSet? tags = null,
+    Guid? concurrencyToken = null,
+    CancellationToken cancellationToken = default);
 
   /// <summary>Soft-deletes a note.</summary>
   /// <param name="id">The note identifier.</param>

@@ -36,9 +36,17 @@ public interface IBookmarksService
   /// <param name="title">The bookmark title.</param>
   /// <param name="description">An optional description.</param>
   /// <param name="tags">Replacement tags.</param>
+  /// <param name="concurrencyToken">The bookmark version returned when it was read, if stale updates should be rejected.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The updated bookmark.</returns>
-  Task<Bookmark> UpdateBookmarkAsync(Guid id, string url, string title, string? description = null, TagSet? tags = null, CancellationToken cancellationToken = default);
+  Task<Bookmark> UpdateBookmarkAsync(
+    Guid id,
+    string url,
+    string title,
+    string? description = null,
+    TagSet? tags = null,
+    Guid? concurrencyToken = null,
+    CancellationToken cancellationToken = default);
 
   /// <summary>Soft-deletes a bookmark.</summary>
   /// <param name="id">The bookmark identifier.</param>

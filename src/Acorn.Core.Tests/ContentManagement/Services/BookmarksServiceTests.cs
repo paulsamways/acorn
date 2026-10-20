@@ -77,7 +77,8 @@ internal class BookmarksServiceTests : ServicesTestBase
       "https://new.example/path",
       "New title",
       "**New** description",
-      TagSet.Parse("New Tag"));
+      TagSet.Parse("New Tag"),
+      concurrencyToken: created.ConcurrencyToken);
 
     await Assert.That(updated.Url).IsEqualTo("https://new.example/path");
     await Assert.That(updated.Title).IsEqualTo("New title");
@@ -89,6 +90,25 @@ internal class BookmarksServiceTests : ServicesTestBase
     var saved = await DbContext.Bookmarks.SingleAsync(x => x.Id == created.Id);
     await Assert.That(saved.Url).IsEqualTo("https://new.example/path");
     await Assert.That(saved.Tags).IsEquivalentTo(["new", "tag"]);
+  }
+
+  [Test]
+  public async Task UpdateBookmarkAsync_UsesLatestVersionWhenConcurrencyTokenIsOmitted()
+  {
+    var bookmark = await BookmarksService.CreateBookmarkAsync("https://example.com", "Original title");
+    _ = await BookmarksService.UpdateBookmarkAsync(
+      bookmark.Id,
+      "https://example.com",
+      "First title",
+      concurrencyToken: bookmark.ConcurrencyToken);
+    DbContext.ChangeTracker.Clear();
+
+    var updatedBookmark = await BookmarksService.UpdateBookmarkAsync(
+      bookmark.Id,
+      "https://example.com",
+      "Client wins title");
+
+    await Assert.That(updatedBookmark.Title).IsEqualTo("Client wins title");
   }
 
   [Test]
@@ -129,7 +149,11 @@ internal class BookmarksServiceTests : ServicesTestBase
 
     try
     {
-      await BookmarksService.UpdateBookmarkAsync(bookmark.Id, "javascript:alert(1)", "Example");
+      await BookmarksService.UpdateBookmarkAsync(
+        bookmark.Id,
+        "javascript:alert(1)",
+        "Example",
+        concurrencyToken: bookmark.ConcurrencyToken);
     }
     catch (ArgumentException)
     {

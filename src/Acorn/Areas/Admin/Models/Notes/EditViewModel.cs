@@ -1,21 +1,31 @@
-using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using Acorn.Core.ContentManagement.Models;
 
 namespace Acorn.Areas.Admin.Models.Notes;
 
-/// <summary>Contains the editable fields for an administrative note form.</summary>
-public sealed class EditViewModel
+/// <summary>Contains the data required to render the administrative note edit page.</summary>
+public sealed class EditViewModel : EditInputModel, IContentViewModel<Note>
 {
-  /// <summary>Gets or sets the note identifier.</summary>
-  public Guid Id { get; init; }
+  /// <summary>Creates the note page model from its input and current saved note.</summary>
+  /// <param name="input">The input values to display.</param>
+  /// <param name="current">The current saved note.</param>
+  [SetsRequiredMembers]
+  public EditViewModel(EditInputModel input, Note current)
+  {
+    ArgumentNullException.ThrowIfNull(input);
+    ArgumentNullException.ThrowIfNull(current);
 
-  /// <summary>Gets or sets the note's Markdown value.</summary>
-  [DisplayFormat(ConvertEmptyStringToNull = true)]
-  public string Value { get; set; } = string.Empty;
+    if (input.Id != current.Id)
+      throw new ArgumentException("The input and current note identifiers must match.", nameof(input));
 
-  /// <summary>Gets or sets space- or comma-separated note tags.</summary>
-  [RegularExpression(@"^[A-Za-z0-9_,\s-]*$", ErrorMessage = "Tags may contain only letters, numbers, underscores, hyphens, spaces, and commas.")]
-  public string? Tags { get; set; }
+    Id = input.Id;
+    ConcurrencyToken = input.ConcurrencyToken;
+    Value = input.Value;
+    Tags = input.Tags;
+    Published = input.Published;
+    Current = current;
+  }
 
-  /// <summary>Gets or sets whether the note is published.</summary>
-  public bool Published { get; set; }
+  /// <inheritdoc />
+  public Note Current { get; }
 }

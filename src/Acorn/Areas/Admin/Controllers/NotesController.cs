@@ -1,5 +1,6 @@
 using Acorn.Areas.Admin.Models.Notes;
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -55,24 +56,34 @@ public sealed class NotesController : Controller
   }
 
   /// <summary>Updates a note and optionally publishes it.</summary>
-  /// <param name="id">The note identifier.</param>
   /// <param name="model">The submitted note fields.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the notes index.</returns>
   [HttpPost(Routes.Admin.NotesEditUrlTemplate, Name = Routes.Admin.NotesEditPostRoute)]
-  public async Task<IActionResult> EditPostAsync(Guid id, EditViewModel model, CancellationToken cancellationToken = default)
+  public async Task<IActionResult> EditPostAsync(EditInputModel model, CancellationToken cancellationToken = default)
   {
     if (!ModelState.IsValid)
     {
-      model.Published = (await _notesService.GetNoteAsync(id, cancellationToken)).PublishedAt.HasValue;
-      return View("Edit", model);
+      return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
     }
 
     var tags = TagSet.Parse(model.Tags);
-    _ = await _notesService.UpdateNoteAsync(id, model.Value, tags, cancellationToken);
+    try
+    {
+      _ = await _notesService.UpdateNoteAsync(
+        model.Id,
+        model.Value,
+        tags,
+        concurrencyToken: model.ConcurrencyToken,
+        cancellationToken: cancellationToken);
+    }
+    catch (ContentConcurrencyException)
+    {
+      return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
+    }
 
     if (model.Published)
-      _ = await _notesService.PublishNoteAsync(id, cancellationToken);
+      _ = await _notesService.PublishNoteAsync(model.Id, cancellationToken);
 
     return RedirectToRoute(Routes.Admin.NotesIndexGetRoute);
   }
@@ -102,11 +113,20 @@ public sealed class NotesController : Controller
   }
 
   private EditViewModel MapToEditViewModel(Note note)
-    => new()
+    => new(new EditInputModel
     {
       Id = note.Id,
+      ConcurrencyToken = note.ConcurrencyToken,
       Value = note.Value,
       Tags = string.Join(", ", note.Tags.OrderBy(tag => tag, StringComparer.Ordinal)),
       Published = note.PublishedAt.HasValue
-    };
+    }, note);
+
+  private async Task<EditViewModel> MapToEditViewModelAsync(
+    EditInputModel model,
+    CancellationToken cancellationToken)
+  {
+    var note = await _notesService.GetNoteAsync(model.Id, cancellationToken);
+    return new EditViewModel(model, note);
+  }
 }

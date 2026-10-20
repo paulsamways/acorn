@@ -31,9 +31,17 @@ public interface IPostAuthoringService
   /// <param name="body">The replacement Markdown body.</param>
   /// <param name="tags">Optional replacement tags.</param>
   /// <param name="excerpt">Optional replacement Markdown excerpt.</param>
+  /// <param name="concurrencyToken">The post version returned when it was read, if stale updates should be rejected.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The updated post.</returns>
-  Task<Post> UpdatePostAsync(Guid id, string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default);
+  Task<Post> UpdatePostAsync(
+    Guid id,
+    string title,
+    string body,
+    TagSet? tags = null,
+    string? excerpt = null,
+    Guid? concurrencyToken = null,
+    CancellationToken cancellationToken = default);
 
   /// <summary>Soft-deletes a post.</summary>
   /// <param name="id">The post identifier.</param>

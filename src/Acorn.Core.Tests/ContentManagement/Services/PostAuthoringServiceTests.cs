@@ -63,7 +63,13 @@ internal class PostAuthoringServiceTests : ServicesTestBase
     var post = await PostAuthoringService.CreatePostAsync("Original title", "Original body", TagSet.Parse("draft"));
     DbContext.ChangeTracker.Clear();
 
-    var updatedPost = await PostAuthoringService.UpdatePostAsync(post.Id, "Updated title", "## Updated body", TagSet.Parse("Published New Tag"), "Updated **excerpt**");
+    var updatedPost = await PostAuthoringService.UpdatePostAsync(
+      post.Id,
+      "Updated title",
+      "## Updated body",
+      TagSet.Parse("Published New Tag"),
+      "Updated **excerpt**",
+      concurrencyToken: post.ConcurrencyToken);
 
     await Assert.That(updatedPost.Title).IsEqualTo("Updated title");
     await Assert.That(updatedPost.Excerpt).IsEqualTo("Updated **excerpt**");
@@ -77,6 +83,18 @@ internal class PostAuthoringServiceTests : ServicesTestBase
     await Assert.That(savedPost.Title).IsEqualTo("Updated title");
     await Assert.That(savedPost.Excerpt).IsEqualTo("Updated **excerpt**");
     await Assert.That(savedPost.Tags).IsEquivalentTo(["published", "new", "tag"]);
+  }
+
+  [Test]
+  public async Task UpdatePostAsync_UsesLatestVersionWhenConcurrencyTokenIsOmitted()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Original title", "Original body");
+    _ = await PostAuthoringService.UpdatePostAsync(post.Id, "First title", "Original body", concurrencyToken: post.ConcurrencyToken);
+    DbContext.ChangeTracker.Clear();
+
+    var updatedPost = await PostAuthoringService.UpdatePostAsync(post.Id, "Client wins title", "Original body");
+
+    await Assert.That(updatedPost.Title).IsEqualTo("Client wins title");
   }
 
   [Test]

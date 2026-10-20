@@ -39,6 +39,12 @@ internal sealed class ContentEntityConfiguration : IEntityTypeConfiguration<Cont
       .IsRequired();
 
     builder
+      .Property(x => x.ConcurrencyToken)
+      .HasColumnName("concurrency_token")
+      .IsConcurrencyToken()
+      .IsRequired();
+
+    builder
       .Property(x => x.PublishedAt)
       .HasColumnName("published_at");
 

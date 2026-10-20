@@ -1,28 +1,32 @@
-using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
+using Acorn.Core.ContentManagement.Models;
 
 namespace Acorn.Areas.Admin.Models.Posts;
 
-/// <summary>Contains the editable fields for an administrative post form.</summary>
-public sealed class EditViewModel
+/// <summary>Contains the data required to render the administrative post edit page.</summary>
+public sealed class EditViewModel : EditInputModel, IContentViewModel<Post>
 {
-  /// <summary>Gets or sets the post identifier.</summary>
-  public Guid Id { get; init; }
+  /// <summary>Creates the post page model from its input and current saved post.</summary>
+  /// <param name="input">The input values to display.</param>
+  /// <param name="current">The current saved post.</param>
+  [SetsRequiredMembers]
+  public EditViewModel(EditInputModel input, Post current)
+  {
+    ArgumentNullException.ThrowIfNull(input);
+    ArgumentNullException.ThrowIfNull(current);
 
-  /// <summary>Gets or sets the post title.</summary>
-  [Required]
-  public string Title { get; set; } = string.Empty;
+    if (input.Id != current.Id)
+      throw new ArgumentException("The input and current post identifiers must match.", nameof(input));
 
-  /// <summary>Gets or sets an optional Markdown excerpt for post listings.</summary>
-  public string? Excerpt { get; set; }
+    Id = input.Id;
+    ConcurrencyToken = input.ConcurrencyToken;
+    Title = input.Title;
+    Body = input.Body;
+    Excerpt = input.Excerpt;
+    Tags = input.Tags;
+    Current = current;
+  }
 
-  /// <summary>Gets or sets the Markdown post body.</summary>
-  [Required]
-  public string Body { get; set; } = string.Empty;
-
-  /// <summary>Gets or sets space- or comma-separated post tags.</summary>
-  [RegularExpression(@"^[A-Za-z0-9_,\s-]*$", ErrorMessage = "Tags may contain only letters, numbers, underscores, hyphens, and can be separated by spaces or commas.")]
-  public string? Tags { get; set; }
-
-  /// <summary>Gets or sets the publication time, if the post is published.</summary>
-  public DateTimeOffset? PublishedAt { get; set; }
+  /// <inheritdoc />
+  public Post Current { get; }
 }

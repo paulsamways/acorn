@@ -43,6 +43,42 @@ internal class UuidSchemaTests
   }
 
   [Test]
+  public async Task AddContentConcurrencyToken_PreservesExistingContent()
+  {
+    var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+      .UseSqlite("Data Source=:memory:")
+      .Options;
+
+    await using var dbContext = new ApplicationDbContext(options);
+    await dbContext.Database.OpenConnectionAsync();
+    await dbContext.Database.MigrateAsync("20261016210311_InitialUuidSchema");
+
+    var user = new User("migration-author@example.test");
+    dbContext.Users.Add(user);
+    await dbContext.SaveChangesAsync();
+
+    var contentId = Guid.CreateVersion7();
+    var authoredAt = DateTime.UtcNow;
+    await dbContext.Database.ExecuteSqlAsync($"""
+      INSERT INTO content (
+        content_id, content_type, created_at, updated_at, published_at, deleted_at,
+        author_id, tags, note_value
+      )
+      VALUES (
+        {contentId.ToByteArray(bigEndian: true)}, 'note', {authoredAt}, {authoredAt},
+        NULL, NULL, {user.Id.ToByteArray(bigEndian: true)}, '[]', 'Existing note'
+      )
+      """);
+
+    await dbContext.Database.MigrateAsync();
+    dbContext.ChangeTracker.Clear();
+
+    var note = await dbContext.Notes.SingleAsync(x => x.Id == contentId);
+    await Assert.That(note.Value).IsEqualTo("Existing note");
+    await Assert.That(note.ConcurrencyToken).IsEqualTo(Guid.Empty);
+  }
+
+  [Test]
   public async Task GuidKeysAndForeignKeys_RoundTripAsOrderedBlobs()
   {
     var options = new DbContextOptionsBuilder<ApplicationDbContext>()

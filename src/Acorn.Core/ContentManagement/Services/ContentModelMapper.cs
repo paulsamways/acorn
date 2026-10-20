@@ -38,6 +38,7 @@ internal sealed class ContentModelMapper :
 
     return new Post(
       content.Id,
+      content.ConcurrencyToken,
       content.Title,
       content.Excerpt,
       content.Excerpt is null ? null : await RenderMarkdownAsync(content.Excerpt, DerivationName.Images.Preview, cancellationToken),
@@ -57,6 +58,7 @@ internal sealed class ContentModelMapper :
 
     return new Note(
       content.Id,
+      content.ConcurrencyToken,
       content.Value,
       await RenderMarkdownAsync(content.Value, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
@@ -73,6 +75,7 @@ internal sealed class ContentModelMapper :
 
     return new Bookmark(
       content.Id,
+      content.ConcurrencyToken,
       content.Url,
       content.Title,
       content.Description,

@@ -79,6 +79,7 @@ internal sealed class BookmarksService : IBookmarksService
     string title,
     string? description = null,
     TagSet? tags = null,
+    Guid? concurrencyToken = null,
     CancellationToken cancellationToken = default)
   {
     var bookmark = await GetBookmarkContentAsync(id, cancellationToken);
@@ -87,7 +88,18 @@ internal sealed class BookmarksService : IBookmarksService
     bookmark.Description = NormalizeDescription(description);
     bookmark.Tags = tags?.ToList() ?? [];
 
-    _ = await _dbContext.SaveChangesAsync(cancellationToken);
+    if (concurrencyToken.HasValue)
+      _dbContext.Entry(bookmark).Property(x => x.ConcurrencyToken).OriginalValue = concurrencyToken.Value;
+
+    try
+    {
+      _ = await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+    catch (DbUpdateConcurrencyException exception)
+    {
+      throw new ContentConcurrencyException(bookmark.Id, exception);
+    }
+
     return await _bookmarkMapper.MapAsync(bookmark, cancellationToken);
   }
 

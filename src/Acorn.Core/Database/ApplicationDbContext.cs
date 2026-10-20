@@ -45,7 +45,9 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
   {
     base.OnConfiguring(optionsBuilder);
 
-    _ = optionsBuilder.AddInterceptors(new AuditableSaveChangesInterceptor());
+    _ = optionsBuilder.AddInterceptors(
+      new AuditableSaveChangesInterceptor(),
+      new ConcurrencySaveChangesInterceptor());
     _ = optionsBuilder.ReplaceService<IMigrationsSqlGenerator, AcornSqliteMigrationsSqlGenerator>();
   }
 

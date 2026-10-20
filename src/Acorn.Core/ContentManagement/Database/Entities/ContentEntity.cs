@@ -3,9 +3,11 @@ using Acorn.Core.Database.Entities;
 
 namespace Acorn.Core.ContentManagement.Database.Entities;
 
-internal abstract class ContentEntity : IAuditable
+internal abstract class ContentEntity : IAuditable, IConcurrencyTracked
 {
   public Guid Id { get; private set; } = Guid.CreateVersion7();
+
+  public Guid ConcurrencyToken { get; set; } = Guid.CreateVersion7();
 
   public DateTime CreatedAt { get; set; }
 

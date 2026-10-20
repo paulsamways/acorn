@@ -4,7 +4,7 @@
   <div class="f-column w-wide g-4 p-4">
     <header class="f-row f-justify-space-between f-align-center">
       <h2>Post</h2>
-      @if (Model.PublishedAt is null)
+      @if (Model.Current.PublishedAt is null)
       {
         <form asp-route="@Routes.Admin.PostsPublishPostRoute" asp-route-id="@Model.Id" method="POST">
           <button type="submit">Publish</button>
@@ -12,12 +12,14 @@
       }
       else
       {
-        <span class="muted">Published @Model.PublishedAt.Value</span>
+        <span class="muted">Published @Model.Current.PublishedAt.Value</span>
       }
     </header>
 
     <form class="f-column g-3" asp-route="@Routes.Admin.PostsEditPostRoute" asp-route-id="@Model.Id" method="POST">
       <div asp-validation-summary="All" class="danger"></div>
+      @await Component.InvokeAsync("ConcurrencyError", new { model = Model, latestVersionRoute = Routes.Admin.PostsEditGetRoute })
+      <input asp-for="ConcurrencyToken" type="hidden" />
 
       <label asp-for="Title">Title</label>
       <input asp-for="Title" />

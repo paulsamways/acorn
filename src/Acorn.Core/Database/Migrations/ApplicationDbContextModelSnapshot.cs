@@ -15,7 +15,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261016210311_InitialUuidSchema";
+    public override string LastMigrationId => "20261019203527_AddContentConcurrencyToken";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -73,6 +73,12 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .IsRequired()
                     .HasColumnType("BLOB")
                     .HasColumnName("author_id");
+
+                b.Property<byte[]>("ConcurrencyToken")
+                    .IsConcurrencyToken()
+                    .IsRequired()
+                    .HasColumnType("BLOB")
+                    .HasColumnName("concurrency_token");
 
                 b.Property<DateTime>("CreatedAt")
                     .HasColumnType("TEXT")
