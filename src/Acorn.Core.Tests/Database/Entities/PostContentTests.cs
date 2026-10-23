@@ -1,4 +1,5 @@
 using Acorn.Core.ContentManagement.Database.Entities;
+using Acorn.Core.ContentManagement.Database;
 using Acorn.Core.Database.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,13 +15,15 @@ internal class PostContentTests : EntitiesTestBase
 
     var post = CreatePost(author.Id);
     DbContext.Posts.Add(post);
+    DbContext.PostRevisions.Add(CreateRevision(post));
     await DbContext.SaveChangesAsync();
 
     DbContext.ChangeTracker.Clear();
     var savedPost = await DbContext.Posts.SingleAsync(x => x.Id == post.Id);
-    await Assert.That(savedPost.Title).IsEqualTo("Initial title");
-    await Assert.That(savedPost.Body).IsEqualTo("Initial body");
-    await Assert.That(savedPost.Tags).IsEquivalentTo(["draft", "testing"]);
+    var savedRevision = await DbContext.PostRevisions.SingleAsync(x => x.ContentId == savedPost.Id);
+    await Assert.That(savedRevision.Title).IsEqualTo("Initial title");
+    await Assert.That(savedRevision.Body).IsEqualTo("Initial body");
+    await Assert.That(savedRevision.Tags).IsEquivalentTo(["draft", "testing"]);
     await Assert.That(savedPost.AuthorId).IsEqualTo(author.Id);
   }
 
@@ -32,17 +35,18 @@ internal class PostContentTests : EntitiesTestBase
 
     var post = CreatePost(author.Id);
     DbContext.Posts.Add(post);
+    DbContext.PostRevisions.Add(CreateRevision(post));
     await DbContext.SaveChangesAsync();
 
     DbContext.ChangeTracker.Clear();
-    var savedPost = await DbContext.Posts.SingleAsync(x => x.Id == post.Id);
+    var savedPost = await DbContext.PostRevisions.SingleAsync(x => x.ContentId == post.Id);
     savedPost.Title = "Updated title";
     savedPost.Body = "Updated body";
     savedPost.Tags = ["published"];
     await DbContext.SaveChangesAsync();
 
     DbContext.ChangeTracker.Clear();
-    var updatedPost = await DbContext.Posts.SingleAsync(x => x.Id == post.Id);
+    var updatedPost = await DbContext.PostRevisions.SingleAsync(x => x.ContentId == post.Id);
     await Assert.That(updatedPost.Title).IsEqualTo("Updated title");
     await Assert.That(updatedPost.Body).IsEqualTo("Updated body");
     await Assert.That(updatedPost.Tags).IsEquivalentTo(["published"]);
@@ -56,6 +60,7 @@ internal class PostContentTests : EntitiesTestBase
 
     var post = CreatePost(author.Id);
     DbContext.Posts.Add(post);
+    DbContext.PostRevisions.Add(CreateRevision(post));
     await DbContext.SaveChangesAsync();
 
     DbContext.ChangeTracker.Clear();
@@ -70,10 +75,19 @@ internal class PostContentTests : EntitiesTestBase
   {
     return new PostContentEntity
     {
-      AuthorId = authorId,
+      AuthorId = authorId
+    };
+  }
+
+  private static PostRevisionEntity CreateRevision(PostContentEntity content)
+    => new()
+    {
+      Content = content,
+      ContentId = content.Id,
+      RevisionNumber = 1,
+      State = ContentRevisionState.Draft,
       Title = "Initial title",
       Body = "Initial body",
       Tags = ["draft", "testing"]
     };
-  }
 }

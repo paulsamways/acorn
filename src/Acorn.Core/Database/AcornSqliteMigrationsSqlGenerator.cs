@@ -22,9 +22,14 @@ internal sealed class AcornSqliteMigrationsSqlGenerator : SqliteMigrationsSqlGen
   {
     base.Generate(operation, model, builder, terminate: false);
 
+    var tableName = operation.Name.StartsWith("ef_temp_", StringComparison.Ordinal)
+      ? operation.Name["ef_temp_".Length..]
+      : operation.Name;
+
     if (model?.GetEntityTypes().Any(entity =>
-        entity.GetTableName() == operation.Name &&
-        entity.FindAnnotation(SqliteTableAnnotations.WithoutRowid)?.Value is true) == true)
+        entity.GetTableName() == tableName &&
+        entity.FindAnnotation(SqliteTableAnnotations.WithoutRowid)?.Value is true) == true ||
+      tableName is "blob" or "content" or "file")
     {
       _ = builder.Append(" WITHOUT ROWID");
     }

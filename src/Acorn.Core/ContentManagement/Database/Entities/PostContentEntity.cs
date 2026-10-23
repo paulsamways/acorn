@@ -1,11 +1,16 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Acorn.Core.ContentManagement.Database.Entities;
 
 internal sealed class PostContentEntity : ContentEntity
 {
-  public required string Title { get; set; }
+  internal PostContentEntity()
+  {
+  }
 
-  public string? Excerpt { get; set; }
-
-  public required string Body { get; set; }
-
+  [SetsRequiredMembers]
+  internal PostContentEntity(Guid authorId)
+    : base(authorId)
+  {
+  }
 }

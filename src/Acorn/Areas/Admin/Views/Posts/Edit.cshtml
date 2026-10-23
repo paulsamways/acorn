@@ -4,15 +4,12 @@
   <div class="f-column w-wide g-4 p-4">
     <header class="f-row f-justify-space-between f-align-center">
       <h2>Post</h2>
-      @if (Model.Current.PublishedAt is null)
+      <span class="muted">@(Model.Current.IsPublished ? "Published" : "Not published")</span>
+      @if (Model.Current.IsDraft)
       {
         <form asp-route="@Routes.Admin.PostsPublishPostRoute" asp-route-id="@Model.Id" method="POST">
-          <button type="submit">Publish</button>
+          <button type="submit">Publish draft</button>
         </form>
-      }
-      else
-      {
-        <span class="muted">Published @Model.Current.PublishedAt.Value</span>
       }
     </header>
 

@@ -6,6 +6,7 @@
   <div class="f-column w-wide g-4 p-4">
     <header class="f-row f-justify-space-between f-align-center">
       <h2>Note</h2>
+      <span class="muted">@(Model.Current.IsPublished ? "Published" : "Not published")</span>
     </header>
 
     <form class="f-column g-3" asp-route="@Routes.Admin.NotesEditPostRoute" asp-route-id="@Model.Id" method="POST">
@@ -22,10 +23,6 @@
           <input asp-for="Tags" />
           <span asp-validation-for="Tags" class="danger"></span>
 
-          <label>
-            <input asp-for="Published" type="checkbox"" /> Published
-          </label>
-
         </div>
       </details>
 
@@ -38,6 +35,10 @@
         </div>
         <div>
           <button type="submit">Save changes</button>
+          @if (Model.Current.IsDraft)
+          {
+            <button type="submit" name="Publish" value="true">Save and publish</button>
+          }
         </div>
       </div>
     </form>

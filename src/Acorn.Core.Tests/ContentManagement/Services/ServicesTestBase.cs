@@ -28,11 +28,15 @@ internal abstract class ServicesTestBase
 
   protected INotesService NotesService { get; private set; } = null!;
 
+  protected INoteAuthoringService NoteAuthoringService { get; private set; } = null!;
+
   protected IContentService ContentService { get; private set; } = null!;
 
   protected IContentAttachmentService ContentAttachmentService { get; private set; } = null!;
 
   protected IBookmarksService BookmarksService { get; private set; } = null!;
+
+  protected IBookmarkAuthoringService BookmarkAuthoringService { get; private set; } = null!;
 
   protected IPostsService PostsService { get; private set; } = null!;
 
@@ -66,7 +70,9 @@ internal abstract class ServicesTestBase
     ContentService = _serviceScope.ServiceProvider.GetRequiredService<IContentService>();
     ContentAttachmentService = _serviceScope.ServiceProvider.GetRequiredService<IContentAttachmentService>();
     NotesService = _serviceScope.ServiceProvider.GetRequiredService<INotesService>();
+    NoteAuthoringService = _serviceScope.ServiceProvider.GetRequiredService<INoteAuthoringService>();
     BookmarksService = _serviceScope.ServiceProvider.GetRequiredService<IBookmarksService>();
+    BookmarkAuthoringService = _serviceScope.ServiceProvider.GetRequiredService<IBookmarkAuthoringService>();
     PostsService = _serviceScope.ServiceProvider.GetRequiredService<IPostsService>();
     PostAuthoringService = _serviceScope.ServiceProvider.GetRequiredService<IPostAuthoringService>();
   }

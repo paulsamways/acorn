@@ -3,149 +3,44 @@ using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.Database;
 using Acorn.Core.Mapping;
-using Acorn.Core.Security;
 using Microsoft.EntityFrameworkCore;
 
 namespace Acorn.Core.ContentManagement.Services;
 
-internal sealed class PostsService : IPostsService, IPostAuthoringService
+internal sealed class PostsService : IPostsService
 {
   private readonly ApplicationDbContext _dbContext;
-  private readonly IUserContextService _userContextService;
-  private readonly IEntityModelMapper<PostContentEntity, Post> _postMapper;
+  private readonly IEntityModelMapper<PostRevisionEntity, Post> _postMapper;
 
   public PostsService(
     ApplicationDbContext dbContext,
-    IUserContextService userContextService,
-    IEntityModelMapper<PostContentEntity, Post> postMapper)
+    IEntityModelMapper<PostRevisionEntity, Post> postMapper)
   {
     _dbContext = dbContext;
-    _userContextService = userContextService;
     _postMapper = postMapper;
-  }
-
-  public async Task<Post> CreatePostAsync(string title, string body, TagSet? tags = null, string? excerpt = null, CancellationToken cancellationToken = default)
-  {
-    var postContent = new PostContentEntity
-    {
-      AuthorId = _userContextService.GetCurrentUserId(),
-      Title = title,
-      Body = body,
-      Excerpt = NormalizeExcerpt(excerpt),
-      Tags = tags?.ToList() ?? []
-    };
-
-    _ = await _dbContext.Posts.AddAsync(postContent, cancellationToken);
-    _ = await _dbContext.SaveChangesAsync(cancellationToken);
-
-    return await _postMapper.MapAsync(postContent, cancellationToken);
-  }
-
-  public async Task<Post> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
-  {
-    var postContent = await GetPostContentAsync(id, cancellationToken);
-    return await _postMapper.MapAsync(postContent, cancellationToken);
   }
 
   public async Task<IEnumerable<Post>> GetPostsAsync(CancellationToken cancellationToken = default)
   {
-    var posts = await _dbContext
-      .Posts
-      .Include(x => x.Attachments)
-      .ThenInclude(x => x.File)
-      .OrderByDescending(x => x.CreatedAt)
+    var contents = await _dbContext.Posts
+      .Include(x => x.PublishedRevision)
+      .Where(x => x.PublishedRevisionId != null)
+      .OrderByDescending(x => x.PublishedRevision!.PublishedAt)
       .ToArrayAsync(cancellationToken);
 
-    return await Task.WhenAll(posts.Select(post => _postMapper.MapAsync(post, cancellationToken)));
+    return await Task.WhenAll(contents.Select(content =>
+      _postMapper.MapAsync((PostRevisionEntity)content.PublishedRevision!, cancellationToken)));
   }
 
-  public async Task<IEnumerable<Post>> GetPublishedPostsAsync(CancellationToken cancellationToken = default)
+  public async Task<Post> GetPostAsync(Guid id, CancellationToken cancellationToken = default)
   {
-    var posts = await _dbContext
-      .Posts
-      .Include(x => x.Attachments)
-      .ThenInclude(x => x.File)
-      .Where(x => x.PublishedAt != null)
-      .OrderByDescending(x => x.PublishedAt)
-      .ToArrayAsync(cancellationToken);
+    var content = await _dbContext.Posts
+      .Include(x => x.PublishedRevision)
+      .FirstOrDefaultAsync(x => x.Id == id && x.PublishedRevisionId != null, cancellationToken);
 
-    return await Task.WhenAll(posts.Select(post => _postMapper.MapAsync(post, cancellationToken)));
-  }
-
-  public async Task<Post> GetPublishedPostAsync(Guid id, CancellationToken cancellationToken = default)
-  {
-    var post = await _dbContext
-      .Posts
-      .Include(x => x.Attachments)
-      .ThenInclude(x => x.File)
-      .FirstOrDefaultAsync(x => x.Id == id && x.PublishedAt != null, cancellationToken);
-
-    if (post is null)
+    if (content?.PublishedRevision is not PostRevisionEntity revision)
       throw new ContentNotFoundException(id);
 
-    return await _postMapper.MapAsync(post, cancellationToken);
+    return await _postMapper.MapAsync(revision, cancellationToken);
   }
-
-  public async Task<Post> UpdatePostAsync(
-    Guid id,
-    string title,
-    string body,
-    TagSet? tags = null,
-    string? excerpt = null,
-    Guid? concurrencyToken = null,
-    CancellationToken cancellationToken = default)
-  {
-    var post = await GetPostContentAsync(id, cancellationToken);
-    post.Title = title;
-    post.Body = body;
-    post.Excerpt = NormalizeExcerpt(excerpt);
-    post.Tags = tags?.ToList() ?? [];
-
-    if (concurrencyToken.HasValue)
-      _dbContext.Entry(post).Property(x => x.ConcurrencyToken).OriginalValue = concurrencyToken.Value;
-
-    try
-    {
-      _ = await _dbContext.SaveChangesAsync(cancellationToken);
-    }
-    catch (DbUpdateConcurrencyException exception)
-    {
-      throw new ContentConcurrencyException(post.Id, exception);
-    }
-
-    return await _postMapper.MapAsync(post, cancellationToken);
-  }
-
-  public async Task DeletePostAsync(Guid id, CancellationToken cancellationToken = default)
-  {
-    var post = await GetPostContentAsync(id, cancellationToken);
-    post.DeletedAt = DateTime.UtcNow;
-
-    _ = await _dbContext.SaveChangesAsync(cancellationToken);
-  }
-
-  public async Task<Post> PublishPostAsync(Guid id, CancellationToken cancellationToken = default)
-  {
-    var post = await GetPostContentAsync(id, cancellationToken);
-    post.PublishedAt = DateTime.UtcNow;
-
-    _ = await _dbContext.SaveChangesAsync(cancellationToken);
-    return await _postMapper.MapAsync(post, cancellationToken);
-  }
-
-  private async Task<PostContentEntity> GetPostContentAsync(Guid id, CancellationToken cancellationToken)
-  {
-    var post = await _dbContext.Posts
-      .Include(x => x.Attachments)
-      .ThenInclude(x => x.File)
-      .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-    if (post is null)
-      throw new ContentNotFoundException(id);
-
-    return post;
-  }
-
-  private static string? NormalizeExcerpt(string? excerpt)
-    => string.IsNullOrWhiteSpace(excerpt) ? null : excerpt;
-
 }

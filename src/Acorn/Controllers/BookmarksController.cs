@@ -23,7 +23,7 @@ public sealed class BookmarksController : Controller
   [HttpGet(Routes.ContentBookmarksIndexUrlTemplate, Name = Routes.ContentBookmarksIndexGetRoute)]
   public async Task<IActionResult> Index(CancellationToken cancellationToken)
   {
-    var bookmarks = await _bookmarksService.GetPublishedBookmarksAsync(cancellationToken);
+    var bookmarks = await _bookmarksService.GetBookmarksAsync(cancellationToken);
     return View(bookmarks);
   }
 }

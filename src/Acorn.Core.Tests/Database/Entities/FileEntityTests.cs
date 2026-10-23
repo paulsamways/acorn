@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Acorn.Core.ContentManagement.Database;
 using Acorn.Core.ContentManagement.Database.Entities;
 using Acorn.Core.Database.Entities;
 using Acorn.Core.FileManagement.Database.Entities;
@@ -31,7 +32,14 @@ internal class FileEntityTests : EntitiesTestBase
     };
     var post = new PostContentEntity
     {
-      AuthorId = owner.Id,
+      AuthorId = owner.Id
+    };
+    var revision = new PostRevisionEntity
+    {
+      Content = post,
+      ContentId = post.Id,
+      RevisionNumber = 1,
+      State = ContentRevisionState.Draft,
       Title = "Photo post",
       Body = "Body"
     };
@@ -45,6 +53,7 @@ internal class FileEntityTests : EntitiesTestBase
     DbContext.Blobs.Add(blob);
     DbContext.ImageFiles.Add(file);
     DbContext.Posts.Add(post);
+    DbContext.PostRevisions.Add(revision);
     DbContext.ContentAttachments.Add(attachment);
     await DbContext.SaveChangesAsync();
 
@@ -55,11 +64,9 @@ internal class FileEntityTests : EntitiesTestBase
     await Assert.That(savedFile.Width).IsEqualTo(16);
     await Assert.That(savedFile.Height).IsEqualTo(12);
 
-    var savedPost = await DbContext.Posts
-      .Include(x => x.Attachments)
-      .SingleAsync(x => x.Id == post.Id);
+    var savedPost = await DbContext.Posts.SingleAsync(x => x.Id == post.Id);
     await Assert.That(savedPost.Id).IsNotEqualTo(Guid.Empty);
-    await Assert.That(savedPost.Attachments).Count().IsEqualTo(1);
+    await Assert.That(await DbContext.ContentAttachments.CountAsync(x => x.ContentId == post.Id)).IsEqualTo(1);
   }
 
   [Test]

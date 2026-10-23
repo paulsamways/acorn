@@ -53,11 +53,19 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
 
   internal DbSet<ContentEntity> Content => Set<ContentEntity>();
 
+  internal DbSet<ContentRevisionEntity> ContentRevisions => Set<ContentRevisionEntity>();
+
   internal DbSet<NoteContentEntity> Notes => Set<NoteContentEntity>();
 
   internal DbSet<PostContentEntity> Posts => Set<PostContentEntity>();
 
   internal DbSet<BookmarkContentEntity> Bookmarks => Set<BookmarkContentEntity>();
+
+  internal DbSet<NoteRevisionEntity> NoteRevisions => Set<NoteRevisionEntity>();
+
+  internal DbSet<PostRevisionEntity> PostRevisions => Set<PostRevisionEntity>();
+
+  internal DbSet<BookmarkRevisionEntity> BookmarkRevisions => Set<BookmarkRevisionEntity>();
 
   internal DbSet<BlobEntity> Blobs => Set<BlobEntity>();
 
@@ -66,6 +74,8 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
   internal DbSet<ImageFileEntity> ImageFiles => Set<ImageFileEntity>();
 
   internal DbSet<ContentAttachmentEntity> ContentAttachments => Set<ContentAttachmentEntity>();
+
+  internal DbSet<ContentRevisionAttachmentEntity> ContentRevisionAttachments => Set<ContentRevisionAttachmentEntity>();
 
   /// <summary>Gets the data-protection keys stored by this context.</summary>
   public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();

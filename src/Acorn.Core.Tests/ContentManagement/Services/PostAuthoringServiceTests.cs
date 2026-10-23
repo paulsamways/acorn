@@ -21,7 +21,10 @@ internal class PostAuthoringServiceTests : ServicesTestBase
     DbContext.ChangeTracker.Clear();
     var savedPost = await DbContext.Posts.SingleAsync(x => x.Id == post.Id);
     await Assert.That(savedPost.AuthorId).IsEqualTo(CurrentUserId);
-    await Assert.That(savedPost.Tags).IsEquivalentTo(["testing", "foo", "bar"]);
+    var savedRevision = await DbContext.PostRevisions.SingleAsync(x => x.ContentId == post.Id);
+    await Assert.That(savedPost.PublishedRevisionId).IsNull();
+    await Assert.That(savedRevision.State).IsEqualTo(Acorn.Core.ContentManagement.Database.ContentRevisionState.Draft);
+    await Assert.That(savedRevision.Tags).IsEquivalentTo(["testing", "foo", "bar"]);
   }
 
   [Test]
@@ -79,7 +82,7 @@ internal class PostAuthoringServiceTests : ServicesTestBase
     await Assert.That(updatedPost.Tags).IsEquivalentTo(["published", "new", "tag"]);
 
     DbContext.ChangeTracker.Clear();
-    var savedPost = await DbContext.Posts.SingleAsync(x => x.Id == post.Id);
+    var savedPost = await DbContext.PostRevisions.SingleAsync(x => x.ContentId == post.Id);
     await Assert.That(savedPost.Title).IsEqualTo("Updated title");
     await Assert.That(savedPost.Excerpt).IsEqualTo("Updated **excerpt**");
     await Assert.That(savedPost.Tags).IsEquivalentTo(["published", "new", "tag"]);
@@ -111,15 +114,76 @@ internal class PostAuthoringServiceTests : ServicesTestBase
   }
 
   [Test]
-  public async Task PublishPostAsync_SetsPublishedAtInUserTimeZone()
+  public async Task PublishPostAsync_MarksPostAsPublishedAndPersistsPublicationTime()
   {
     var post = await PostAuthoringService.CreatePostAsync("To publish", "Body");
     DbContext.ChangeTracker.Clear();
 
     var publishedPost = await PostAuthoringService.PublishPostAsync(post.Id);
 
-    var publishedAtUtc = DbContext.Posts.Local.Single(x => x.Id == post.Id).PublishedAt!.Value;
-    await Assert.That(publishedPost.PublishedAt).IsEqualTo(ConvertToUserTime(publishedAtUtc));
-    await Assert.That(publishedPost.PublishedAt!.Value.Offset).IsEqualTo(UserTimeZone.BaseUtcOffset);
+    await Assert.That(publishedPost.IsPublished).IsTrue();
+    await Assert.That(publishedPost.IsDraft).IsFalse();
+    var publishedRevision = DbContext.PostRevisions.Local.Single(
+      x => x.ContentId == post.Id && x.State == Acorn.Core.ContentManagement.Database.ContentRevisionState.Published);
+    await Assert.That(publishedRevision.PublishedAt).IsNotNull();
+    var content = DbContext.Posts.Local.Single(x => x.Id == post.Id);
+    await Assert.That(content.PublishedRevisionId).IsEqualTo(publishedRevision.Id);
+    await Assert.That(DbContext.PostRevisions.Local.Count(
+      x => x.ContentId == post.Id && x.State == Acorn.Core.ContentManagement.Database.ContentRevisionState.Draft)).IsEqualTo(0);
+  }
+
+  [Test]
+  public async Task GetPostAsync_CreatesDraftFromPublishedRevisionWhenMissing()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Published post", "Body");
+    await PostAuthoringService.PublishPostAsync(post.Id);
+    DbContext.ChangeTracker.Clear();
+
+    var draft = await PostAuthoringService.GetPostAsync(post.Id);
+
+    await Assert.That(draft.IsDraft).IsTrue();
+    await Assert.That(draft.IsPublished).IsTrue();
+    await Assert.That(draft.Title).IsEqualTo("Published post");
+    await Assert.That(draft.Body).IsEqualTo("Body");
+    await Assert.That(await DbContext.PostRevisions.CountAsync(x => x.ContentId == post.Id)).IsEqualTo(2);
+  }
+
+  [Test]
+  public async Task PublishPostAsync_ThrowsWhenThereIsNoDraft()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Published post", "Body");
+    await PostAuthoringService.PublishPostAsync(post.Id);
+
+    await Assert.That(async () => await PostAuthoringService.PublishPostAsync(post.Id))
+      .Throws<InvalidOperationException>();
+  }
+
+  [Test]
+  public async Task UpdatingPublishedPostKeepsLiveRevisionUntilDraftIsPublished()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Original title", "Original body");
+    await PostAuthoringService.PublishPostAsync(post.Id);
+
+    var draft = await PostAuthoringService.UpdatePostAsync(post.Id, "Draft title", "Draft body");
+    var publishedBeforeRepublish = await PostsService.GetPostAsync(post.Id);
+
+    await Assert.That(draft.IsDraft).IsTrue();
+    await Assert.That(draft.IsPublished).IsTrue();
+    await Assert.That(publishedBeforeRepublish.Title).IsEqualTo("Original title");
+    await Assert.That(publishedBeforeRepublish.Body).IsEqualTo("Original body");
+
+    await PostAuthoringService.PublishPostAsync(post.Id);
+    var publishedAfterRepublish = await PostsService.GetPostAsync(post.Id);
+    var revisions = await DbContext.PostRevisions
+      .Where(x => x.ContentId == post.Id)
+      .OrderBy(x => x.RevisionNumber)
+      .ToArrayAsync();
+
+    await Assert.That(publishedAfterRepublish.Title).IsEqualTo("Draft title");
+    await Assert.That(revisions.Length).IsEqualTo(2);
+    await Assert.That(revisions[0].Title).IsEqualTo("Original title");
+    await Assert.That(revisions[0].State).IsEqualTo(Acorn.Core.ContentManagement.Database.ContentRevisionState.Published);
+    await Assert.That(revisions[1].Title).IsEqualTo("Draft title");
+    await Assert.That(revisions[1].State).IsEqualTo(Acorn.Core.ContentManagement.Database.ContentRevisionState.Published);
   }
 }

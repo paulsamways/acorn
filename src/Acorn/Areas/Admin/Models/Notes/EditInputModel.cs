@@ -13,6 +13,6 @@ public class EditInputModel : ContentInputModel
   [RegularExpression(@"^[A-Za-z0-9_,\s-]*$", ErrorMessage = "Tags may contain only letters, numbers, underscores, hyphens, spaces, and commas.")]
   public string? Tags { get; set; }
 
-  /// <summary>Gets or sets whether the note is published.</summary>
-  public bool Published { get; set; }
+  /// <summary>Gets or sets whether this submission should publish the saved draft.</summary>
+  public bool Publish { get; set; }
 }

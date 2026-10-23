@@ -1,4 +1,5 @@
 using Acorn.Core.ContentManagement.Database.Entities;
+using Acorn.Core.ContentManagement.Database;
 using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.Extensions;
@@ -11,9 +12,9 @@ using Markdig.Syntax.Inlines;
 namespace Acorn.Core.ContentManagement.Services;
 
 internal sealed class ContentModelMapper :
-  IEntityModelMapper<PostContentEntity, Post>,
-  IEntityModelMapper<NoteContentEntity, Note>,
-  IEntityModelMapper<BookmarkContentEntity, Bookmark>
+  IEntityModelMapper<PostRevisionEntity, Post>,
+  IEntityModelMapper<NoteRevisionEntity, Note>,
+  IEntityModelMapper<BookmarkRevisionEntity, Bookmark>
 {
   private readonly IUserContextService _userContextService;
   private readonly MarkdownPipeline _markdownPipeline;
@@ -29,61 +30,65 @@ internal sealed class ContentModelMapper :
     _attachmentUrlResolver = attachmentUrlResolver;
   }
 
-  public async Task<Post> MapAsync(PostContentEntity content, CancellationToken cancellationToken = default)
+  public async Task<Post> MapAsync(PostRevisionEntity revision, CancellationToken cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
 
     var timeZone = await _userContextService.GetUserTimeZoneAsync();
-    var metadata = MapMetadata(content, timeZone);
+    var content = revision.Content;
+    var metadata = MapMetadata(content, revision, timeZone);
 
     return new Post(
       content.Id,
-      content.ConcurrencyToken,
-      content.Title,
-      content.Excerpt,
-      content.Excerpt is null ? null : await RenderMarkdownAsync(content.Excerpt, DerivationName.Images.Preview, cancellationToken),
-      content.Body,
-      await RenderMarkdownAsync(content.Body, DerivationName.Images.Inline, cancellationToken),
+      revision.ConcurrencyToken,
+      revision.Title,
+      revision.Excerpt,
+      revision.Excerpt is null ? null : await RenderMarkdownAsync(revision.Excerpt, DerivationName.Images.Preview, cancellationToken),
+      revision.Body,
+      await RenderMarkdownAsync(revision.Body, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
-      metadata.PublishedAt);
+      metadata.IsPublished,
+      metadata.IsDraft);
   }
 
-  public async Task<Note> MapAsync(NoteContentEntity content, CancellationToken cancellationToken = default)
+  public async Task<Note> MapAsync(NoteRevisionEntity revision, CancellationToken cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
     var timeZone = await _userContextService.GetUserTimeZoneAsync();
-    var metadata = MapMetadata(content, timeZone);
+    var metadata = MapMetadata(revision.Content, revision, timeZone);
 
     return new Note(
-      content.Id,
-      content.ConcurrencyToken,
-      content.Value,
-      await RenderMarkdownAsync(content.Value, DerivationName.Images.Inline, cancellationToken),
+      revision.ContentId,
+      revision.ConcurrencyToken,
+      revision.Value,
+      await RenderMarkdownAsync(revision.Value, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
-      metadata.PublishedAt);
+      metadata.IsPublished,
+      metadata.IsDraft);
   }
 
-  public async Task<Bookmark> MapAsync(BookmarkContentEntity content, CancellationToken cancellationToken = default)
+  public async Task<Bookmark> MapAsync(BookmarkRevisionEntity revision, CancellationToken cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
     var timeZone = await _userContextService.GetUserTimeZoneAsync();
-    var metadata = MapMetadata(content, timeZone);
+    var metadata = MapMetadata(revision.Content, revision, timeZone);
 
     return new Bookmark(
-      content.Id,
-      content.ConcurrencyToken,
-      content.Url,
-      content.Title,
-      content.Description,
-      content.Description is null ? null : await RenderMarkdownAsync(content.Description, DerivationName.Images.Inline, cancellationToken),
+      revision.ContentId,
+      revision.ConcurrencyToken,
+      revision.Url,
+      revision.Title,
+      revision.Description,
+      revision.Description is null ? null : await RenderMarkdownAsync(revision.Description, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,
       metadata.CreatedAt,
       metadata.UpdatedAt,
-      metadata.PublishedAt);
+      metadata.IsPublished,
+      metadata.IsDraft);
   }
 
   private async Task<string> RenderMarkdownAsync(string? markdown, string imageDerivation, CancellationToken cancellationToken = default)
@@ -133,16 +138,21 @@ internal sealed class ContentModelMapper :
       Guid.TryParse(url.AsSpan("file:".Length), out attachmentId);
   }
 
-  private static ContentMetadata MapMetadata(ContentEntity content, TimeZoneInfo timeZone)
+  private static ContentMetadata MapMetadata(
+    ContentEntity content,
+    ContentRevisionEntity revision,
+    TimeZoneInfo timeZone)
     => new(
-      content.Tags.ToArray(),
+      revision.Tags.ToArray(),
       content.CreatedAt.ConvertUtcToLocal(timeZone),
-      content.UpdatedAt.ConvertUtcToLocal(timeZone),
-      content.PublishedAt?.ConvertUtcToLocal(timeZone));
+      revision.UpdatedAt.ConvertUtcToLocal(timeZone),
+      content.PublishedRevisionId is not null,
+      revision.State == ContentRevisionState.Draft);
 
   private sealed record ContentMetadata(
     IReadOnlyList<string> Tags,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt,
-    DateTimeOffset? PublishedAt);
+    bool IsPublished,
+    bool IsDraft);
 }
