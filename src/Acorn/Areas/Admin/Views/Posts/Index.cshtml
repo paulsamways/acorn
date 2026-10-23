@@ -15,7 +15,9 @@
         <div class="f-row f-justify-space-between f-align-center">
           <h3>@(string.IsNullOrWhiteSpace(post.Title) ? "Untitled post" : post.Title)</h3>
           <span class="muted">
-            @(post.PublishedAt is null ? "Draft" : $"Published {post.PublishedAt:g}")
+            @(post.IsPublished
+              ? post.IsDraft ? "Draft and published" : "Published"
+              : "Draft")
           </span>
         </div>
 

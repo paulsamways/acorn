@@ -22,7 +22,7 @@ public sealed class EditViewModel : EditInputModel, IContentViewModel<Note>
     ConcurrencyToken = input.ConcurrencyToken;
     Value = input.Value;
     Tags = input.Tags;
-    Published = input.Published;
+    Publish = input.Publish;
     Current = current;
   }
 

@@ -1,6 +1,16 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Acorn.Core.ContentManagement.Database.Entities;
 
 internal sealed class NoteContentEntity : ContentEntity
 {
-  public required string Value { get; set; }
+  internal NoteContentEntity()
+  {
+  }
+
+  [SetsRequiredMembers]
+  internal NoteContentEntity(Guid authorId)
+    : base(authorId)
+  {
+  }
 }

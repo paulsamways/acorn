@@ -12,14 +12,14 @@ namespace Acorn.Areas.Admin.Controllers;
 [Area(Routes.Admin.AreaName)]
 public sealed class BookmarksController : Controller
 {
-  private readonly IBookmarksService _bookmarksService;
+  private readonly IBookmarkAuthoringService _bookmarksService;
   private readonly IBookmarkMetadataService _bookmarkMetadataService;
 
   /// <summary>Creates the bookmarks controller.</summary>
   /// <param name="bookmarksService">The bookmark service.</param>
   /// <param name="bookmarkMetadataService">The bookmark metadata fetcher.</param>
   public BookmarksController(
-    IBookmarksService bookmarksService,
+    IBookmarkAuthoringService bookmarksService,
     IBookmarkMetadataService bookmarkMetadataService)
   {
     _bookmarksService = bookmarksService;

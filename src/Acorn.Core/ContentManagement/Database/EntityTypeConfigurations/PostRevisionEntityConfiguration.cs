@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Acorn.Core.ContentManagement.Database.EntityTypeConfigurations;
 
-internal sealed class PostContentEntityConfiguration : IEntityTypeConfiguration<PostContentEntity>
+internal sealed class PostRevisionEntityConfiguration : IEntityTypeConfiguration<PostRevisionEntity>
 {
   [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0058:Expression value is never used", Justification = "ModelBuilder is a fluent API.")]
-  public void Configure(EntityTypeBuilder<PostContentEntity> builder)
+  public void Configure(EntityTypeBuilder<PostRevisionEntity> builder)
   {
-    builder.ToTable("content");
+    builder.ToTable("content_revision");
 
     builder
       .Property(x => x.Title)

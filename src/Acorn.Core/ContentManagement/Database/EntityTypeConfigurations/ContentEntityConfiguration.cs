@@ -45,12 +45,12 @@ internal sealed class ContentEntityConfiguration : IEntityTypeConfiguration<Cont
       .IsRequired();
 
     builder
-      .Property(x => x.PublishedAt)
-      .HasColumnName("published_at");
-
-    builder
       .Property(x => x.DeletedAt)
       .HasColumnName("deleted_at");
+
+    builder
+      .Property(x => x.PublishedRevisionId)
+      .HasColumnName("current_published_revision_id");
 
     builder
       .Property(x => x.AuthorId)
@@ -58,15 +58,22 @@ internal sealed class ContentEntityConfiguration : IEntityTypeConfiguration<Cont
       .IsRequired();
 
     builder
-      .Property(x => x.Tags)
-      .HasColumnName("tags")
-      .IsRequired();
-
-    builder
       .HasOne(x => x.Author)
       .WithMany()
       .HasForeignKey(x => x.AuthorId)
       .OnDelete(DeleteBehavior.Cascade);
+
+    builder
+      .HasMany(x => x.Revisions)
+      .WithOne(x => x.Content)
+      .HasForeignKey(x => x.ContentId)
+      .OnDelete(DeleteBehavior.Cascade);
+
+    builder
+      .HasOne(x => x.PublishedRevision)
+      .WithMany()
+      .HasForeignKey(x => x.PublishedRevisionId)
+      .OnDelete(DeleteBehavior.Restrict);
 
     builder
       .HasQueryFilter(x => x.DeletedAt == null);

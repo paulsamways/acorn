@@ -10,9 +10,9 @@
           <h3>
             <a href="@bookmark.Url" target="_blank" rel="noopener noreferrer">@bookmark.Title</a>
           </h3>
-          @if (bookmark.PublishedAt is DateTimeOffset publishedAt)
+          @if (bookmark.IsPublished)
           {
-            <time class="muted" datetime="@publishedAt" title="Published at {0}" display="Date"></time>
+            <span class="muted">Published</span>
           }
         </header>
 

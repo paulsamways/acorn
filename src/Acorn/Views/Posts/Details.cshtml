@@ -4,10 +4,6 @@
   <article class="f-column g-3 w-wide p-4">
     <header class="f-column g-1">
       <h1>@(string.IsNullOrWhiteSpace(Model.Title) ? "Untitled post" : Model.Title)</h1>
-      @if (Model.PublishedAt is DateTimeOffset publishedAt)
-      {
-        <time class="muted" datetime="@publishedAt" title="Published at {0}" display="Date"></time>
-      }
     </header>
 
     <div class="prose">

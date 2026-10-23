@@ -13,6 +13,12 @@
 - **Naming:** entity classes are suffixed with `Entity` (`FileEntity`, not `File`) to distinguish them from domain/DTO types. Configurations are named `<Name>EntityConfiguration`.
 - **Visibility:** entities and their configurations are `internal`. They must never appear in public service signatures; services map them to public models/DTOs.
 
+### Services and managers
+
+Service interfaces are the integration boundary for callers outside `Acorn.Core`; service implementations coordinate application use cases and expose public models rather than persistence entities. Managers are internal Core collaborators used by services to encapsulate shared domain or persistence workflows. They may work directly with internal entities, but they should not be exposed as external APIs or used by callers in place of services.
+
+Content has separate authoring and public service contracts. Authoring services are for create, edit, and publish workflows. Opening an editor uses the existing draft or creates one from the current published revision (falling back to the highest-numbered revision). Public content services expose only the revision selected by the current-published pointer and must never return a draft.
+
 ### Entity identifiers
 
 Application aggregate roots and independently exposed entities use one UUIDv7 `Id` as both their database primary key and their stable identifier across routes, exports, and imports. Do not keep a separate integer primary key plus `PublicId`; derived TPH entities share their base entity's ID. `ContentAttachment` is independently addressable and follows the same rule.
@@ -25,11 +31,19 @@ Keep natural keys where they are the domain identity: `Blob` remains keyed by it
 
 ### Optimistic concurrency
 
-Content entities use an application-managed GUID concurrency token. EF Core includes the token's original value when updating an entity; if another save has changed it, the update affects no row and EF reports a concurrency conflict. `ConcurrencySaveChangesInterceptor` assigns a new UUIDv7 token whenever an `IConcurrencyTracked` entity is added or modified. Content services translate EF's concurrency exception into `ContentConcurrencyException`.
+Content revisions use an application-managed GUID concurrency token. EF Core includes the token's original value when updating a revision; if another save has changed it, the update affects no row and EF reports a concurrency conflict. Content roots also use a token for lifecycle changes such as moving the current-published pointer. `ConcurrencySaveChangesInterceptor` assigns a new UUIDv7 token whenever an `IConcurrencyTracked` entity is added or modified. Content services translate EF's concurrency exception into `ContentConcurrencyException`.
 
-Update services accept an optional expected token. Supplying the token from the edit form detects changes made since that form was loaded. Omitting it uses the token from the entity fetched by the service, allowing a client-wins update relative to the form while still detecting a concurrent save between the service's fetch and its save.
+Update services accept an optional expected revision token. Supplying the token from the edit form detects changes made since that form was loaded. Omitting it uses the token from the revision fetched by the service, allowing a client-wins update relative to the form while still detecting a concurrent save between the service's fetch and its save.
 
-This is currently implemented for content, but `IConcurrencyTracked` and the interceptor provide a persistence pattern that can be applied to other entities that need optimistic concurrency. Such entities must also configure their token as an EF Core concurrency token.
+`IConcurrencyTracked` and the interceptor provide a persistence pattern for other entities that need optimistic concurrency. Such entities must also configure their token as an EF Core concurrency token.
+
+### Content revisions
+
+Posts, bookmarks, and notes share a stable content identity and a TPH revision hierarchy. Authored fields, tags, and revision-specific attachment visibility are stored with revisions. A content item has zero or one draft revision and a nullable `PublishedRevisionId` that selects the live revision. Authoring uses the existing draft, or creates one from the current published revision (falling back to the highest revision number) when editing begins. Publishing marks that draft as published and moves the live pointer; it does not create another draft. Published revisions are immutable, so edits to a later draft do not change public output.
+
+`ContentEntity.PublishedRevisionId` selects the live revision explicitly; publication time is historical metadata and does not select the public version. Publishing marks the draft as published and moves that pointer atomically. Attachment identity and file storage remain stable, while a content-revision attachment association determines whether a file belongs to a particular draft or published revision and what visibility it has. Public attachment access is limited to associations on the currently selected revision.
+
+The field inventory, lifecycle rules, migration behavior, affected surfaces, and validation gates are in [docs/plan/content-revisions-plan.md](docs/plan/content-revisions-plan.md).
 
 ## Building
 

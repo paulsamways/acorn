@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Acorn.Core.ContentManagement.Database;
 using Acorn.Core.ContentManagement.Database.Entities;
 using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Exceptions;
@@ -43,7 +44,10 @@ internal class ContentAttachmentService : IContentAttachmentService
     CancellationToken cancellationToken = default)
   {
     var userId = _userContextService.GetCurrentUserId();
-    var content = await _dbContext.Content.FirstOrDefaultAsync(x => x.Id == contentId, cancellationToken);
+    var content = await _dbContext.Content
+      .Include(x => x.Revisions.Where(revision => revision.State == ContentRevisionState.Draft))
+      .Include(x => x.PublishedRevision)
+      .FirstOrDefaultAsync(x => x.Id == contentId, cancellationToken);
 
     if (content is null)
       throw new ContentNotFoundException(contentId);
@@ -54,6 +58,7 @@ internal class ContentAttachmentService : IContentAttachmentService
     if (!stream.CanSeek)
       throw new ArgumentException($"{nameof(stream)} must be seekable.");
 
+    var revision = await GetOrCreateDraftAsync(content, cancellationToken);
     stream.Position = 0;
     var metadata = await _fileValidator.ValidateAsync(stream, filename, mediaType, cancellationToken);
 
@@ -63,12 +68,16 @@ internal class ContentAttachmentService : IContentAttachmentService
     var attachment = new ContentAttachmentEntity
     {
       Content = content,
-      File = originalFile,
-      Visibility = AttachmentVisibility.Public // TODO: For images, this doesn't seem like a good idea...
+      File = originalFile
     };
     _ = _dbContext.ContentAttachments.Add(attachment);
+    revision.Attachments.Add(new ContentRevisionAttachmentEntity
+    {
+      Attachment = attachment,
+      Visibility = AttachmentVisibility.Public
+    });
 
-    await CreateAttachmentDerivationsAsync(stream, metadata, attachment, cancellationToken);
+    await CreateAttachmentDerivationsAsync(stream, metadata, attachment, revision, cancellationToken);
 
     _ = await _dbContext.SaveChangesAsync(cancellationToken);
     return attachment.Id;
@@ -125,26 +134,28 @@ internal class ContentAttachmentService : IContentAttachmentService
       .ContentAttachments
       .Include(x => x.File)
       .Include(x => x.Content)
-      .Include(x => x.Parent!)
-      .ThenInclude(x => x.Content)
+      .Include(x => x.Content)
+        .ThenInclude(x => x.PublishedRevision)
+      .Include(x => x.Revisions)
       .SingleOrDefaultAsync(predicate, cancellationToken);
 
     if (attachment is null)
       throw new AttachmentNotFoundException();
 
-    var contentPublished = attachment.Parent is null
-      ? attachment.Content.PublishedAt is not null
-      : attachment.Parent?.Content.PublishedAt is not null;
+    var currentRevisionId = attachment.Content.PublishedRevisionId;
+    var publishedAttachment = currentRevisionId is Guid publishedId
+      ? attachment.Revisions.FirstOrDefault(x => x.RevisionId == publishedId)
+      : null;
 
     var isAuthenticated = _userContextService.IsAuthenticated();
     var isOwner = isAuthenticated && attachment.File.OwnerId == _userContextService.GetCurrentUserId();
 
-    if (contentPublished)
+    if (publishedAttachment is not null)
     {
-      if (attachment.Visibility == AttachmentVisibility.Owner && !isOwner)
+      if (publishedAttachment.Visibility == AttachmentVisibility.Owner && !isOwner)
         throw new UnauthorizedException();
 
-      if (attachment.Visibility == AttachmentVisibility.Authenticated && !isAuthenticated)
+      if (publishedAttachment.Visibility == AttachmentVisibility.Authenticated && !isAuthenticated)
         throw new UnauthorizedException();
     }
     else
@@ -155,7 +166,7 @@ internal class ContentAttachmentService : IContentAttachmentService
 
     var fileDescriptor = await _fileManager.OpenFileAsync(attachment.File.Id, cancellationToken);
 
-    var isPublic = contentPublished && attachment.Visibility == AttachmentVisibility.Public;
+    var isPublic = publishedAttachment?.Visibility == AttachmentVisibility.Public;
     var disposition = attachment.File is ImageFileEntity
       ? AttachmentDisposition.Inline
       : AttachmentDisposition.Attachment;
@@ -166,6 +177,7 @@ internal class ContentAttachmentService : IContentAttachmentService
     Stream stream,
     FileMetadata metadata,
     ContentAttachmentEntity parent,
+    ContentRevisionEntity revision,
     CancellationToken cancellationToken)
   {
     foreach (var producer in _derivationProducers.Where(x => x.CanDerive(metadata)))
@@ -185,17 +197,34 @@ internal class ContentAttachmentService : IContentAttachmentService
           FileId = file.Id,
           Parent = parent,
           ParentId = parent.Id,
-          DerivationName = producer.DerivationName,
-          Visibility = derivation.Visibility
+          DerivationName = producer.DerivationName
         };
         parent.Derivations.Add(child);
 
         _ = _dbContext.ContentAttachments.Add(child);
+        revision.Attachments.Add(new ContentRevisionAttachmentEntity
+        {
+          Attachment = child,
+          Visibility = derivation.Visibility
+        });
       }
       finally
       {
         await derivation.Stream.DisposeAsync();
       }
     }
+  }
+
+  private async Task<ContentRevisionEntity> GetOrCreateDraftAsync(
+    ContentEntity content,
+    CancellationToken cancellationToken)
+  {
+    return content switch
+    {
+      PostContentEntity post => await new PostContentManager(_dbContext).GetOrCreateDraftAsync(post, cancellationToken),
+      BookmarkContentEntity bookmark => await new BookmarkContentManager(_dbContext).GetOrCreateDraftAsync(bookmark, cancellationToken),
+      NoteContentEntity note => await new NoteContentManager(_dbContext).GetOrCreateDraftAsync(note, cancellationToken),
+      _ => throw new InvalidOperationException($"Unsupported content type: {content.GetType().Name}")
+    };
   }
 }

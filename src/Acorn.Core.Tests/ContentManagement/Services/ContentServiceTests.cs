@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Database;
 using Acorn.Core.ContentManagement.Database.Entities;
 using Acorn.Core.ContentManagement.Derivations;
 using Acorn.Core.ContentManagement.Models;
@@ -14,25 +15,25 @@ namespace Acorn.Core.Tests.ContentManagement.Services;
 internal class ContentServiceTests : ServicesTestBase
 {
   [Test]
-  public async Task GetRecentPublishedContentAsync_ReturnsPublishedContentAcrossTypesInUpdateOrder()
+  public async Task GetRecentContentAsync_ReturnsPublishedContentAcrossTypesInPublicationOrder()
   {
     var post = await PostAuthoringService.CreatePostAsync("A post", "Body");
-    var note = await NotesService.CreateNoteAsync("A note\nMore detail");
-    var bookmark = await BookmarksService.CreateBookmarkAsync("https://example.com", "A bookmark");
-    await NotesService.CreateNoteAsync("A draft");
+    var note = await NoteAuthoringService.CreateNoteAsync("A note\nMore detail");
+    var bookmark = await BookmarkAuthoringService.CreateBookmarkAsync("https://example.com", "A bookmark");
+    await NoteAuthoringService.CreateNoteAsync("A draft");
     var deleted = await PostAuthoringService.CreatePostAsync("A deleted post", "Body");
     await PostAuthoringService.PublishPostAsync(post.Id);
-    await NotesService.PublishNoteAsync(note.Id);
-    await BookmarksService.PublishBookmarkAsync(bookmark.Id);
+    await NoteAuthoringService.PublishNoteAsync(note.Id);
+    await BookmarkAuthoringService.PublishBookmarkAsync(bookmark.Id);
     await PostAuthoringService.PublishPostAsync(deleted.Id);
     await PostAuthoringService.DeletePostAsync(deleted.Id);
 
     DbContext.ChangeTracker.Clear();
-    await DbContext.Database.ExecuteSqlAsync($"UPDATE content SET updated_at = {new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {post.Id.ToByteArray(bigEndian: true)}");
-    await DbContext.Database.ExecuteSqlAsync($"UPDATE content SET updated_at = {new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {note.Id.ToByteArray(bigEndian: true)}");
-    await DbContext.Database.ExecuteSqlAsync($"UPDATE content SET updated_at = {new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {bookmark.Id.ToByteArray(bigEndian: true)}");
+    await DbContext.Database.ExecuteSqlAsync($"UPDATE content_revision SET published_at = {new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {post.Id.ToByteArray(bigEndian: true)} AND revision_state = 'Published'");
+    await DbContext.Database.ExecuteSqlAsync($"UPDATE content_revision SET published_at = {new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {note.Id.ToByteArray(bigEndian: true)} AND revision_state = 'Published'");
+    await DbContext.Database.ExecuteSqlAsync($"UPDATE content_revision SET published_at = {new DateTime(2026, 2, 1, 0, 0, 0, DateTimeKind.Utc)} WHERE content_id = {bookmark.Id.ToByteArray(bigEndian: true)} AND revision_state = 'Published'");
 
-    var content = (await ContentService.GetRecentPublishedContentAsync()).ToArray();
+    var content = (await ContentService.GetRecentContentAsync()).ToArray();
 
     await Assert.That(content.Length).IsEqualTo(3);
     await Assert.That(content[0] is Note).IsTrue();
@@ -46,14 +47,14 @@ internal class ContentServiceTests : ServicesTestBase
   }
 
   [Test]
-  public async Task GetRecentPublishedContentAsync_LimitsResults()
+  public async Task GetRecentContentAsync_LimitsResults()
   {
     var first = await PostAuthoringService.CreatePostAsync("First", "Body");
     var second = await PostAuthoringService.CreatePostAsync("Second", "Body");
     await PostAuthoringService.PublishPostAsync(first.Id);
     await PostAuthoringService.PublishPostAsync(second.Id);
 
-    await Assert.That(await ContentService.GetRecentPublishedContentAsync(1)).Count().IsEqualTo(1);
+    await Assert.That(await ContentService.GetRecentContentAsync(1)).Count().IsEqualTo(1);
   }
 
   [Test]
@@ -130,6 +131,41 @@ internal class ContentServiceTests : ServicesTestBase
   }
 
   [Test]
+  public async Task AttachmentChangesStayOnDraftUntilThatRevisionIsPublished()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Post", "Body");
+    await using var firstStream = new MemoryStream([1, 2, 3]);
+    var firstAttachmentId = await ContentAttachmentService.CreateAttachmentAsync(
+      post.Id,
+      firstStream,
+      "first.bin",
+      "application/octet-stream");
+    await PostAuthoringService.PublishPostAsync(post.Id);
+
+    _ = await PostAuthoringService.UpdatePostAsync(post.Id, "Updated", "Updated body");
+    await using var secondStream = new MemoryStream([4, 5, 6]);
+    var secondAttachmentId = await ContentAttachmentService.CreateAttachmentAsync(
+      post.Id,
+      secondStream,
+      "second.bin",
+      "application/octet-stream");
+
+    var firstBeforePublish = await ContentAttachmentService.OpenAttachmentAsync(firstAttachmentId);
+    await using var firstBeforePublishStream = firstBeforePublish.Stream;
+    var secondBeforePublish = await ContentAttachmentService.OpenAttachmentAsync(secondAttachmentId);
+    await using var secondBeforePublishStream = secondBeforePublish.Stream;
+
+    await Assert.That(firstBeforePublish.IsPublic).IsTrue();
+    await Assert.That(secondBeforePublish.IsPublic).IsFalse();
+
+    await PostAuthoringService.PublishPostAsync(post.Id);
+    var secondAfterPublish = await ContentAttachmentService.OpenAttachmentAsync(secondAttachmentId);
+    await using var secondAfterPublishStream = secondAfterPublish.Stream;
+
+    await Assert.That(secondAfterPublish.IsPublic).IsTrue();
+  }
+
+  [Test]
   public async Task OpenAttachmentAsync_OpensNamedDerivation()
   {
     var ownerId = Guid.NewGuid();
@@ -162,13 +198,15 @@ internal class ContentServiceTests : ServicesTestBase
       .ToArrayAsync();
     var original = attachments.Single(x => x.Id == attachmentId);
     var derivations = attachments.Where(x => x.ParentId == attachmentId).ToArray();
+    var draftRevision = await DbContext.PostRevisions.SingleAsync(x => x.ContentId == post.Id);
 
-    await Assert.That(original.Visibility).IsEqualTo(AttachmentVisibility.Public);
+    await Assert.That(await GetVisibilityAsync(original.Id, draftRevision.Id)).IsEqualTo(AttachmentVisibility.Public);
     await Assert.That(original.DerivationName).IsNull();
     await Assert.That(derivations.Length).IsEqualTo(3);
     await Assert.That(derivations.Select(x => x.DerivationName ?? string.Empty).Order().ToArray())
       .IsEquivalentTo(new[] { "inline", "large", "preview" });
-    await Assert.That(derivations.All(x => x.Visibility == AttachmentVisibility.Public)).IsTrue();
+    await Assert.That((await Task.WhenAll(derivations.Select(x => GetVisibilityAsync(x.Id, draftRevision.Id))))
+      .All(x => x == AttachmentVisibility.Public)).IsTrue();
     await Assert.That(derivations.All(x => x.File.MediaType == "image/webp")).IsTrue();
     await Assert.That(derivations.Select(x => ((ImageFileEntity)x.File).Width).Distinct().Count()).IsEqualTo(1);
     await Assert.That(derivations.Select(x => ((ImageFileEntity)x.File).Height).Distinct().Count()).IsEqualTo(1);
@@ -193,8 +231,9 @@ internal class ContentServiceTests : ServicesTestBase
       .Where(x => x.Id == attachmentId || x.ParentId == attachmentId)
       .ToArrayAsync();
     var original = attachments.Single(x => x.Id == attachmentId);
+    var draftRevision = await DbContext.PostRevisions.SingleAsync(x => x.ContentId == post.Id);
 
-    await Assert.That(original.Visibility).IsEqualTo(AttachmentVisibility.Public);
+    await Assert.That(await GetVisibilityAsync(original.Id, draftRevision.Id)).IsEqualTo(AttachmentVisibility.Public);
     await Assert.That(original.ParentId).IsNull();
     await Assert.That(original.DerivationName).IsNull();
     await Assert.That(attachments.Count(x => x.ParentId == attachmentId)).IsEqualTo(3);
@@ -339,23 +378,43 @@ internal class ContentServiceTests : ServicesTestBase
     };
     var content = new PostContentEntity
     {
-      AuthorId = ownerId,
+      AuthorId = ownerId
+    };
+    var revision = new PostRevisionEntity
+    {
+      Content = content,
+      ContentId = content.Id,
+      RevisionNumber = 1,
+      State = publishedAt is null ? ContentRevisionState.Draft : ContentRevisionState.Published,
+      PublishedAt = publishedAt,
       Title = "Attachment post",
-      Body = "Body",
-      PublishedAt = publishedAt
+      Body = "Body"
     };
     var attachment = new ContentAttachmentEntity
     {
       Content = content,
-      File = file,
-      Visibility = visibility
+      File = file
     };
+    revision.Attachments.Add(new ContentRevisionAttachmentEntity
+    {
+      Revision = revision,
+      Attachment = attachment,
+      Visibility = visibility
+    });
 
     DbContext.Blobs.Add(blob);
     DbContext.ImageFiles.Add(file);
     DbContext.Posts.Add(content);
+    DbContext.PostRevisions.Add(revision);
     DbContext.ContentAttachments.Add(attachment);
     await DbContext.SaveChangesAsync();
+    if (publishedAt is not null)
+    {
+      content.PublishedRevision = revision;
+      content.PublishedRevisionId = revision.Id;
+      await DbContext.SaveChangesAsync();
+    }
+
     return attachment;
   }
 
@@ -388,15 +447,37 @@ internal class ContentServiceTests : ServicesTestBase
       File = file,
       Parent = parent,
       ParentId = parent.Id,
-      DerivationName = name,
-      Visibility = visibility
+      DerivationName = name
     };
+    var revision = await DbContext.ContentRevisions.SingleAsync(x => x.ContentId == parent.ContentId);
+    revision.Attachments.Add(new ContentRevisionAttachmentEntity
+    {
+      Revision = revision,
+      Attachment = derivation,
+      Visibility = visibility
+    });
 
     DbContext.Blobs.Add(blob);
     DbContext.ImageFiles.Add(file);
     DbContext.ContentAttachments.Add(derivation);
     await DbContext.SaveChangesAsync();
     return derivation;
+  }
+
+  private async Task<AttachmentVisibility> GetVisibilityAsync(Guid attachmentId, Guid? revisionId)
+  {
+    if (revisionId is null)
+    {
+      return await DbContext.ContentRevisionAttachments
+        .Where(x => x.AttachmentId == attachmentId)
+        .Select(x => x.Visibility)
+        .SingleAsync();
+    }
+
+    return await DbContext.ContentRevisionAttachments
+      .Where(x => x.AttachmentId == attachmentId && x.RevisionId == revisionId)
+      .Select(x => x.Visibility)
+      .SingleAsync();
   }
 
   private static async Task<MemoryStream> CreatePngAsync(int width, int height)

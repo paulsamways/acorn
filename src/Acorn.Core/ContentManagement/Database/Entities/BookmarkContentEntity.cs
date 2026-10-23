@@ -1,10 +1,16 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Acorn.Core.ContentManagement.Database.Entities;
 
 internal sealed class BookmarkContentEntity : ContentEntity
 {
-  public required string Url { get; set; }
+  internal BookmarkContentEntity()
+  {
+  }
 
-  public required string Title { get; set; }
-
-  public string? Description { get; set; }
+  [SetsRequiredMembers]
+  internal BookmarkContentEntity(Guid authorId)
+    : base(authorId)
+  {
+  }
 }

@@ -15,7 +15,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261019203527_AddContentConcurrencyToken";
+    public override string LastMigrationId => "20261022202529_AddContentRevisions";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -45,11 +45,6 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.Property<byte[]>("ParentId")
                     .HasColumnType("BLOB")
                     .HasColumnName("parent_id");
-
-                b.Property<string>("Visibility")
-                    .IsRequired()
-                    .HasColumnType("TEXT")
-                    .HasColumnName("visibility");
 
                 b.HasKey("Id");
 
@@ -88,14 +83,9 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("deleted_at");
 
-                b.Property<DateTime?>("PublishedAt")
-                    .HasColumnType("TEXT")
-                    .HasColumnName("published_at");
-
-                b.Property<string>("Tags")
-                    .IsRequired()
-                    .HasColumnType("TEXT")
-                    .HasColumnName("tags");
+                b.Property<byte[]>("PublishedRevisionId")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("current_published_revision_id");
 
                 b.Property<DateTime>("UpdatedAt")
                     .HasColumnType("TEXT")
@@ -110,6 +100,8 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
 
                 b.HasIndex("AuthorId");
 
+                b.HasIndex("PublishedRevisionId");
+
                 b.ToTable("content");
 
                 b.HasDiscriminator<string>("content_type").HasValue("ContentEntity");
@@ -117,6 +109,97 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b
                     .UseTphMappingStrategy()
                     .HasAnnotation("Acorn:WithoutRowid", true);
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionAttachmentEntity", b =>
+            {
+                b.Property<byte[]>("RevisionId")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("content_revision_id");
+
+                b.Property<byte[]>("AttachmentId")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("content_attachment_id");
+
+                b.Property<string>("Visibility")
+                    .IsRequired()
+                    .HasColumnType("TEXT")
+                    .HasColumnName("visibility");
+
+                b.HasKey("RevisionId", "AttachmentId");
+
+                b.HasIndex("AttachmentId");
+
+                b.ToTable("content_revision_attachment");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionEntity", b =>
+            {
+                b.Property<byte[]>("Id")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("content_revision_id");
+
+                b.Property<byte[]>("ConcurrencyToken")
+                    .IsConcurrencyToken()
+                    .IsRequired()
+                    .HasColumnType("BLOB")
+                    .HasColumnName("concurrency_token");
+
+                b.Property<byte[]>("ContentId")
+                    .IsRequired()
+                    .HasColumnType("BLOB")
+                    .HasColumnName("content_id");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("created_at");
+
+                b.Property<DateTime?>("PublishedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("published_at");
+
+                b.Property<int>("RevisionNumber")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("revision_number");
+
+                b.Property<string>("State")
+                    .IsRequired()
+                    .HasColumnType("TEXT")
+                    .HasColumnName("revision_state");
+
+                b.Property<string>("Tags")
+                    .IsRequired()
+                    .HasColumnType("TEXT")
+                    .HasColumnName("tags");
+
+                b.Property<DateTime>("UpdatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("updated_at");
+
+                b.Property<string>("revision_type")
+                    .IsRequired()
+                    .HasMaxLength(21)
+                    .HasColumnType("TEXT");
+
+                b.HasKey("Id");
+
+                b.HasIndex("ContentId")
+                    .IsUnique()
+                    .HasFilter("\"revision_state\" = 'Draft'");
+
+                b.HasIndex("ContentId", "RevisionNumber")
+                    .IsUnique();
+
+                b.ToTable("content_revision", t =>
+                    {
+                        t.HasCheckConstraint("ck_content_revision_publication_state", "(revision_state = 'Draft' AND published_at IS NULL) OR (revision_state = 'Published' AND published_at IS NOT NULL)");
+
+                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_value IS NOT NULL)");
+                    });
+
+                b.HasDiscriminator<string>("revision_type").HasValue("ContentRevisionEntity");
+
+                b.UseTphMappingStrategy();
             });
 
         modelBuilder.Entity("Acorn.Core.Database.Entities.Role", b =>
@@ -460,6 +543,27 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
             {
                 b.HasBaseType("Acorn.Core.ContentManagement.Database.Entities.ContentEntity");
 
+                b.HasDiscriminator().HasValue("bookmark");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.NoteContentEntity", b =>
+            {
+                b.HasBaseType("Acorn.Core.ContentManagement.Database.Entities.ContentEntity");
+
+                b.HasDiscriminator().HasValue("note");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.PostContentEntity", b =>
+            {
+                b.HasBaseType("Acorn.Core.ContentManagement.Database.Entities.ContentEntity");
+
+                b.HasDiscriminator().HasValue("post");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.BookmarkRevisionEntity", b =>
+            {
+                b.HasBaseType("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionEntity");
+
                 b.Property<string>("Description")
                     .HasColumnType("TEXT")
                     .HasColumnName("bookmark_description");
@@ -474,28 +578,38 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("bookmark_url");
 
-                b.ToTable("content");
+                b.ToTable("content_revision", t =>
+                    {
+                        t.HasCheckConstraint("ck_content_revision_publication_state", "(revision_state = 'Draft' AND published_at IS NULL) OR (revision_state = 'Published' AND published_at IS NOT NULL)");
+
+                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_value IS NOT NULL)");
+                    });
 
                 b.HasDiscriminator().HasValue("bookmark");
             });
 
-        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.NoteContentEntity", b =>
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.NoteRevisionEntity", b =>
             {
-                b.HasBaseType("Acorn.Core.ContentManagement.Database.Entities.ContentEntity");
+                b.HasBaseType("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionEntity");
 
                 b.Property<string>("Value")
                     .IsRequired()
                     .HasColumnType("TEXT")
                     .HasColumnName("note_value");
 
-                b.ToTable("content");
+                b.ToTable("content_revision", t =>
+                    {
+                        t.HasCheckConstraint("ck_content_revision_publication_state", "(revision_state = 'Draft' AND published_at IS NULL) OR (revision_state = 'Published' AND published_at IS NOT NULL)");
+
+                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_value IS NOT NULL)");
+                    });
 
                 b.HasDiscriminator().HasValue("note");
             });
 
-        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.PostContentEntity", b =>
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.PostRevisionEntity", b =>
             {
-                b.HasBaseType("Acorn.Core.ContentManagement.Database.Entities.ContentEntity");
+                b.HasBaseType("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionEntity");
 
                 b.Property<string>("Body")
                     .IsRequired()
@@ -511,7 +625,12 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("post_title");
 
-                b.ToTable("content");
+                b.ToTable("content_revision", t =>
+                    {
+                        t.HasCheckConstraint("ck_content_revision_publication_state", "(revision_state = 'Draft' AND published_at IS NULL) OR (revision_state = 'Published' AND published_at IS NOT NULL)");
+
+                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_value IS NOT NULL)");
+                    });
 
                 b.HasDiscriminator().HasValue("post");
             });
@@ -543,7 +662,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentAttachmentEntity", b =>
             {
                 b.HasOne("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", "Content")
-                    .WithMany("Attachments")
+                    .WithMany()
                     .HasForeignKey("ContentId")
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
@@ -574,7 +693,44 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .OnDelete(DeleteBehavior.Cascade)
                     .IsRequired();
 
+                b.HasOne("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionEntity", "PublishedRevision")
+                    .WithMany()
+                    .HasForeignKey("PublishedRevisionId")
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 b.Navigation("Author");
+
+                b.Navigation("PublishedRevision");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionAttachmentEntity", b =>
+            {
+                b.HasOne("Acorn.Core.ContentManagement.Database.Entities.ContentAttachmentEntity", "Attachment")
+                    .WithMany("Revisions")
+                    .HasForeignKey("AttachmentId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.HasOne("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionEntity", "Revision")
+                    .WithMany("Attachments")
+                    .HasForeignKey("RevisionId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("Attachment");
+
+                b.Navigation("Revision");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionEntity", b =>
+            {
+                b.HasOne("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", "Content")
+                    .WithMany("Revisions")
+                    .HasForeignKey("ContentId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.Navigation("Content");
             });
 
         modelBuilder.Entity("Acorn.Core.FileManagement.Database.Entities.FileEntity", b =>
@@ -650,9 +806,16 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentAttachmentEntity", b =>
             {
                 b.Navigation("Derivations");
+
+                b.Navigation("Revisions");
             });
 
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", b =>
+            {
+                b.Navigation("Revisions");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionEntity", b =>
             {
                 b.Navigation("Attachments");
             });

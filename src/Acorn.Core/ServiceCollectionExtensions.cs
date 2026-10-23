@@ -164,16 +164,17 @@ public static class ServiceCollectionExtensions
       .AddTransient<IDerivationProducer>(x => new WebpImageDerivationProducer(DerivationName.Images.Inline, 1200))
       .AddTransient<IDerivationProducer>(x => new WebpImageDerivationProducer(DerivationName.Images.Preview, 320))
       .AddScoped<ContentModelMapper>()
-      .AddScoped<IEntityModelMapper<PostContentEntity, Post>>(provider => provider.GetRequiredService<ContentModelMapper>())
-      .AddScoped<IEntityModelMapper<NoteContentEntity, Note>>(provider => provider.GetRequiredService<ContentModelMapper>())
-      .AddScoped<IEntityModelMapper<BookmarkContentEntity, Bookmark>>(provider => provider.GetRequiredService<ContentModelMapper>())
+      .AddScoped<IEntityModelMapper<PostRevisionEntity, Post>>(provider => provider.GetRequiredService<ContentModelMapper>())
+      .AddScoped<IEntityModelMapper<NoteRevisionEntity, Note>>(provider => provider.GetRequiredService<ContentModelMapper>())
+      .AddScoped<IEntityModelMapper<BookmarkRevisionEntity, Bookmark>>(provider => provider.GetRequiredService<ContentModelMapper>())
       .AddScoped<IContentService, ContentService>()
       .AddScoped<IContentAttachmentService, ContentAttachmentService>()
       .AddScoped<INotesService, NotesService>()
+      .AddScoped<INoteAuthoringService, NoteAuthoringService>()
       .AddScoped<IBookmarksService, BookmarksService>()
-      .AddScoped<PostsService>()
-      .AddScoped<IPostsService>(provider => provider.GetRequiredService<PostsService>())
-      .AddScoped<IPostAuthoringService>(provider => provider.GetRequiredService<PostsService>());
+      .AddScoped<IBookmarkAuthoringService, BookmarkAuthoringService>()
+      .AddScoped<IPostsService, PostsService>()
+      .AddScoped<IPostAuthoringService, PostAuthoringService>();
   }
 
   /// <summary>Registers file validation and file-management services.</summary>

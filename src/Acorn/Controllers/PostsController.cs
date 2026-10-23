@@ -27,7 +27,7 @@ public sealed class PostsController : Controller
   {
     try
     {
-      var post = await _postsService.GetPublishedPostAsync(id, cancellationToken);
+      var post = await _postsService.GetPostAsync(id, cancellationToken);
       return View(post);
     }
     catch (ContentNotFoundException)

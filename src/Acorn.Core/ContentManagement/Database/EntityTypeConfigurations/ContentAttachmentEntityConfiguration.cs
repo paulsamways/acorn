@@ -29,12 +29,6 @@ internal sealed class ContentAttachmentEntityConfiguration : IEntityTypeConfigur
       .HasColumnName("file_id");
 
     builder
-      .Property(x => x.Visibility)
-      .HasColumnName("visibility")
-      .HasConversion<string>()
-      .IsRequired();
-
-    builder
       .Property(x => x.ParentId)
       .HasColumnName("parent_id");
 
@@ -44,7 +38,7 @@ internal sealed class ContentAttachmentEntityConfiguration : IEntityTypeConfigur
 
     builder
       .HasOne(x => x.Content)
-      .WithMany(x => x.Attachments)
+      .WithMany()
       .HasForeignKey(x => x.ContentId)
       .OnDelete(DeleteBehavior.Cascade);
 

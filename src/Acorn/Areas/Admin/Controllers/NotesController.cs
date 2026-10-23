@@ -12,11 +12,11 @@ namespace Acorn.Areas.Admin.Controllers;
 [Area(Routes.Admin.AreaName)]
 public sealed class NotesController : Controller
 {
-  private readonly INotesService _notesService;
+  private readonly INoteAuthoringService _notesService;
 
   /// <summary>Creates the notes controller.</summary>
   /// <param name="notesService">The note management service.</param>
-  public NotesController(INotesService notesService)
+  public NotesController(INoteAuthoringService notesService)
   {
     _notesService = notesService;
   }
@@ -55,7 +55,7 @@ public sealed class NotesController : Controller
     return View("Edit", MapToEditViewModel(note));
   }
 
-  /// <summary>Updates a note and optionally publishes it.</summary>
+  /// <summary>Updates a note and optionally publishes the saved draft.</summary>
   /// <param name="model">The submitted note fields.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the notes index.</returns>
@@ -82,7 +82,7 @@ public sealed class NotesController : Controller
       return View("Edit", await MapToEditViewModelAsync(model, cancellationToken));
     }
 
-    if (model.Published)
+    if (model.Publish)
       _ = await _notesService.PublishNoteAsync(model.Id, cancellationToken);
 
     return RedirectToRoute(Routes.Admin.NotesIndexGetRoute);
@@ -119,7 +119,7 @@ public sealed class NotesController : Controller
       ConcurrencyToken = note.ConcurrencyToken,
       Value = note.Value,
       Tags = string.Join(", ", note.Tags.OrderBy(tag => tag, StringComparer.Ordinal)),
-      Published = note.PublishedAt.HasValue
+      Publish = false
     }, note);
 
   private async Task<EditViewModel> MapToEditViewModelAsync(

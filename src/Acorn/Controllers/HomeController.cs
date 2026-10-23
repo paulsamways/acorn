@@ -24,7 +24,7 @@ public class HomeController : Controller
   [HttpGet(Routes.HomeIndexUrlTemplate, Name = Routes.HomeIndexGetRoute)]
   public async Task<IActionResult> Index(CancellationToken cancellationToken)
   {
-    var content = await _contentService.GetRecentPublishedContentAsync(cancellationToken: cancellationToken);
+    var content = await _contentService.GetRecentContentAsync(cancellationToken: cancellationToken);
     return View(content);
   }
 

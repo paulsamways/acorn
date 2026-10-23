@@ -24,7 +24,9 @@
             }
           </h3>
           <span class="muted">
-            @(bookmark.PublishedAt is null ? "Draft" : $"Published {bookmark.PublishedAt:g}")
+            @(bookmark.IsPublished
+              ? bookmark.IsDraft ? "Draft and published" : "Published"
+              : "Draft")
           </span>
         </div>
 
