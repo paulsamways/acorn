@@ -16,6 +16,27 @@ internal static class Routes
   public const string ContentBookmarksIndexUrlTemplate = "/content/bookmarks";
   public const string ContentBookmarksIndexGetRoute = nameof(ContentBookmarksIndexGetRoute);
 
+  // Comments
+
+  public const string ContentCommentsNewUrlTemplate = "/content/{contentId:guid}/comments/new";
+  public const string ContentCommentsNewGetRoute = nameof(ContentCommentsNewGetRoute);
+
+  public const string ContentCommentsCreateUrlTemplate = "/content/{contentId:guid}/comments";
+  public const string ContentCommentsCreatePostRoute = nameof(ContentCommentsCreatePostRoute);
+
+  public const string ContentCommentsResultUrlTemplate = "/content/{contentId:guid}/comments/result";
+  public const string ContentCommentsResultGetRoute = nameof(ContentCommentsResultGetRoute);
+
+  public const string ContentCommentsVerifyUrlTemplate = "/content/comments/verify";
+  public const string ContentCommentsVerifyGetRoute = nameof(ContentCommentsVerifyGetRoute);
+  public const string ContentCommentsVerifyPostRoute = nameof(ContentCommentsVerifyPostRoute);
+
+  public const string ContentCommentsResendUrlTemplate = "/content/comments/resend";
+  public const string ContentCommentsResendPostRoute = nameof(ContentCommentsResendPostRoute);
+
+  public const string ContentCommentsForgetUrlTemplate = "/content/comments/forget";
+  public const string ContentCommentsForgetPostRoute = nameof(ContentCommentsForgetPostRoute);
+
   // Account
 
   public const string AccountSignInUrlTemplate = "/account/sign-in";
@@ -56,6 +77,21 @@ internal static class Routes
 
     public const string AttachFileUrlTemplate = AreaUrlPrefix + "/content/{id:guid}/attachments";
     public const string AttachFilePostRoute = nameof(Admin) + nameof(AttachFilePostRoute);
+
+    public const string CommentsIndexUrlTemplate = AreaUrlPrefix + "/comments";
+    public const string CommentsIndexGetRoute = nameof(Admin) + nameof(CommentsIndexGetRoute);
+
+    public const string CommentsApproveUrlTemplate = AreaUrlPrefix + "/comments/approve/{id:guid}";
+    public const string CommentsApprovePostRoute = nameof(Admin) + nameof(CommentsApprovePostRoute);
+
+    public const string CommentsHideUrlTemplate = AreaUrlPrefix + "/comments/hide/{id:guid}";
+    public const string CommentsHidePostRoute = nameof(Admin) + nameof(CommentsHidePostRoute);
+
+    public const string CommentsUnhideUrlTemplate = AreaUrlPrefix + "/comments/unhide/{id:guid}";
+    public const string CommentsUnhidePostRoute = nameof(Admin) + nameof(CommentsUnhidePostRoute);
+
+    public const string CommentsAnonymiseUrlTemplate = AreaUrlPrefix + "/comments/anonymise/{id:guid}";
+    public const string CommentsAnonymisePostRoute = nameof(Admin) + nameof(CommentsAnonymisePostRoute);
 
 
     public const string PostsIndexUrlTemplate = AreaUrlPrefix + "/posts";

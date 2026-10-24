@@ -1,7 +1,9 @@
 using System.Net;
 using System.Text.Json;
+using System.Threading.RateLimiting;
 using Acorn;
 using Acorn.Core;
+using Acorn.Core.ContentManagement;
 using Acorn.Core.Database;
 using Acorn.Core.Database.Backups;
 using Acorn.Core.Database.Entities;
@@ -38,6 +40,24 @@ internal class Program
 
     if (!builder.Environment.IsDevelopment())
       builder.Services.AddHostedService<SqliteDatabaseBackupHostedService>();
+
+    builder.Services.AddScoped<ICommentUrlResolver, CommentUrlResolver>();
+    builder.Services.AddSingleton<CommentAuthorCookie>();
+    builder.Services.AddSingleton<CommentFormGuard>();
+
+    builder.Services.AddRateLimiter(options =>
+    {
+      options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+      options.AddPolicy(Constants.CommentsRateLimitPolicy, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+          httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+          _ => new FixedWindowRateLimiterOptions
+          {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(10),
+            QueueLimit = 0
+          }));
+    });
 
     builder.Services.AddSession((options) =>
     {
@@ -143,6 +163,7 @@ internal class Program
     }
 
     app.UseRouting();
+    app.UseRateLimiter();
     app.UseStaticFiles();
 
     app.UseAuthentication();

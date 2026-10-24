@@ -1,0 +1,15 @@
+@model Guid
+@{
+  ViewData["Title"] = "Link not valid";
+}
+
+<main class="f-grow-1 f-column f-align-center">
+  <form class="w-narrow f-column g-3 p-4" asp-route="@Routes.ContentCommentsResendPostRoute" method="POST">
+    <h2>This link isn't valid</h2>
+    <p>The verification link is wrong, has expired, or has already been used. If your comment is still unverified, we can send a new link.</p>
+
+    <input type="hidden" name="id" value="@Model" />
+
+    <button type="submit">Send a new link</button>
+  </form>
+</main>

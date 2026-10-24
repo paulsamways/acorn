@@ -1,0 +1,19 @@
+@model bool
+@{
+  ViewData["Title"] = "Verification email";
+}
+
+<main class="f-grow-1 f-column f-align-center">
+  <div class="w-narrow f-column g-3 p-4">
+    @if (Model)
+    {
+      <h2>Please wait a moment</h2>
+      <p>A verification email was sent very recently. Wait a minute, then try again.</p>
+    }
+    else
+    {
+      <h2>Check your email</h2>
+      <p>If your comment is waiting to be verified, we've sent a new link to the email address you gave.</p>
+    }
+  </div>
+</main>

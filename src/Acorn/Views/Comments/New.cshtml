@@ -1,0 +1,22 @@
+@model Acorn.Models.Comments.CommentFormViewModel
+@{
+  ViewData["Title"] = Model.ParentComment is null ? "Leave a comment" : "Reply to comment";
+}
+
+<main class="f-grow-1 f-column f-align-center">
+  <div class="w-wide f-column g-4 p-4">
+    <h2>@ViewData["Title"]</h2>
+
+    @if (Model.ParentComment is { } parent)
+    {
+      <blockquote class="f-column g-2">
+        <strong>@parent.AuthorName</strong>
+        <div class="prose">@Html.Raw(parent.BodyHtml)</div>
+      </blockquote>
+    }
+
+    <partial name="~/Views/Comments/_CommentForm.cshtml" model="Model" />
+
+    <a asp-route="@Routes.ContentPostsDetailsGetRoute" asp-route-id="@Model.ContentId" asp-fragment="comments">Back to the post</a>
+  </div>
+</main>
