@@ -13,24 +13,24 @@ public class CommentVerificationEmailMessage : EmailMessage
   }
 
   /// <summary>Creates a verification message.</summary>
-  /// <param name="verificationUrl">The URL the commenter must visit to verify their comment.</param>
+  /// <param name="verificationUrl">The URL the commenter must visit to confirm their email address.</param>
   public CommentVerificationEmailMessage(string verificationUrl)
   {
     VerificationUrl = verificationUrl;
   }
 
   /// <summary>Gets or sets the comment verification URL.</summary>
-  [Description("The URL the commenter must visit to verify their comment")]
+  [Description("The URL the commenter must visit to confirm their email address")]
   [DefaultValue("https://example.com/content/comments/verify")]
   public string VerificationUrl { get; set; }
 
   /// <inheritdoc />
-  public override string GetSubject() => "Verify your comment";
+  public override string GetSubject() => "Confirm your email address";
 
   /// <inheritdoc />
   public override string GetBodyPlainText() =>
     $"""
-    Hi, please use the following link to verify your comment:
+    Hi, please use the following link to confirm your email address and submit your comment:
 
       {VerificationUrl}
 

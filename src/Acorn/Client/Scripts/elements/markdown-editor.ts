@@ -9,7 +9,8 @@ type WrapAction = {
   upload?: { attribute: string; accept: string; filenameAsText?: boolean };
 };
 
-type LineAction = { kind: "line"; label: string; icon: string; prefix: string };
+// `heading` actions are hidden when the host has the `disable-headings` attribute.
+type LineAction = { kind: "line"; label: string; icon: string; prefix: string; heading?: boolean };
 
 type MarkdownAction = WrapAction | LineAction;
 
@@ -104,6 +105,7 @@ const actions: MarkdownAction[][] = [
       label: "Heading 1",
       icon: icon(`${H_BASE}m4.501-8.627 2.25-1.5v10.126m0 0h-2.25m2.25 0h2.25`),
       prefix: "# ",
+      heading: true,
     },
     {
       kind: "line",
@@ -112,6 +114,7 @@ const actions: MarkdownAction[][] = [
         `${H_BASE}M21.75 19.5H16.5v-1.609a2.25 2.25 0 0 1 1.244-2.012l2.89-1.445c.651-.326 1.116-.955 1.116-1.683 0-.498-.04-.987-.118-1.463-.135-.825-.835-1.422-1.668-1.489a15.202 15.202 0 0 0-3.464.12`,
       ),
       prefix: "## ",
+      heading: true,
     },
     {
       kind: "line",
@@ -120,6 +123,7 @@ const actions: MarkdownAction[][] = [
         `${H_BASE}M20.905 14.626a4.52 4.52 0 0 1 .738 3.603c-.154.695-.794 1.143-1.504 1.208a15.194 15.194 0 0 1-3.639-.104m4.405-4.707a4.52 4.52 0 0 0 .738-3.603c-.154-.696-.794-1.144-1.504-1.209a15.19 15.19 0 0 0-3.639.104m4.405 4.708H18`,
       ),
       prefix: "### ",
+      heading: true,
     },
   ],
   [
@@ -231,6 +235,13 @@ class MarkdownEditor extends HTMLElement {
       const groupElement = document.createElement("div");
       groupElement.setAttribute("role", "group");
       group.forEach((action) => {
+        if (action.kind === "line" && action.heading && this.hasAttribute("disable-headings")) {
+          return;
+        }
+        // Upload buttons are only offered when the host provides an endpoint
+        if (action.kind === "wrap" && action.upload && !this.getAttribute(action.upload.attribute)) {
+          return;
+        }
         const button = document.createElement("button");
         button.type = "button";
         button.innerHTML = action.icon;
@@ -240,11 +251,14 @@ class MarkdownEditor extends HTMLElement {
         button.addEventListener("click", () => this.applyAction(textarea, action));
         groupElement.append(button);
       });
-      toolbar.append(groupElement);
+      if (groupElement.childElementCount > 0) {
+        toolbar.append(groupElement);
+      }
     });
 
     this.textContent = "";
-    this.append(toolbar, textarea);
+    // Textarea first in the DOM so it precedes the buttons in tab order; CSS shows the toolbar above it
+    this.append(textarea, toolbar);
   }
 
   private async applyAction(textarea: HTMLTextAreaElement, action: MarkdownAction): Promise<void> {

@@ -1,32 +1,30 @@
 @model Acorn.Models.Comments.CommentsViewModel
 
-<section id="comments" class="f-column g-4" aria-label="Comments">
-  <h2>Comments</h2>
+<details id="comments" aria-label="Comments">
+  <summary>Comments (@Model.Comments.Count)</summary>
+  <div class="f-column g-4 mt-3">
 
-  @if (Model.Comments.Count == 0)
-  {
-    <p class="muted">No comments yet.</p>
-  }
-  else
-  {
-    <div class="f-column g-4">
-      @foreach (var comment in Model.Comments)
-      {
-        <partial name="~/Views/Comments/_Comment.cshtml" model="comment" />
-      }
-    </div>
-  }
-
-  <div class="f-column g-3">
-    <h3>Leave a comment</h3>
-    <partial name="~/Views/Comments/_CommentForm.cshtml" model="Model.Form" />
-
-    @if (Model.Form.IsTrustedAuthor)
+    @if (Model.Comments.Count == 0)
     {
-      <form asp-route="@Routes.ContentCommentsForgetPostRoute" method="POST">
-        <input type="hidden" name="returnUrl" value="@(Context.Request.Path + "#comments")" />
-        <small class="muted">You won't be asked to verify again on this browser. <button type="submit" class="link">Not you? Forget me.</button></small>
-      </form>
+      <p class="muted">No one has left a comment.</p>
     }
+    else
+    {
+      <div class="f-column g-4">
+        @foreach (var comment in Model.Comments)
+        {
+          <partial name="~/Views/Comments/_Comment.cshtml" model="comment" />
+        }
+      </div>
+    }
+
+    <div id="comment-form-home">
+      <div id="comment-form-wrapper" class="f-column g-3 p-3" hidden>
+        <partial name="~/Views/Comments/_CommentForm.cshtml" model="Model.Form" />
+      </div>
+    </div>
+    <div class="f-row f-justify-end">
+      <button id="leave-comment">Leave a comment</button>
+    </div>
   </div>
-</section>
+</details>

@@ -1,6 +1,6 @@
 @model bool
 @{
-  ViewData["Title"] = "Verification email";
+  ViewData["Title"] = "Confirmation email";
 }
 
 <main class="f-grow-1 f-column f-align-center">
@@ -8,12 +8,12 @@
     @if (Model)
     {
       <h2>Please wait a moment</h2>
-      <p>A verification email was sent very recently. Wait a minute, then try again.</p>
+      <p>A confirmation email was sent very recently. Wait a minute, then try again.</p>
     }
     else
     {
       <h2>Check your email</h2>
-      <p>If your comment is waiting to be verified, we've sent a new link to the email address you gave.</p>
+      <p>If your email is waiting to be confirmed, we've sent a new link to the address you gave.</p>
     }
   </div>
 </main>

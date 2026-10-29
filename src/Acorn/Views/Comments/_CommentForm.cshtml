@@ -8,28 +8,24 @@
   <input type="hidden" name="Input.ParentCommentId" value="@Model.Input.ParentCommentId" />
   <input type="hidden" name="Input.FormToken" value="@Model.Input.FormToken" />
 
-  <div class="f-column">
-    <label asp-for="Input.AuthorName"></label>
-    <input asp-for="Input.AuthorName" type="text" autocomplete="name" maxlength="@Acorn.Core.ContentManagement.ContentCommentLimits.AuthorNameMaxLength" required>
-    <span asp-validation-for="Input.AuthorName" class="text-danger"></span>
-  </div>
+  <div class="f-row g-3">
+    <div class="f-column f-grow-1">
+      <label asp-for="Input.AuthorName"></label>
+      <input asp-for="Input.AuthorName" type="text" autocomplete="name" maxlength="@Acorn.Core.ContentManagement.ContentCommentLimits.AuthorNameMaxLength" required>
+      <span asp-validation-for="Input.AuthorName" class="text-danger"></span>
+    </div>
 
-  <div class="f-column">
-    <label asp-for="Input.AuthorEmail"></label>
-    <input asp-for="Input.AuthorEmail" type="email" autocomplete="email" maxlength="@Acorn.Core.ContentManagement.ContentCommentLimits.AuthorEmailMaxLength" required>
-    <span asp-validation-for="Input.AuthorEmail" class="text-danger"></span>
-    <small class="muted">
-      @(Model.IsTrustedAuthor
-        ? "Never shown publicly."
-        : "Never shown publicly. We'll email you a link to verify your comment.")
-    </small>
+    <div class="f-column f-grow-1">
+      <label asp-for="Input.AuthorEmail"></label>
+      <input asp-for="Input.AuthorEmail" type="email" autocomplete="email" maxlength="@Acorn.Core.ContentManagement.ContentCommentLimits.AuthorEmailMaxLength" required>
+      <span asp-validation-for="Input.AuthorEmail" class="text-danger"></span>
+    </div>
   </div>
 
   <div class="f-column">
     <label asp-for="Input.Body"></label>
-    <textarea asp-for="Input.Body" rows="6" maxlength="@Acorn.Core.ContentManagement.ContentCommentLimits.BodyMaxLength" required></textarea>
+    <markdown-editor disable-headings id="Input_Body" name="Input.Body" rows="6" maxlength="@Acorn.Core.ContentManagement.ContentCommentLimits.BodyMaxLength" required></markdown-editor>
     <span asp-validation-for="Input.Body" class="text-danger"></span>
-    <small class="muted">Basic Markdown is supported: emphasis, lists, quotes, code and links.</small>
   </div>
 
   <div style="position: absolute; left: -10000px;" aria-hidden="true">
@@ -37,7 +33,8 @@
     <input asp-for="Input.Website" type="text" tabindex="-1" autocomplete="off">
   </div>
 
-  <div class="f-row g-3 f-align-center">
-    <button type="submit">Post comment</button>
+  <div class="f-row g-3 f-justify-end">
+    <button type="button" id="comment-reply-cancel" class="link">Cancel</button>
+    <button type="submit">Submit</button>
   </div>
 </form>

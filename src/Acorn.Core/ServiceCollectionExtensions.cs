@@ -156,6 +156,14 @@ public static class ServiceCollectionExtensions
         .Build()
     );
 
+    _ = services.AddKeyedSingleton(
+      Constants.SafeInlineMarkdownPipeline,
+      new MarkdownPipelineBuilder()
+        .DisableHtml()
+        .DisableHeadings()
+        .Build()
+    );
+
     _ = services
       .AddHttpClient<IBookmarkMetadataService, BookmarkMetadataService>((client) =>
       {

@@ -1,18 +1,18 @@
 @model Acorn.Core.ContentManagement.Models.ContentComment
 
-<article id="comment-@Model.Id" class="f-column g-2">
-  <header class="f-row g-2 f-align-center">
-    <strong>@Model.AuthorName</strong>
-    <time class="muted small-text" datetime="@Model.CreatedAt" display="Date"></time>
-  </header>
+<article id="comment-@Model.Id" data-comment="@Model.Id" class="f-column g-2">
 
   <div class="prose">
     @Html.Raw(Model.BodyHtml)
   </div>
 
-  <div>
-    <a class="small-text" asp-route="@Routes.ContentCommentsNewGetRoute" asp-route-contentId="@Model.ContentId" asp-route-parent="@Model.Id">Reply</a>
-  </div>
+  <footer class="f-row g-2 f-align-center f-justify-end muted">
+    &mdash; @Model.AuthorName,
+    <time datetime="@Model.CreatedAt" display="DateTime"></time>.
+    <a asp-route="@Routes.ContentCommentsNewGetRoute" asp-route-contentId="@Model.ContentId" asp-route-parent="@Model.Id" data-reply-to="@Model.Id" data-reply-author="@Model.AuthorName">Reply</a> to this comment.
+  </footer>
+
+  <div class="comment-reply-slot"></div>
 
   @if (Model.Replies.Count > 0)
   {

@@ -1,4 +1,5 @@
 using Markdig;
+using Microsoft.Extensions.DependencyInjection;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
 using Markdig.Syntax.Inlines;
@@ -12,11 +13,12 @@ internal sealed class ContentCommentRenderer
 
   private static readonly string[] _allowedSchemes = [Uri.UriSchemeHttp, Uri.UriSchemeHttps, Uri.UriSchemeMailto];
 
-  // Plain CommonMark: no extensions, no raw HTML and no headings (they render as text).
-  private static readonly MarkdownPipeline _pipeline = new MarkdownPipelineBuilder()
-    .DisableHtml()
-    .DisableHeadings()
-    .Build();
+  private readonly MarkdownPipeline _pipeline;
+
+  public ContentCommentRenderer([FromKeyedServices(Constants.SafeInlineMarkdownPipeline)] MarkdownPipeline pipeline)
+  {
+    _pipeline = pipeline;
+  }
 
   public string Render(string markdown)
   {

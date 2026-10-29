@@ -16,7 +16,7 @@ public sealed class CommentInputModel
   [Required]
   [EmailAddress]
   [StringLength(ContentCommentLimits.AuthorEmailMaxLength)]
-  [Display(Name = "Email (kept private)")]
+  [Display(Name = "Email")]
   public string AuthorEmail { get; set; } = string.Empty;
 
   /// <summary>Gets or sets the Markdown comment body.</summary>
