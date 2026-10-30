@@ -1,5 +1,4 @@
 import "../elements/markdown-editor.js";
-import "../elements/comment-reply.js";
 
 document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.querySelector("body > .sidebar");
