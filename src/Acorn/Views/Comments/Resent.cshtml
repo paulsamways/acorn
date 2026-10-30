@@ -1,0 +1,19 @@
+@model bool
+@{
+  ViewData["Title"] = "Confirmation email";
+}
+
+<main class="f-grow-1 f-column f-align-center">
+  <div class="w-narrow f-column g-3 p-4">
+    @if (Model)
+    {
+      <h2>Please wait a moment</h2>
+      <p>A confirmation email was sent very recently. Wait a minute, then try again.</p>
+    }
+    else
+    {
+      <h2>Check your email</h2>
+      <p>If your email is waiting to be confirmed, we've sent a new link to the address you gave.</p>
+    }
+  </div>
+</main>

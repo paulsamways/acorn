@@ -87,11 +87,10 @@
 
   details>summary {
     cursor: pointer;
-  }
-  details>summary::marker {
+    text-decoration: underline;
     color: var(--text-color-highlight);
   }
-  details>summary:hover::marker {
+  details>summary:hover {
     color: var(--text-color-highlight-hover);
   }
 
@@ -124,13 +123,14 @@
     color: var(--text-color-muted);
   }
   markdown-editor {
-    display: block;
+    display: flex;
+    gap: .5rem;
+    flex-direction: column-reverse;
   }
   markdown-editor > [role=toolbar] {
     display: flex;
     flex-wrap: wrap;
     gap: .2rem 1rem;
-    margin-bottom: .5rem;
   }
   markdown-editor > [role=toolbar] > [role=group] {
     display: flex;
@@ -180,4 +180,21 @@
       transition: none;
     }
   }
+}
+
+
+article.replying-to {
+    border-left: 3px solid var(--text-color-highlight);
+    padding-left: .75rem;
+}
+
+.reply-banner {
+    border-left: 3px solid var(--text-color-highlight);
+    background-color: var(--background-color-z1);
+    padding: .5rem .75rem;
+    border-radius: var(--border-radius);
+}
+
+.reply-banner[hidden] {
+    display: none;
 }

@@ -77,6 +77,8 @@ public class ApplicationDbContext : IdentityDbContext<User, Role, Guid>, IDataPr
 
   internal DbSet<ContentRevisionAttachmentEntity> ContentRevisionAttachments => Set<ContentRevisionAttachmentEntity>();
 
+  internal DbSet<ContentCommentEntity> ContentComments => Set<ContentCommentEntity>();
+
   /// <summary>Gets the data-protection keys stored by this context.</summary>
   public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 }

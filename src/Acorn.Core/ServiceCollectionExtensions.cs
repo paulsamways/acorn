@@ -17,6 +17,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -50,6 +51,12 @@ public static class ServiceCollectionExtensions
       .AddFileManagement()
       .AddEmail(configuration, isDevelopment)
       .AddContentManagement();
+
+    _ = services
+      .AddOptions<ContentCommentOptions>()
+      .Bind(configuration.GetSection("Comments"))
+      .ValidateDataAnnotations()
+      .ValidateOnStart();
 
     return services;
   }
@@ -135,11 +142,25 @@ public static class ServiceCollectionExtensions
   /// <returns>The service collection for chaining.</returns>
   public static IServiceCollection AddContentManagement(this IServiceCollection services)
   {
+    services.TryAddSingleton(TimeProvider.System);
+
+    _ = services
+      .AddOptions<ContentCommentOptions>()
+      .ValidateDataAnnotations();
+
     _ = services.AddSingleton(
       new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
         .UseEmojiAndSmiley()
         .DisableHtml()
+        .Build()
+    );
+
+    _ = services.AddKeyedSingleton(
+      Constants.SafeInlineMarkdownPipeline,
+      new MarkdownPipelineBuilder()
+        .DisableHtml()
+        .DisableHeadings()
         .Build()
     );
 
@@ -174,7 +195,10 @@ public static class ServiceCollectionExtensions
       .AddScoped<IBookmarksService, BookmarksService>()
       .AddScoped<IBookmarkAuthoringService, BookmarkAuthoringService>()
       .AddScoped<IPostsService, PostsService>()
-      .AddScoped<IPostAuthoringService, PostAuthoringService>();
+      .AddScoped<IPostAuthoringService, PostAuthoringService>()
+      .AddSingleton<ContentCommentRenderer>()
+      .AddScoped<IContentCommentService, ContentCommentService>()
+      .AddScoped<IContentCommentModerationService, ContentCommentModerationService>();
   }
 
   /// <summary>Registers file validation and file-management services.</summary>

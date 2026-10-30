@@ -1,0 +1,40 @@
+@model Acorn.Models.Comments.CommentFormViewModel
+
+<form class="f-column g-3" asp-route="@Routes.ContentCommentsCreatePostRoute" asp-route-contentId="@Model.ContentId" method="POST">
+
+  <partial name="_ValidationSummary" />
+
+  @* Rendered by hand so a stale posted FormToken value is never echoed back from model state. *@
+  <input type="hidden" name="Input.ParentCommentId" value="@Model.Input.ParentCommentId" />
+  <input type="hidden" name="Input.FormToken" value="@Model.Input.FormToken" />
+
+  <div class="f-row g-3">
+    <div class="f-column f-grow-1">
+      <label asp-for="Input.AuthorName"></label>
+      <input asp-for="Input.AuthorName" type="text" autocomplete="name" maxlength="@Acorn.Core.ContentManagement.ContentCommentLimits.AuthorNameMaxLength" required>
+      <span asp-validation-for="Input.AuthorName" class="text-danger"></span>
+    </div>
+
+    <div class="f-column f-grow-1">
+      <label asp-for="Input.AuthorEmail"></label>
+      <input asp-for="Input.AuthorEmail" type="email" autocomplete="email" maxlength="@Acorn.Core.ContentManagement.ContentCommentLimits.AuthorEmailMaxLength" required>
+      <span asp-validation-for="Input.AuthorEmail" class="text-danger"></span>
+    </div>
+  </div>
+
+  <div class="f-column">
+    <label asp-for="Input.Body"></label>
+    <markdown-editor disable-headings id="Input_Body" name="Input.Body" rows="6" maxlength="@Acorn.Core.ContentManagement.ContentCommentLimits.BodyMaxLength" required></markdown-editor>
+    <span asp-validation-for="Input.Body" class="text-danger"></span>
+  </div>
+
+  <div style="position: absolute; left: -10000px;" aria-hidden="true">
+    <label asp-for="Input.Website">Leave this field empty</label>
+    <input asp-for="Input.Website" type="text" tabindex="-1" autocomplete="off">
+  </div>
+
+  <div class="f-row g-3 f-justify-end">
+    <button type="button" id="comment-reply-cancel" class="link">Cancel</button>
+    <button type="submit">Submit</button>
+  </div>
+</form>

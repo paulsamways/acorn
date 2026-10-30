@@ -19,5 +19,7 @@
         }
       </div>
     }
+
+    @await Component.InvokeAsync("Comments", new { contentId = Model.Id })
   </article>
 </main>

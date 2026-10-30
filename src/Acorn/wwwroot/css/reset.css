@@ -42,4 +42,8 @@
   #root, #__next {
     isolation: isolate;
   }
+
+  [hidden] {
+    display: none !important;
+  }
 }

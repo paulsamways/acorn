@@ -1,0 +1,21 @@
+@model Acorn.Models.Comments.CommentVerifyViewModel
+@{
+  ViewData["Title"] = "Confirm your email";
+}
+
+<main class="f-grow-1 f-column f-align-center">
+  <form class="w-narrow f-column g-3 p-4" asp-route="@Routes.ContentCommentsVerifyPostRoute" method="POST">
+    <h2>Confirm your email</h2>
+    <p>Confirm that this is your email address to submit your comment.</p>
+
+    <input type="hidden" name="id" value="@Model.Id" />
+    <input type="hidden" name="token" value="@Model.Token" />
+
+    <label class="f-row g-2 f-align-center">
+      <input type="checkbox" name="remember" value="true" />
+      <span>Don't ask me to confirm again on this browser</span>
+    </label>
+
+    <button type="submit">Confirm email</button>
+  </form>
+</main>

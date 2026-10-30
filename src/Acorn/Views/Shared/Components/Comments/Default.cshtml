@@ -1,0 +1,32 @@
+@model Acorn.Models.Comments.CommentsViewModel
+
+<details id="comments" aria-label="Comments">
+  <summary>Comments (@Model.Comments.Count)</summary>
+  <div class="f-column g-4 mt-3">
+
+    @if (Model.Comments.Count == 0)
+    {
+      <p class="muted">No one has left a comment.</p>
+    }
+    else
+    {
+      <div class="f-column g-4">
+        @foreach (var comment in Model.Comments)
+        {
+          <partial name="~/Views/Comments/_Comment.cshtml" model="comment" />
+        }
+      </div>
+    }
+
+    <div id="comment-form-home">
+      <div id="comment-form-wrapper" class="f-column g-3 p-3" hidden>
+        <partial name="~/Views/Comments/_CommentForm.cshtml" model="Model.Form" />
+      </div>
+    </div>
+    <div class="f-row f-justify-end">
+      <button id="leave-comment">Leave a comment</button>
+    </div>
+  </div>
+</details>
+
+<script type="module" src="~/js/components/comments.js" asp-append-version="true"></script>

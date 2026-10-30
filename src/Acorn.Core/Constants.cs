@@ -19,4 +19,13 @@ public static class Constants
 
   /// <summary>Gets the antiforgery cookie name.</summary>
   public const string AntiforgeryCookie = $"{Name}.Antiforgery";
+
+  /// <summary>Gets the cookie that lets a verified commenter skip email verification.</summary>
+  public const string CommentAuthorCookie = $"{Name}.CommentAuthor";
+
+  /// <summary>Gets the name of the rate-limiting policy applied to comment submission.</summary>
+  public const string CommentsRateLimitPolicy = "comments";
+
+  /// <summary>The key of the Markdown pipeline for visitor-written content: no raw HTML, headings or extensions.</summary>
+  public const string SafeInlineMarkdownPipeline = "safe-inline";
 }

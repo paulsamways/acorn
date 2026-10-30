@@ -15,7 +15,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261022202529_AddContentRevisions";
+    public override string LastMigrationId => "20261024194916_AddContentComments";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
@@ -56,6 +56,106 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .IsUnique();
 
                 b.ToTable("content_attachment");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentCommentEntity", b =>
+            {
+                b.Property<byte[]>("Id")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("content_comment_id");
+
+                b.Property<DateTime?>("ApprovedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("approved_at");
+
+                b.Property<string>("AuthorEmail")
+                    .IsRequired()
+                    .HasMaxLength(254)
+                    .HasColumnType("TEXT")
+                    .HasColumnName("author_email");
+
+                b.Property<string>("AuthorName")
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnType("TEXT")
+                    .HasColumnName("author_name");
+
+                b.Property<string>("Body")
+                    .IsRequired()
+                    .HasMaxLength(4000)
+                    .HasColumnType("TEXT")
+                    .HasColumnName("body");
+
+                b.Property<byte[]>("ConcurrencyToken")
+                    .IsConcurrencyToken()
+                    .IsRequired()
+                    .HasColumnType("BLOB")
+                    .HasColumnName("concurrency_token");
+
+                b.Property<byte[]>("ContentId")
+                    .IsRequired()
+                    .HasColumnType("BLOB")
+                    .HasColumnName("content_id");
+
+                b.Property<DateTime>("CreatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("created_at");
+
+                b.Property<int>("Depth")
+                    .HasColumnType("INTEGER")
+                    .HasColumnName("depth");
+
+                b.Property<DateTime?>("HiddenAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("hidden_at");
+
+                b.Property<byte[]>("ParentCommentId")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("parent_comment_id");
+
+                b.Property<string>("State")
+                    .IsRequired()
+                    .HasColumnType("TEXT")
+                    .HasColumnName("comment_state");
+
+                b.Property<DateTime>("UpdatedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("updated_at");
+
+                b.Property<DateTime?>("VerificationSentAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("verification_sent_at");
+
+                b.Property<DateTime?>("VerificationTokenExpiresAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("verification_token_expires_at");
+
+                b.Property<byte[]>("VerificationTokenHash")
+                    .HasColumnType("BLOB")
+                    .HasColumnName("verification_token_hash");
+
+                b.Property<DateTime?>("VerifiedAt")
+                    .HasColumnType("TEXT")
+                    .HasColumnName("verified_at");
+
+                b.HasKey("Id");
+
+                b.HasIndex("VerificationTokenHash")
+                    .IsUnique()
+                    .HasFilter("\"verification_token_hash\" IS NOT NULL");
+
+                b.HasIndex("ContentId", "ParentCommentId");
+
+                b.HasIndex("State", "CreatedAt");
+
+                b.HasIndex("ContentId", "State", "CreatedAt");
+
+                b.ToTable("content_comment", t =>
+                    {
+                        t.HasCheckConstraint("ck_content_comment_depth", "depth >= 0");
+
+                        t.HasCheckConstraint("ck_content_comment_state", "comment_state IN ('Unverified', 'Verified', 'Approved', 'Hidden')");
+                    });
             });
 
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", b =>
@@ -685,6 +785,25 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.Navigation("Parent");
             });
 
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentCommentEntity", b =>
+            {
+                b.HasOne("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", "Content")
+                    .WithMany()
+                    .HasForeignKey("ContentId")
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired();
+
+                b.HasOne("Acorn.Core.ContentManagement.Database.Entities.ContentCommentEntity", "Parent")
+                    .WithMany("Replies")
+                    .HasForeignKey("ContentId", "ParentCommentId")
+                    .HasPrincipalKey("ContentId", "Id")
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                b.Navigation("Content");
+
+                b.Navigation("Parent");
+            });
+
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", b =>
             {
                 b.HasOne("Acorn.Core.Database.Entities.User", "Author")
@@ -808,6 +927,11 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                 b.Navigation("Derivations");
 
                 b.Navigation("Revisions");
+            });
+
+        modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentCommentEntity", b =>
+            {
+                b.Navigation("Replies");
             });
 
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentEntity", b =>
