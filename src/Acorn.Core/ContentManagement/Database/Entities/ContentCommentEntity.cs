@@ -92,6 +92,13 @@ internal sealed class ContentCommentEntity : IAuditable, IConcurrencyTracked
     HiddenAt = null;
   }
 
+  public void EnsureDeletable()
+  {
+    // Only comments that were never approved are deletable; they can't have replies.
+    if (State is not (ContentCommentState.Unverified or ContentCommentState.Verified))
+      throw new CommentNotDeletableException(Id, State);
+  }
+
   public void Anonymise()
   {
     AuthorEmail = AnonymisedEmail;

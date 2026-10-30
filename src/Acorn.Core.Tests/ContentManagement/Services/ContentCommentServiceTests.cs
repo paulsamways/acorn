@@ -276,4 +276,49 @@ internal class ContentCommentServiceTests : ServicesTestBase
     await Assert.That(after.IsEmailAnonymised).IsTrue();
     await Assert.That(after.AuthorEmail).DoesNotContain("example.test");
   }
+
+  [Test]
+  public async Task Delete_RemovesUnverifiedAndVerifiedComments()
+  {
+    var contentId = await CreatePublishedPostAsync();
+    var unverified = await CommentService.SubmitAsync(NewComment(contentId));
+    var verified = await CommentService.SubmitAsync(NewComment(contentId, email: "other@example.test"));
+    _ = await CommentService.VerifyAsync(verified.CommentId, LastToken());
+
+    foreach (var item in await CommentModerationService.ListAsync())
+    {
+      await CommentModerationService.DeleteAsync(item.Id, item.ConcurrencyToken);
+    }
+
+    await Assert.That(await CommentModerationService.ListAsync()).IsEmpty();
+    await Assert.That(unverified.CommentId).IsNotEqualTo(verified.CommentId);
+  }
+
+  [Test]
+  public async Task Delete_RejectsApprovedAndHiddenComments()
+  {
+    var contentId = await CreatePublishedPostAsync();
+    var approvedId = await ApprovedCommentAsync(contentId);
+    var approved = (await CommentModerationService.ListAsync()).Single();
+
+    await Assert.That(async () => await CommentModerationService.DeleteAsync(approvedId, approved.ConcurrencyToken))
+      .Throws<CommentNotDeletableException>();
+
+    await CommentModerationService.HideAsync(approvedId, approved.ConcurrencyToken);
+    var hidden = (await CommentModerationService.ListAsync()).Single();
+    await Assert.That(async () => await CommentModerationService.DeleteAsync(approvedId, hidden.ConcurrencyToken))
+      .Throws<CommentNotDeletableException>();
+  }
+
+  [Test]
+  public async Task Delete_StaleConcurrencyToken_Throws()
+  {
+    var contentId = await CreatePublishedPostAsync();
+    var submitted = await CommentService.SubmitAsync(NewComment(contentId));
+    var stale = (await CommentModerationService.ListAsync()).Single();
+    _ = await CommentService.VerifyAsync(submitted.CommentId, LastToken());
+
+    await Assert.That(async () => await CommentModerationService.DeleteAsync(stale.Id, stale.ConcurrencyToken))
+      .Throws<CommentConcurrencyException>();
+  }
 }

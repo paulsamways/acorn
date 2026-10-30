@@ -59,6 +59,26 @@ internal sealed class ContentCommentModerationService : IContentCommentModeratio
   public Task AnonymiseAsync(Guid id, Guid concurrencyToken, CancellationToken cancellationToken = default)
     => ApplyAsync(id, concurrencyToken, (comment, _) => comment.Anonymise(), cancellationToken);
 
+  public async Task DeleteAsync(Guid id, Guid concurrencyToken, CancellationToken cancellationToken = default)
+  {
+    var comment = await _dbContext.ContentComments
+      .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+      ?? throw new CommentNotFoundException(id);
+
+    comment.EnsureDeletable();
+    _dbContext.Entry(comment).Property(x => x.ConcurrencyToken).OriginalValue = concurrencyToken;
+    _ = _dbContext.ContentComments.Remove(comment);
+
+    try
+    {
+      _ = await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+    catch (DbUpdateConcurrencyException exception)
+    {
+      throw new CommentConcurrencyException(id, exception);
+    }
+  }
+
   private async Task ApplyAsync(
     Guid id,
     Guid concurrencyToken,

@@ -71,6 +71,16 @@ public sealed class CommentsController : Controller
   public Task<IActionResult> AnonymisePostAsync(Guid id, Guid concurrencyToken, ContentCommentState? state, CancellationToken cancellationToken)
     => ModerateAsync(() => _moderationService.AnonymiseAsync(id, concurrencyToken, cancellationToken), state);
 
+  /// <summary>Permanently deletes a comment that has not been approved.</summary>
+  /// <param name="id">The comment identifier.</param>
+  /// <param name="concurrencyToken">The version the moderator saw.</param>
+  /// <param name="state">The list filter to return to.</param>
+  /// <param name="cancellationToken">A token used to cancel the operation.</param>
+  /// <returns>A redirect to the comments index.</returns>
+  [HttpPost(Routes.Admin.CommentsDeleteUrlTemplate, Name = Routes.Admin.CommentsDeletePostRoute)]
+  public Task<IActionResult> DeletePostAsync(Guid id, Guid concurrencyToken, ContentCommentState? state, CancellationToken cancellationToken)
+    => ModerateAsync(() => _moderationService.DeleteAsync(id, concurrencyToken, cancellationToken), state);
+
   private async Task<IActionResult> ModerateAsync(Func<Task> action, ContentCommentState? state)
   {
     try
@@ -84,6 +94,10 @@ public sealed class CommentsController : Controller
     catch (InvalidCommentTransitionException)
     {
       TempData["Message"] = "That change isn't allowed for the comment's current state.";
+    }
+    catch (CommentNotDeletableException)
+    {
+      TempData["Message"] = "Only comments that haven't been approved can be deleted.";
     }
     catch (CommentNotFoundException)
     {

@@ -38,4 +38,11 @@ public interface IContentCommentModerationService
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A task representing the operation.</returns>
   Task AnonymiseAsync(Guid id, Guid concurrencyToken, CancellationToken cancellationToken = default);
+
+  /// <summary>Permanently deletes a comment that has not been approved. Approved and hidden comments cannot be deleted.</summary>
+  /// <param name="id">The comment identifier.</param>
+  /// <param name="concurrencyToken">The version the moderator saw.</param>
+  /// <param name="cancellationToken">A token used to cancel the operation.</param>
+  /// <returns>A task representing the operation.</returns>
+  Task DeleteAsync(Guid id, Guid concurrencyToken, CancellationToken cancellationToken = default);
 }

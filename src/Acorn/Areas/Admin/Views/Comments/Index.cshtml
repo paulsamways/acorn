@@ -74,6 +74,14 @@
               <button type="submit">Hide</button>
             </form>
           }
+          @if (comment.State is ContentCommentState.Unverified or ContentCommentState.Verified)
+          {
+            <form asp-route="@Routes.Admin.CommentsDeletePostRoute" asp-route-id="@comment.Id" method="POST" onsubmit="return confirm('Permanently delete this comment? This cannot be undone.');">
+              <input type="hidden" name="concurrencyToken" value="@comment.ConcurrencyToken" />
+              <input type="hidden" name="state" value="@current" />
+              <button type="submit">Delete</button>
+            </form>
+          }
           @if (!comment.IsEmailAnonymised)
           {
             <form asp-route="@Routes.Admin.CommentsAnonymisePostRoute" asp-route-id="@comment.Id" method="POST">

@@ -93,6 +93,9 @@ internal static class Routes
     public const string CommentsAnonymiseUrlTemplate = AreaUrlPrefix + "/comments/anonymise/{id:guid}";
     public const string CommentsAnonymisePostRoute = nameof(Admin) + nameof(CommentsAnonymisePostRoute);
 
+    public const string CommentsDeleteUrlTemplate = AreaUrlPrefix + "/comments/delete/{id:guid}";
+    public const string CommentsDeletePostRoute = nameof(Admin) + nameof(CommentsDeletePostRoute);
+
 
     public const string PostsIndexUrlTemplate = AreaUrlPrefix + "/posts";
     public const string PostsIndexGetRoute = nameof(Admin) + nameof(PostsIndexGetRoute);
