@@ -8,6 +8,7 @@ using Acorn.Core.Database;
 using Acorn.Core.Database.Backups;
 using Acorn.Core.Database.Entities;
 using Acorn.Core.Storage;
+using Acorn.Core.Telemetry;
 using Acorn.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -17,6 +18,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 
 internal class Program
@@ -37,6 +41,30 @@ internal class Program
       builder.Configuration,
       dataDirectoryService,
       builder.Environment.IsDevelopment());
+
+    builder.Logging.AddFilter<OpenTelemetryLoggerProvider>("Acorn.Core.Telemetry", LogLevel.None);
+    builder.Logging.AddFilter<OpenTelemetryLoggerProvider>("Acorn.Core.Email.LoggingEmailService", LogLevel.None);
+    builder.Logging.AddOpenTelemetry(options =>
+    {
+      options.IncludeFormattedMessage = true;
+      options.IncludeScopes = true;
+      options.ParseStateValues = true;
+      options.AddSqliteTelemetryExporter();
+    });
+
+    builder.Services.AddOpenTelemetry()
+      .ConfigureResource(resource => resource.AddService("Acorn"))
+      .WithTracing(tracing => tracing
+        .AddEntityFrameworkCoreInstrumentation(options => options.EnrichWithIDbCommand = (activity, command) =>
+        {
+          var verb = command.CommandText.AsSpan().TrimStart();
+          var end = verb.IndexOfAny(" \r\n\t");
+          if (end >= 0)
+            verb = verb[..end];
+          activity.DisplayName = $"{activity.DisplayName}: {verb.ToString().ToUpperInvariant()}";
+        })
+        .AddSource("Microsoft.AspNetCore", "System.Net.Http", AcornTelemetry.SourceName)
+        .AddSqliteTelemetryExporter());
 
     if (!builder.Environment.IsDevelopment())
       builder.Services.AddHostedService<SqliteDatabaseBackupHostedService>();

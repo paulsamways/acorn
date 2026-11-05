@@ -12,6 +12,7 @@ using Acorn.Core.FileManagement.Validation;
 using Acorn.Core.Mapping;
 using Acorn.Core.Security;
 using Acorn.Core.Storage;
+using Acorn.Core.Telemetry;
 using Markdig;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,7 @@ namespace Acorn.Core;
 /// <summary>Registers core application services.</summary>
 public static class ServiceCollectionExtensions
 {
-  /// <summary>Registers the core data, storage, email, and content-management services.</summary>
+  /// <summary>Registers core data, storage, email, content-management, and telemetry services.</summary>
   /// <param name="services">The service collection.</param>
   /// <param name="configuration">The application configuration.</param>
   /// <param name="dataDirectoryService">Resolves paths beneath the application data directory.</param>
@@ -50,13 +51,28 @@ public static class ServiceCollectionExtensions
       .AddStorage(configuration)
       .AddFileManagement()
       .AddEmail(configuration, isDevelopment)
-      .AddContentManagement();
+      .AddContentManagement()
+      .AddTelemetry(configuration);
 
     _ = services
       .AddOptions<ContentCommentOptions>()
       .Bind(configuration.GetSection("Comments"))
       .ValidateDataAnnotations()
       .ValidateOnStart();
+
+    return services;
+  }
+
+  private static IServiceCollection AddTelemetry(this IServiceCollection services, IConfiguration configuration)
+  {
+    _ = services
+      .AddOptions<SqliteTelemetryOptions>()
+      .Bind(configuration.GetSection(SqliteTelemetryOptions.SectionName))
+      .ValidateDataAnnotations()
+      .ValidateOnStart();
+
+    _ = services.AddSingleton<SqliteTelemetryStore>();
+    _ = services.AddHostedService<SqliteTelemetryRetentionHostedService>();
 
     return services;
   }

@@ -86,6 +86,24 @@
         "resolved": "7.0.1",
         "contentHash": "C7tSjjLX0LZGu9BQ/xShsfuKujOqkWrRrko3qm8BT39NR1CuqywEDEFuu8grS90u9mhwdr+EW4j/lWtekvlHQQ=="
       },
+      "OpenTelemetry.Extensions.Hosting": {
+        "type": "Direct",
+        "requested": "[1.20.1, )",
+        "resolved": "1.20.1",
+        "contentHash": "wnoK07COxyQBR47QwP80SIO4cpD2xeF4PrBDYFXDMnhDLmOP4nN0Szy1wCBLo5UABU1I4xwWRGzZM0bFdCbRog==",
+        "dependencies": {
+          "OpenTelemetry": "1.20.1"
+        }
+      },
+      "OpenTelemetry.Instrumentation.EntityFrameworkCore": {
+        "type": "Direct",
+        "requested": "[1.20.1-beta.1, )",
+        "resolved": "1.20.1-beta.1",
+        "contentHash": "Aur07Og5QZ17xWIE2tBLGCo7Wp370xkeEUPoVBW+SlM3R+RIDZFuPbiPrTqcrOxdw+Bd0MEwgsjfOfpA6sA/sQ==",
+        "dependencies": {
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "[1.20.1, 2.0.0)"
+        }
+      },
       "BouncyCastle.Cryptography": {
         "type": "Transitive",
         "resolved": "2.7.0",
@@ -186,6 +204,19 @@
         "contentHash": "YqueG52R/Xej4VVbKuRIodjiAhV0HR/XVbLbNrJhCZnzjnSjgMJ/dCdV0akQQxavX6hp/LC6rqLGLcXeQYU7XA==",
         "dependencies": {
           "System.CodeDom": "6.0.0"
+        }
+      },
+      "OpenTelemetry.Api": {
+        "type": "Transitive",
+        "resolved": "1.20.1",
+        "contentHash": "QO9hlwadOdJGR4vDpJyDnl9B62v7epIBSTIHUA4C+bCtrRaB4TWmYSnu3QVOIe7caH8dt7NaHRei6zebESJJyw=="
+      },
+      "OpenTelemetry.Api.ProviderBuilderExtensions": {
+        "type": "Transitive",
+        "resolved": "1.20.1",
+        "contentHash": "eDzDY/jTBqRytkYECmVKF7ZP5sKmCIqv1SSnA5BSWltIIvc3931TOMRyCW1qCGNIgmtldtJhISnsmFNxOCfauQ==",
+        "dependencies": {
+          "OpenTelemetry.Api": "1.20.1"
         }
       },
       "SQLite": {
@@ -292,6 +323,7 @@
           "Microsoft.Data.Sqlite.Core": "[11.0.0-rc.2.26504.105, )",
           "Microsoft.EntityFrameworkCore": "[11.0.0-rc.2.26504.105, )",
           "Microsoft.EntityFrameworkCore.Sqlite": "[11.0.0-rc.2.26504.105, )",
+          "OpenTelemetry": "[1.20.1, )",
           "SixLabors.ImageSharp": "[4.1.3, )"
         }
       },
@@ -354,6 +386,15 @@
           "Microsoft.Extensions.DependencyModel": "11.0.0-rc.2.26504.105",
           "SQLitePCLRaw.bundle_e_sqlite3": "3.0.5",
           "SQLitePCLRaw.core": "3.0.5"
+        }
+      },
+      "OpenTelemetry": {
+        "type": "CentralTransitive",
+        "requested": "[1.20.1, )",
+        "resolved": "1.20.1",
+        "contentHash": "+XDw3fYbiv1a40aFnDJSQleeuUJciXuhoIA19XmcGhT47Hy/xZRqk8NCjHUDKrg72Ixjthicecp8ygBDNeH/Jw==",
+        "dependencies": {
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "1.20.1"
         }
       },
       "SixLabors.ImageSharp": {

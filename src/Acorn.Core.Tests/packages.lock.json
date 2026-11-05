@@ -121,6 +121,14 @@
           "Microsoft.Extensions.Configuration": "11.0.0-rc.2.26504.105"
         }
       },
+      "Microsoft.Extensions.Configuration.EnvironmentVariables": {
+        "type": "Transitive",
+        "resolved": "10.0.0",
+        "contentHash": "TmFegsI/uCdwMBD4yKpmO+OkjVNHQL49Dh/ep83NI5rPUEoBK9OdsJo1zURc1A2FuS/R/Pos3wsTjlyLnguBLA==",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0"
+        }
+      },
       "Microsoft.Extensions.DependencyInjection": {
         "type": "Transitive",
         "resolved": "11.0.0-rc.2.26504.105",
@@ -165,6 +173,17 @@
         "contentHash": "tGZ8lo15pCx32vlCtKprvLFtnNmPykudpw/62pkf4hN4kzwhZTiRkxgZwjl5PSwsaNmVDdwnZiYkqeBBxqRSiQ==",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": "11.0.0-rc.2.26504.105"
+        }
+      },
+      "Microsoft.Extensions.Logging.Configuration": {
+        "type": "Transitive",
+        "resolved": "10.0.0",
+        "contentHash": "j8zcwhS6bYB6FEfaY3nYSgHdpiL2T+/V3xjpHtslVAegyI1JUbB9yAt/BFdvZdsNbY0Udm4xFtvfT/hUwcOOOg==",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "10.0.0",
+          "Microsoft.Extensions.Configuration.Binder": "10.0.0",
+          "Microsoft.Extensions.Logging": "10.0.0",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.0"
         }
       },
       "Microsoft.Testing.Extensions.Telemetry": {
@@ -219,6 +238,19 @@
         "type": "Transitive",
         "resolved": "0.11.6",
         "contentHash": "f33RkDtZO8VlGXCtmQIviOtxgnUdym9xx/b1p9h91CRGOsJFxCFOFK1FDbVt1OCf1aWwYejUFa2MOQyFWTFjbA=="
+      },
+      "OpenTelemetry.Api": {
+        "type": "Transitive",
+        "resolved": "1.20.1",
+        "contentHash": "QO9hlwadOdJGR4vDpJyDnl9B62v7epIBSTIHUA4C+bCtrRaB4TWmYSnu3QVOIe7caH8dt7NaHRei6zebESJJyw=="
+      },
+      "OpenTelemetry.Api.ProviderBuilderExtensions": {
+        "type": "Transitive",
+        "resolved": "1.20.1",
+        "contentHash": "eDzDY/jTBqRytkYECmVKF7ZP5sKmCIqv1SSnA5BSWltIIvc3931TOMRyCW1qCGNIgmtldtJhISnsmFNxOCfauQ==",
+        "dependencies": {
+          "OpenTelemetry.Api": "1.20.1"
+        }
       },
       "SQLite": {
         "type": "Transitive",
@@ -308,6 +340,7 @@
           "Microsoft.Extensions.Http": "[11.0.0-rc.2.26504.105, )",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "[11.0.0-rc.2.26504.105, )",
           "Microsoft.Extensions.Options.DataAnnotations": "[11.0.0-rc.2.26504.105, )",
+          "OpenTelemetry": "[1.20.1, )",
           "SixLabors.ImageSharp": "[4.1.3, )"
         }
       },
@@ -411,6 +444,17 @@
         "requested": "[11.0.0-rc.2.26504.105, )",
         "resolved": "11.0.0-rc.2.26504.105",
         "contentHash": "QBIu/VSiNCmiNQWRjJUGRJ1cPlI9cdkSMeyXGoTKEPDA00LGBYszK0qZLB1L143x4CyG3pELB2r8EYOUqv/yHQ=="
+      },
+      "OpenTelemetry": {
+        "type": "CentralTransitive",
+        "requested": "[1.20.1, )",
+        "resolved": "1.20.1",
+        "contentHash": "+XDw3fYbiv1a40aFnDJSQleeuUJciXuhoIA19XmcGhT47Hy/xZRqk8NCjHUDKrg72Ixjthicecp8ygBDNeH/Jw==",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.0",
+          "Microsoft.Extensions.Logging.Configuration": "10.0.0",
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "1.20.1"
+        }
       },
       "SixLabors.ImageSharp": {
         "type": "CentralTransitive",
