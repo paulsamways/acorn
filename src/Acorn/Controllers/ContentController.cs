@@ -25,6 +25,7 @@ public sealed class ContentController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The file response, or not found when missing or unauthorized.</returns>
   [HttpGet(Routes.ContentAttachmentsUrlTemplate, Name = Routes.ContentAttachmentsGetRoute)]
+  [HttpHead(Routes.ContentAttachmentsUrlTemplate)]
   public async Task<IActionResult> GetAttachmentAsync(Guid attachmentId, string filename, CancellationToken cancellationToken)
   {
     try

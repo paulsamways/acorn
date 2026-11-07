@@ -21,6 +21,7 @@ public sealed class BookmarksController : Controller
   /// <returns>The published bookmark list.</returns>
   [AllowAnonymous]
   [HttpGet(Routes.ContentBookmarksIndexUrlTemplate, Name = Routes.ContentBookmarksIndexGetRoute)]
+  [HttpHead(Routes.ContentBookmarksIndexUrlTemplate)]
   public async Task<IActionResult> Index(CancellationToken cancellationToken)
   {
     var bookmarks = await _bookmarksService.GetBookmarksAsync(cancellationToken);

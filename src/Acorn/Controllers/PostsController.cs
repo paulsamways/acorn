@@ -23,6 +23,7 @@ public sealed class PostsController : Controller
   /// <returns>The post page, or not found if the post is unpublished or unavailable.</returns>
   [AllowAnonymous]
   [HttpGet(Routes.ContentPostsDetailsUrlTemplate, Name = Routes.ContentPostsDetailsGetRoute)]
+  [HttpHead(Routes.ContentPostsDetailsUrlTemplate)]
   public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
   {
     try

@@ -22,6 +22,7 @@ public class HomeController : Controller
   /// <returns>The home page.</returns>
   [AllowAnonymous]
   [HttpGet(Routes.HomeIndexUrlTemplate, Name = Routes.HomeIndexGetRoute)]
+  [HttpHead(Routes.HomeIndexUrlTemplate)]
   public async Task<IActionResult> Index(CancellationToken cancellationToken)
   {
     var content = await _contentService.GetRecentContentAsync(cancellationToken: cancellationToken);

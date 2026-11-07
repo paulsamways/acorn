@@ -37,6 +37,7 @@ public sealed class CommentsController : Controller
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The comment form, or not found if the content or parent comment is unavailable.</returns>
   [HttpGet(Routes.ContentCommentsNewUrlTemplate, Name = Routes.ContentCommentsNewGetRoute)]
+  [HttpHead(Routes.ContentCommentsNewUrlTemplate)]
   public async Task<IActionResult> NewGetAsync(Guid contentId, Guid? parent, CancellationToken cancellationToken)
   {
     var input = new CommentInputModel { ParentCommentId = parent };
@@ -110,6 +111,7 @@ public sealed class CommentsController : Controller
   /// <param name="commentId">The comment identifier, if known.</param>
   /// <returns>The result page.</returns>
   [HttpGet(Routes.ContentCommentsResultUrlTemplate, Name = Routes.ContentCommentsResultGetRoute)]
+  [HttpHead(Routes.ContentCommentsResultUrlTemplate)]
   public IActionResult ResultGet(Guid contentId, ContentCommentState state, Guid? commentId)
     => View("Result", new CommentResultViewModel(contentId, state, commentId));
 
@@ -118,6 +120,7 @@ public sealed class CommentsController : Controller
   /// <param name="token">The verification token.</param>
   /// <returns>The confirmation page. Following the link alone never changes anything.</returns>
   [HttpGet(Routes.ContentCommentsVerifyUrlTemplate, Name = Routes.ContentCommentsVerifyGetRoute)]
+  [HttpHead(Routes.ContentCommentsVerifyUrlTemplate)]
   public IActionResult VerifyGet(Guid id, string? token)
   {
     // Keep the token out of Referer headers sent from this page.

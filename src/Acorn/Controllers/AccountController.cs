@@ -42,6 +42,7 @@ public class AccountController : Controller
   /// <param name="returnUrl">An optional local URL to return to after sign-in.</param>
   /// <returns>The sign-in page or a redirect for an authenticated user.</returns>
   [HttpGet(Routes.AccountSignInUrlTemplate, Name = Routes.AccountSignInGetRoute)]
+  [HttpHead(Routes.AccountSignInUrlTemplate)]
   [AllowAnonymous]
   public IActionResult SignInGet(string? email = null, string? returnUrl = null)
   {
@@ -105,6 +106,7 @@ public class AccountController : Controller
   /// <param name="returnUrl">An optional local URL to return to after registration.</param>
   /// <returns>The registration page or a redirect for an authenticated user.</returns>
   [HttpGet(Routes.AccountRegisterUrlTemplate, Name = Routes.AccountRegisterGetRoute)]
+  [HttpHead(Routes.AccountRegisterUrlTemplate)]
   [AllowAnonymous]
   public IActionResult RegisterGet(string? returnUrl = null)
   {
@@ -182,6 +184,7 @@ public class AccountController : Controller
   /// <summary>Displays the registration completion page.</summary>
   /// <returns>The completion page or a redirect if registration is incomplete.</returns>
   [HttpGet(Routes.AccountRegisterCompleteUrlTemplate, Name = Routes.AccountRegisterCompleteGetRoute)]
+  [HttpHead(Routes.AccountRegisterCompleteUrlTemplate)]
   [AllowAnonymous]
   public IActionResult RegisterCompleteGet()
   {
@@ -208,6 +211,7 @@ public class AccountController : Controller
   /// <param name="code">The email activation code.</param>
   /// <returns>The activation page or a redirect if the account cannot be activated.</returns>
   [HttpGet(Routes.AccountActivateUrlTemplate, Name = Routes.AccountActivateGetRoute)]
+  [HttpHead(Routes.AccountActivateUrlTemplate)]
   [AllowAnonymous]
   public async Task<IActionResult> ActivateGetAsync(string email, string code)
   {
@@ -267,6 +271,7 @@ public class AccountController : Controller
   /// <summary>Displays the forgotten-password form.</summary>
   /// <returns>The form or a redirect for an authenticated user.</returns>
   [HttpGet(Routes.AccountForgotPasswordUrlTemplate, Name = Routes.AccountForgotPasswordGetRoute)]
+  [HttpHead(Routes.AccountForgotPasswordUrlTemplate)]
   [AllowAnonymous]
   public IActionResult ForgotPasswordGet()
   {
@@ -322,6 +327,7 @@ public class AccountController : Controller
   /// <param name="code">The password-reset code.</param>
   /// <returns>The reset form or a redirect if the request is invalid.</returns>
   [HttpGet(Routes.AccountResetPasswordUrlTemplate, Name = Routes.AccountResetPasswordGetRoute)]
+  [HttpHead(Routes.AccountResetPasswordUrlTemplate)]
   [AllowAnonymous]
   public IActionResult ResetPasswordGet(string email, string code)
   {
