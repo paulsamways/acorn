@@ -75,7 +75,10 @@ def load(directory, prefix):
 
 def attrs(text):
     try:
-        return {a["key"]: a["value"] for a in json.loads(text)}
+        value = json.loads(text)
+        if isinstance(value, dict):
+            return value
+        return {a["key"]: a["value"] for a in value}
     except (ValueError, TypeError, KeyError):
         return {}
 

@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Acorn · Log viewer</title>
+  <style>
+    :root {
+      font: 15px/1.5 system-ui, -apple-system, sans-serif;
+      color: #e4e9e7;
+      background: #101716;
+      --panel: #182321;
+      --line: #314440;
+      --muted: #9eb1aa;
+      --accent: #a4d5b3;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { width: 100%; padding: 38px 28px 64px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: start; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .14em; font-size: .73rem; font-weight: 700; }
+    h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); margin: 4px 0; letter-spacing: -.04em; }
+    h2 { font-size: 1.05rem; margin: 0; }
+    p { margin: 4px 0; }
+    .muted { color: var(--muted); }
+    .badge { border: 1px solid var(--line); color: var(--accent); border-radius: 999px; padding: 6px 12px; white-space: nowrap; font-size: .8rem; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); gap: 20px; align-items: start; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+    .results-panel { grid-column: 1 / -1; min-width: 0; }
+    .panel-title { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+    input[type=file] { display: block; width: 100%; color: var(--muted); font-size: .8rem; margin: 14px 0; }
+    input[type=file]::file-selector-button, button {
+      cursor: pointer; border: 1px solid #536e64; background: #263c34; color: #e4f2e7;
+      padding: 9px 13px; border-radius: 8px; font: inherit; font-weight: 600;
+    }
+    input[type=file]::file-selector-button { margin-right: 8px; }
+    button:hover:not(:disabled), input[type=file]::file-selector-button:hover { background: #345248; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .primary { background: var(--accent); color: #10271a; border-color: var(--accent); }
+    .primary:hover:not(:disabled) { background: #c4e6cc; }
+    .small { font-size: .83rem; }
+    .note { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 16px; }
+    details summary { cursor: pointer; color: #e4f2e7; font-weight: 600; }
+    .schema-view { margin-top: 12px; }
+    .schema-view ul { margin-top: 6px; }
+    .schema-view li { padding: 4px 0; display: flex; justify-content: space-between; gap: 8px; }
+    .schema-view code { overflow-wrap: anywhere; }
+    ul { padding: 0; margin: 0; list-style: none; }
+    li { border-top: 1px solid var(--line); padding: 10px 0; overflow-wrap: anywhere; }
+    li:first-child { border-top: 0; }
+    code, textarea, table { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { color: #c2dec9; }
+    textarea { display: block; resize: vertical; min-height: 180px; width: 100%; padding: 15px; background: #101a18; color: #e4f2e7; border: 1px solid var(--line); border-radius: 9px; font-size: .87rem; line-height: 1.6; tab-size: 2; }
+    textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .actions { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 14px; }
+    .library { display: flex; align-items: end; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .library label { display: grid; gap: 5px; flex: 1 1 240px; }
+    select { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: #101a18; color: #e4f2e7; font: inherit; }
+    select:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    #status { min-height: 1.5em; overflow-wrap: anywhere; }
+    .error { color: #ffb1a6; }
+    .table-wrap { overflow: auto; max-height: 65vh; border: 1px solid var(--line); border-radius: 9px; }
+    table { border-collapse: collapse; width: 100%; text-align: left; font-size: .8rem; }
+    th { position: sticky; top: 0; z-index: 1; background: #24352f; color: #cce4d1; font-weight: 600; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; min-width: 90px; max-width: 440px; overflow-wrap: anywhere; white-space: pre-wrap; }
+    tbody tr:nth-child(even) { background: #1c2b27; }
+    tbody tr:hover { background: #293e35; }
+    .null { color: #839690; font-style: italic; }
+    @media (max-width: 760px) {
+      main { padding: 24px 16px 48px; }
+      .layout { grid-template-columns: 1fr; }
+      header { flex-direction: column; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.js"></script>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <div class="eyebrow">Acorn / Telemetry</div>
+      <h1>Log viewer</h1>
+      <p class="muted">Explore SQLite telemetry with SQL, right in your browser.</p>
+    </div>
+    <span class="badge">Local analysis · No upload</span>
+  </header>
+
+  <div class="layout">
+    <section class="panel" aria-labelledby="editor-heading">
+      <div class="panel-title">
+        <div><h2 id="editor-heading">SQL editor</h2><p class="small muted">Run one SQLite statement at a time.</p></div>
+        <span class="small muted">Ctrl / ⌘ + Enter to run</span>
+      </div>
+      <div class="library">
+        <label for="scripts" class="small">Script library
+          <select id="scripts">
+            <option value="">Choose a script…</option>
+          </select>
+        </label>
+        <button id="load-script" type="button" disabled>Load into editor</button>
+      </div>
+      <p id="script-description" class="small muted" aria-live="polite">Loading a script replaces the editor contents; it does not run the query.</p>
+      <textarea id="query" spellcheck="false" aria-label="SQL query">SELECT TimestampUtc, SeverityText, Category, Message, SourceDatabase
+FROM Logs
+ORDER BY TimestampUtc DESC
+LIMIT 100;</textarea>
+      <div class="actions">
+        <button id="run" class="primary" type="button" disabled>Run query</button>
+        <span id="status" class="small muted" role="status" aria-live="polite">Loading SQLite…</span>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2>Databases</h2>
+      <p class="muted small">Select one or more SQLite database snapshots.</p>
+      <input id="files" type="file" accept=".db,.sqlite,.sqlite3,application/vnd.sqlite3" multiple disabled aria-label="Select SQLite database files">
+      <ul id="file-list" class="small"><li class="muted">No databases loaded yet.</li></ul>
+      <div class="note small muted">
+        <p>Query <code>Logs</code> and <code>Traces</code> across all selected files, or use <code>db1.Logs</code>, <code>db2.Traces</code>, etc. for an individual file.</p>
+      </div>
+      <details class="note small">
+        <summary>View schemas</summary>
+        <p class="muted">Combined columns; missing source columns are NULL. A dash means no declared type.</p>
+        <div id="view-schemas" class="muted" aria-live="polite">
+          <p>Load databases to see the combined view schemas.</p>
+        </div>
+      </details>
+      <div class="note small muted">
+        <p>Files are processed in memory and aren't sent to a server. SQLite itself loads from a public CDN; only open this page when you trust that source.</p>
+        <p>Use a SQLite backup or fully checkpointed database. Uncheckpointed <code>-wal</code> data is not included.</p>
+      </div>
+    </aside>
+
+    <section class="panel results-panel" aria-labelledby="results-heading">
+      <div class="panel-title">
+        <div><h2 id="results-heading">Results</h2><p id="result-summary" class="small muted">Results will appear here.</p></div>
+      </div>
+      <div id="results"></div>
+    </section>
+  </div>
+</main>
+<script>
+  const filesInput = document.getElementById('files');
+  const fileList = document.getElementById('file-list');
+  const viewSchemas = document.getElementById('view-schemas');
+  const queryInput = document.getElementById('query');
+  const runButton = document.getElementById('run');
+  const status = document.getElementById('status');
+  const results = document.getElementById('results');
+  const summary = document.getElementById('result-summary');
+  const scriptsInput = document.getElementById('scripts');
+  const loadScriptButton = document.getElementById('load-script');
+  const scriptDescription = document.getElementById('script-description');
+  const requestAttributes = `WITH requests AS (
+  SELECT t.StartTimeUtc,
+    json_extract(t.AttributesJson, '$."url.path"') AS request_path,
+    json_extract(t.AttributesJson, '$."client.address"') AS client,
+    json_extract(t.AttributesJson, '$."user_agent.original"') AS agent,
+    json_extract(t.AttributesJson, '$."http.request.method"') AS method,
+    json_extract(t.AttributesJson, '$."http.response.status_code"') AS status
+  FROM Traces AS t
+  WHERE t.SourceName = 'Microsoft.AspNetCore' AND t.Kind = 1
+)`;
+  const scripts = [
+    {
+      name: 'Recent logs',
+      description: 'Recent log entries across the selected databases.',
+      sql: `SELECT TimestampUtc, SeverityText, Category, Message, SourceDatabase
+FROM Logs
+ORDER BY TimestampUtc DESC
+LIMIT 100;`
+    },
+    {
+      name: 'Requested paths',
+      description: 'Count requests per path and show when each path was last requested.',
+      sql: `${requestAttributes}
+SELECT request_path, COUNT(*) AS requests, MAX(StartTimeUtc) AS last_requested
+FROM requests
+GROUP BY request_path
+ORDER BY requests DESC;`
+    },
+    {
+      name: 'Clients and user agents by path',
+      description: 'Count each combination of path, client address and user agent.',
+      sql: `${requestAttributes}
+SELECT request_path, client, agent, COUNT(*) AS requests
+FROM requests
+GROUP BY request_path, client, agent
+ORDER BY request_path, requests DESC;`
+    },
+    {
+      name: 'Unique user agents',
+      description: 'List user agents with request counts, distinct client counts and their first and last request times.',
+      sql: `${requestAttributes}
+SELECT agent, COUNT(*) AS requests, COUNT(DISTINCT client) AS clients,
+       MIN(StartTimeUtc) AS first_seen, MAX(StartTimeUtc) AS last_seen
+FROM requests
+GROUP BY agent
+ORDER BY requests DESC;`
+    },
+    {
+      name: 'Sign-in requests by client',
+      description: 'Summarize sign-in traffic by client, method and status; response codes do not prove login success or failure.',
+      sql: `${requestAttributes}
+SELECT client, method, status, COUNT(*) AS requests,
+       MIN(StartTimeUtc) AS first_seen, MAX(StartTimeUtc) AS last_seen
+FROM requests
+WHERE request_path = '/account/sign-in'
+GROUP BY client, method, status
+ORDER BY requests DESC;`
+    }
+  ];
+  const cdn = 'https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/';
+  let sqlite;
+  let database;
+  let sourceDatabases = [];
+
+  for (const [index, script] of scripts.entries()) {
+    const option = document.createElement('option');
+    option.value = String(index);
+    option.textContent = script.name;
+    scriptsInput.append(option);
+  }
+  scriptsInput.addEventListener('change', () => {
+    const selected = scriptsInput.value === '' ? null : scripts[Number(scriptsInput.value)];
+    loadScriptButton.disabled = !selected;
+    scriptDescription.textContent = selected
+      ? `${selected.description} Loading replaces the editor contents; it does not run the query.`
+      : 'Loading a script replaces the editor contents; it does not run the query.';
+  });
+  loadScriptButton.addEventListener('click', () => {
+    if (scriptsInput.value === '') return;
+    queryInput.value = scripts[Number(scriptsInput.value)].sql;
+    queryInput.focus();
+  });
+
+  function setStatus(message, isError = false) {
+    status.textContent = message;
+    status.classList.toggle('error', isError);
+  }
+
+  function quoteIdentifier(value) {
+    return `"${value.replaceAll('"', '""')}"`;
+  }
+
+  function quoteString(value) {
+    return `'${value.replaceAll("'", "''")}'`;
+  }
+
+  function renderViewSchemas(db) {
+    const fragment = document.createDocumentFragment();
+    for (const name of ['Logs', 'Traces']) {
+      const section = document.createElement('div');
+      section.className = 'schema-view';
+      const heading = document.createElement('strong');
+      heading.textContent = name;
+      section.append(heading);
+      const exists = db.exec(`SELECT name FROM sqlite_temp_master WHERE type = 'view' AND name = ${quoteString(name)} COLLATE NOCASE`);
+      if (!exists.length) {
+        const message = document.createElement('p');
+        message.textContent = 'Not available in the loaded databases.';
+        section.append(message);
+      } else {
+        const info = db.exec(`PRAGMA temp.table_info(${quoteIdentifier(name)})`);
+        const list = document.createElement('ul');
+        for (const row of info[0].values) {
+          const item = document.createElement('li');
+          const column = document.createElement('code');
+          column.textContent = row[1];
+          const type = document.createElement('span');
+          type.className = 'muted';
+          type.textContent = row[2] || '—';
+          item.append(column, type);
+          list.append(item);
+        }
+        section.append(list);
+      }
+      fragment.append(section);
+    }
+    viewSchemas.replaceChildren(fragment);
+  }
+
+  function createCombinedView(db, table, schemas) {
+    const sources = [];
+    const columns = new Map();
+    for (const { schema, name } of schemas) {
+      const tables = db.exec(`SELECT name FROM ${schema}.sqlite_master WHERE type = 'table' AND name = ${quoteString(table)} COLLATE NOCASE`);
+      if (!tables.length) continue;
+      const actualName = tables[0].values[0][0];
+      const info = db.exec(`PRAGMA ${schema}.table_info(${quoteIdentifier(actualName)})`);
+      const names = info[0].values.map(row => row[1]);
+      for (const column of names) {
+        const key = column.toLowerCase();
+        if (key === 'sourcedatabase') throw new Error(`${name}: ${table} already contains a SourceDatabase column.`);
+        if (!columns.has(key)) columns.set(key, column);
+      }
+      sources.push({ schema, name, actualName, names: new Set(names.map(column => column.toLowerCase())) });
+    }
+    if (!sources.length) return false;
+    const selects = sources.map(source => {
+      const fields = [...columns].map(([key, column]) =>
+        source.names.has(key) ? quoteIdentifier(column) : `NULL AS ${quoteIdentifier(column)}`);
+      fields.push(`${quoteString(source.name)} AS SourceDatabase`);
+      return `SELECT ${fields.join(', ')} FROM ${source.schema}.${quoteIdentifier(source.actualName)}`;
+    });
+    db.run(`CREATE TEMP VIEW ${quoteIdentifier(table)} AS ${selects.join(' UNION ALL ')}`);
+    return true;
+  }
+
+  async function loadFiles(files) {
+    if (!files.length) return;
+    runButton.disabled = true;
+    filesInput.disabled = true;
+    setStatus('Loading databases…');
+    let candidate;
+    const sources = [];
+    try {
+      candidate = new sqlite.Database();
+      const schemas = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (/-wal$|-shm$/i.test(file.name)) throw new Error(`${file.name}: select database snapshots, not WAL or shared-memory files.`);
+        const schema = `db${i + 1}`;
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const source = new sqlite.Database(bytes);
+        sources.push(source);
+        candidate.run(`ATTACH DATABASE ${quoteString(source.filename)} AS ${schema}`);
+        candidate.exec(`SELECT count(*) FROM ${schema}.sqlite_master`);
+        schemas.push({ schema, name: file.name });
+      }
+      const views = ['Logs', 'Traces'].filter(table => createCombinedView(candidate, table, schemas));
+      if (!views.length) throw new Error('No Logs or Traces tables found in the selected databases.');
+      renderViewSchemas(candidate);
+      if (database) database.close();
+      for (const source of sourceDatabases) source.close();
+      database = candidate;
+      sourceDatabases = sources.splice(0);
+      candidate = null;
+      fileList.replaceChildren();
+      for (const source of schemas) {
+        const item = document.createElement('li');
+        const label = document.createElement('code');
+        label.textContent = source.schema;
+        item.append(label, document.createTextNode(`  ${source.name}`));
+        fileList.append(item);
+      }
+      results.replaceChildren();
+      summary.textContent = 'Results will appear here.';
+      setStatus(`Loaded ${files.length} database${files.length === 1 ? '' : 's'}. Available views: ${views.join(', ')}.`);
+    } catch (error) {
+      setStatus(`Could not load databases: ${error.message || String(error)}`, true);
+    } finally {
+      if (candidate) candidate.close();
+      for (const source of sources) source.close();
+      filesInput.disabled = false;
+      filesInput.value = '';
+      runButton.disabled = !database;
+    }
+  }
+
+  function displayValue(value, cell) {
+    if (value === null) {
+      cell.textContent = 'NULL';
+      cell.className = 'null';
+    } else if (value instanceof Uint8Array) {
+      cell.textContent = `BLOB (${value.length} bytes): ${Array.from(value, byte => byte.toString(16).padStart(2, '0')).join('')}`;
+    } else {
+      cell.textContent = String(value);
+    }
+  }
+
+  function runQuery() {
+    if (!database) return;
+    results.replaceChildren();
+    summary.textContent = '';
+    const started = performance.now();
+    let statement;
+    try {
+      const iterator = database.iterateStatements(queryInput.value);
+      let statementCount = 0;
+      while (!iterator.next().done) statementCount++;
+      if (!statementCount) throw new Error('Enter a SQL statement.');
+      if (statementCount > 1) throw new Error('Run only one statement at a time.');
+      statement = database.prepare(queryInput.value);
+      const columns = statement.getColumnNames();
+      const rows = [];
+      while (statement.step()) rows.push(statement.get());
+      statement.free();
+      statement = null;
+      renderViewSchemas(database);
+      const elapsed = (performance.now() - started).toFixed(1);
+      if (!columns.length) {
+        summary.textContent = `Statement completed in ${elapsed} ms. Changes are in memory only.`;
+      } else {
+        const table = document.createElement('table');
+        const head = table.createTHead().insertRow();
+        for (const column of columns) {
+          const th = document.createElement('th');
+          th.scope = 'col';
+          th.textContent = column;
+          head.append(th);
+        }
+        const body = table.createTBody();
+        for (const row of rows) {
+          const tr = body.insertRow();
+          for (const value of row) displayValue(value, tr.insertCell());
+        }
+        const wrap = document.createElement('div');
+        wrap.className = 'table-wrap';
+        wrap.append(table);
+        results.append(wrap);
+        summary.textContent = `${rows.length.toLocaleString()} row${rows.length === 1 ? '' : 's'} · ${elapsed} ms`;
+      }
+      setStatus('Query complete.');
+    } catch (error) {
+      if (statement) statement.free();
+      summary.textContent = 'No results to display.';
+      setStatus(`Query failed: ${error.message || String(error)}`, true);
+    }
+  }
+
+  filesInput.addEventListener('change', () => loadFiles([...filesInput.files]));
+  runButton.addEventListener('click', runQuery);
+  queryInput.addEventListener('keydown', event => {
+    if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+      event.preventDefault();
+      runQuery();
+    }
+  });
+
+  if (typeof initSqlJs !== 'function') {
+    setStatus('Could not load SQLite from the CDN. Check your connection and reload.', true);
+    filesInput.disabled = true;
+  } else {
+    initSqlJs({ locateFile: file => cdn + file }).then(module => {
+      sqlite = module;
+      filesInput.disabled = false;
+      setStatus('Select database files to begin.');
+    }).catch(error => {
+      filesInput.disabled = true;
+      setStatus(`Could not initialize SQLite: ${error.message}`, true);
+    });
+  }
+</script>
+</body>
+</html>

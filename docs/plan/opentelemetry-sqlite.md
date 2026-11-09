@@ -35,6 +35,7 @@ Store timestamps in a documented, consistently normalized UTC representation. Us
 - **Logs:** event timestamp, severity, category, event ID, rendered message, exception, optional trace/span IDs, structured state and scope properties, and resource attributes. Index trace ID (and span ID where present) and timestamp.
 
 Represent dynamic attributes and event/link collections as JSON where that is simpler than normalized child tables. Define serialization and null handling explicitly; do not silently discard unsupported values.
+Span, log, event and link attribute collections are serialized as JSON objects, using case-sensitive keys and retaining the last value for duplicate keys. Empty collections are `{}`. Event and link attributes remain JSON strings within their respective event/link records; log scopes retain their separate existing representation. Existing array-form attributes are not migrated.
 
 ## OpenTelemetry integration
 

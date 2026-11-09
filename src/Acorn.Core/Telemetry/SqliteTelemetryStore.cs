@@ -476,9 +476,13 @@ internal sealed class SqliteTelemetryStore : IDisposable
 
   private static string SerializeAttributes(IEnumerable<KeyValuePair<string, object?>>? attributes)
   {
-    var values = attributes?.Select(static attribute => new AttributeRecord(
-      attribute.Key,
-      NormalizeValue(attribute.Value))) ?? Enumerable.Empty<AttributeRecord>();
+    var values = new Dictionary<string, object?>(StringComparer.Ordinal);
+    if (attributes is not null)
+    {
+      foreach (var attribute in attributes)
+        values[attribute.Key] = NormalizeValue(attribute.Value);
+    }
+
     return JsonSerializer.Serialize(values, _jsonOptions);
   }
 
