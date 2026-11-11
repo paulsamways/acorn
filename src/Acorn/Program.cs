@@ -55,6 +55,11 @@ internal class Program
     builder.Services.AddOpenTelemetry()
       .ConfigureResource(resource => resource.AddService("Acorn"))
       .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation(options =>
+          options.Filter = context => !string.Equals(
+            context.Request.Path.Value,
+            Routes.HealthUrlTemplate,
+            StringComparison.OrdinalIgnoreCase))
         .AddEntityFrameworkCoreInstrumentation(options => options.EnrichWithIDbCommand = (activity, command) =>
         {
           var verb = command.CommandText.AsSpan().TrimStart();
@@ -63,7 +68,7 @@ internal class Program
             verb = verb[..end];
           activity.DisplayName = $"{activity.DisplayName}: {verb.ToString().ToUpperInvariant()}";
         })
-        .AddSource("Microsoft.AspNetCore", "System.Net.Http", AcornTelemetry.SourceName)
+        .AddSource("System.Net.Http", AcornTelemetry.SourceName)
         .AddSqliteTelemetryExporter());
 
     if (!builder.Environment.IsDevelopment())
