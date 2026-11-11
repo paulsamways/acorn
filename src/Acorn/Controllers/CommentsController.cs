@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.RateLimiting;
 namespace Acorn.Controllers;
 
 /// <summary>Handles public comment submission and email verification.</summary>
-[AllowAnonymous]
 public sealed class CommentsController : Controller
 {
   private readonly IContentCommentService _commentService;
@@ -36,6 +35,7 @@ public sealed class CommentsController : Controller
   /// <param name="parent">The comment being replied to, if any.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The comment form, or not found if the content or parent comment is unavailable.</returns>
+  [AllowAnonymous]
   [HttpGet(Routes.ContentCommentsNewUrlTemplate, Name = Routes.ContentCommentsNewGetRoute)]
   [HttpHead(Routes.ContentCommentsNewUrlTemplate)]
   public async Task<IActionResult> NewGetAsync(Guid contentId, Guid? parent, CancellationToken cancellationToken)
@@ -53,6 +53,7 @@ public sealed class CommentsController : Controller
   /// <param name="input">The submitted fields.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the result page, or the form again if the submission was invalid.</returns>
+  [AllowAnonymous]
   [HttpPost(Routes.ContentCommentsCreateUrlTemplate, Name = Routes.ContentCommentsCreatePostRoute)]
   [EnableRateLimiting(Core.Constants.CommentsRateLimitPolicy)]
   public async Task<IActionResult> CreatePostAsync(Guid contentId, CommentInputModel input, CancellationToken cancellationToken)
@@ -110,6 +111,7 @@ public sealed class CommentsController : Controller
   /// <param name="state">The comment's state.</param>
   /// <param name="commentId">The comment identifier, if known.</param>
   /// <returns>The result page.</returns>
+  [AllowAnonymous]
   [HttpGet(Routes.ContentCommentsResultUrlTemplate, Name = Routes.ContentCommentsResultGetRoute)]
   [HttpHead(Routes.ContentCommentsResultUrlTemplate)]
   public IActionResult ResultGet(Guid contentId, ContentCommentState state, Guid? commentId)
@@ -119,6 +121,7 @@ public sealed class CommentsController : Controller
   /// <param name="id">The comment identifier.</param>
   /// <param name="token">The verification token.</param>
   /// <returns>The confirmation page. Following the link alone never changes anything.</returns>
+  [AllowAnonymous]
   [HttpGet(Routes.ContentCommentsVerifyUrlTemplate, Name = Routes.ContentCommentsVerifyGetRoute)]
   [HttpHead(Routes.ContentCommentsVerifyUrlTemplate)]
   public IActionResult VerifyGet(Guid id, string? token)
@@ -135,6 +138,7 @@ public sealed class CommentsController : Controller
   /// <param name="remember">Whether to skip verification for this commenter's future comments.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A redirect to the result page, or the failure page if the link is not valid.</returns>
+  [AllowAnonymous]
   [HttpPost(Routes.ContentCommentsVerifyUrlTemplate, Name = Routes.ContentCommentsVerifyPostRoute)]
   public async Task<IActionResult> VerifyPostAsync(Guid id, string? token, bool remember, CancellationToken cancellationToken)
   {
@@ -157,6 +161,7 @@ public sealed class CommentsController : Controller
   /// <param name="id">The comment identifier.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>A page that always says a link was sent, so it does not reveal which comments exist.</returns>
+  [AllowAnonymous]
   [HttpPost(Routes.ContentCommentsResendUrlTemplate, Name = Routes.ContentCommentsResendPostRoute)]
   [EnableRateLimiting(Core.Constants.CommentsRateLimitPolicy)]
   public async Task<IActionResult> ResendPostAsync(Guid id, CancellationToken cancellationToken)
@@ -177,6 +182,7 @@ public sealed class CommentsController : Controller
   /// <summary>Clears the trusted-commenter cookie.</summary>
   /// <param name="returnUrl">A local URL to return to.</param>
   /// <returns>A redirect to the local URL or the home page.</returns>
+  [AllowAnonymous]
   [HttpPost(Routes.ContentCommentsForgetUrlTemplate, Name = Routes.ContentCommentsForgetPostRoute)]
   public IActionResult ForgetPost(string? returnUrl)
   {

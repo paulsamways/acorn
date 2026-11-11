@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace Acorn.Controllers;
 
 /// <summary>Serves content attachments when their access policy permits.</summary>
-[AllowAnonymous]
 public sealed class ContentController : Controller
 {
   private readonly IContentAttachmentService _contentAttachmentService;
@@ -24,6 +23,7 @@ public sealed class ContentController : Controller
   /// <param name="filename">The file to serve.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The file response, or not found when missing or unauthorized.</returns>
+  [AllowAnonymous]
   [HttpGet(Routes.ContentAttachmentsUrlTemplate, Name = Routes.ContentAttachmentsGetRoute)]
   [HttpHead(Routes.ContentAttachmentsUrlTemplate)]
   public async Task<IActionResult> GetAttachmentAsync(Guid attachmentId, string filename, CancellationToken cancellationToken)

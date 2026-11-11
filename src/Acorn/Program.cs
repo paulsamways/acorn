@@ -10,11 +10,11 @@ using Acorn.Core.Database.Entities;
 using Acorn.Core.Storage;
 using Acorn.Core.Telemetry;
 using Acorn.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -105,18 +105,14 @@ internal class Program
       .AddSignInManager()
       .AddDefaultTokenProviders();
 
-    builder.Services.AddAuthorization(options =>
-    {
-      options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-    });
+    builder.Services.AddAuthorization();
 
     builder.Services.AddHttpContextAccessor();
 
     builder.Services.AddControllersWithViews()
       .AddMvcOptions(static (options) =>
       {
+        options.Filters.Add(new AuthorizeFilter());
         options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
       })
       .AddViewOptions(static (options) =>
