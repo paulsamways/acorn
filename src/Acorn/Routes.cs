@@ -5,6 +5,9 @@ internal static class Routes
   public const string HomeIndexUrlTemplate = "/";
   public const string HomeIndexGetRoute = nameof(HomeIndexGetRoute);
 
+  public const string HealthUrlTemplate = "/health";
+  public const string HealthGetRoute = nameof(HealthGetRoute);
+
   // Content Management
 
   public const string ContentPostsDetailsUrlTemplate = "/content/posts/{id:guid}";

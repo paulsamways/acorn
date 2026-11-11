@@ -5,6 +5,12 @@
 @authAndAntiforgeryCookies = replace-with-auth-and-antiforgery-cookies
 @antiforgeryToken = replace-with-request-token
 
+### Check application health
+GET {{baseUrl}}/health
+
+### Check application health without a response body
+HEAD {{baseUrl}}/health
+
 ### Upload an image to an owned post
 POST {{baseUrl}}/admin/posts/{{postId}}/files
 Cookie: {{authAndAntiforgeryCookies}}
