@@ -10,6 +10,12 @@ fi
 SOURCE_DIR=$1
 DEST_DIR=$2
 
+if [[ -n ${SUDO_UID:-} ]] &&
+    [[ ! $SUDO_UID =~ ^[0-9]+$ || ! ${SUDO_GID:-} =~ ^[0-9]+$ ]]; then
+    printf 'Error: sudo user or group ID is invalid.\n' >&2
+    exit 1
+fi
+
 if ! command -v sqlite3 >/dev/null 2>&1; then
     printf 'Error: sqlite3 is required but was not found in PATH.\n' >&2
     exit 1
@@ -56,6 +62,13 @@ for source in "${databases[@]}"; do
 
     if ! sqlite3 "$source" ".backup \"$temporary\""; then
         printf 'Error: SQLite backup failed for %s\n' "$source" >&2
+        rm -f -- "$temporary"
+        status=1
+        continue
+    fi
+
+    if [[ -n ${SUDO_UID:-} ]] && ! chown -- "$SUDO_UID:$SUDO_GID" "$temporary"; then
+        printf 'Error: could not set backup ownership for %s\n' "$source" >&2
         rm -f -- "$temporary"
         status=1
         continue
