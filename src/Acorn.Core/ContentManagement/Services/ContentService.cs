@@ -40,6 +40,18 @@ internal sealed class ContentService : IContentService
     return await Task.WhenAll(content.Select(MapContentAsync));
   }
 
+  public async Task<IEnumerable<Content>> GetContentWithTagAsync(string tag, CancellationToken cancellationToken = default)
+  {
+    var content = await _dbContext.Content
+      .Include(x => x.PublishedRevision)
+      .Where(x => x.PublishedRevisionId != null && x.PublishedRevision!.Tags.Contains(tag))
+      .OrderByDescending(x => x.PublishedRevision!.PublishedAt)
+      .ThenByDescending(x => x.Id)
+      .ToArrayAsync(cancellationToken);
+
+    return await Task.WhenAll(content.Select(MapContentAsync));
+  }
+
   private async Task<Content> MapContentAsync(ContentEntity content)
   {
     return content.PublishedRevision switch

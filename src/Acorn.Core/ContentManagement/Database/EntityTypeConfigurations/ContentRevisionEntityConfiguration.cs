@@ -73,7 +73,7 @@ internal sealed class ContentRevisionEntityConfiguration : IEntityTypeConfigurat
       .IsRequired();
 
     builder
-      .Property(x => x.Tags)
+      .PrimitiveCollection(x => x.Tags)
       .HasColumnName("tags")
       .IsRequired();
 

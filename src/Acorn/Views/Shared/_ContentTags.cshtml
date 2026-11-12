@@ -1,0 +1,11 @@
+@model IEnumerable<string>
+
+@if (Model.Any())
+{
+  <div class="f-row g-2 f-justify-end">
+    @foreach (var tag in Model.OrderBy(tag => tag, StringComparer.Ordinal))
+    {
+      <a asp-route="@Routes.ContentTagGetRoute" asp-route-tag="@tag" class="badge">@tag</a>
+    }
+  </div>
+}

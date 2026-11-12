@@ -58,6 +58,49 @@ internal class ContentServiceTests : ServicesTestBase
   }
 
   [Test]
+  public async Task GetContentWithTagAsync_ReturnsMatchingPublishedContentAcrossTypes()
+  {
+    var post = await PostAuthoringService.CreatePostAsync("Tagged post", "Body", TagSet.Parse("shared other"));
+    var bookmark = await BookmarkAuthoringService.CreateBookmarkAsync(
+      "https://example.com",
+      "Tagged bookmark",
+      tags: TagSet.Parse("shared"));
+    var note = await NoteAuthoringService.CreateNoteAsync("Tagged note", TagSet.Parse("shared"));
+    var draft = await NoteAuthoringService.CreateNoteAsync("Draft note", TagSet.Parse("shared"));
+    var deleted = await PostAuthoringService.CreatePostAsync("Deleted post", "Body", TagSet.Parse("shared"));
+    await PostAuthoringService.PublishPostAsync(post.Id);
+    await BookmarkAuthoringService.PublishBookmarkAsync(bookmark.Id);
+    await NoteAuthoringService.PublishNoteAsync(note.Id);
+    await PostAuthoringService.PublishPostAsync(deleted.Id);
+    await PostAuthoringService.DeletePostAsync(deleted.Id);
+
+    var content = (await ContentService.GetContentWithTagAsync("shared")).ToArray();
+
+    await Assert.That(content.Length).IsEqualTo(3);
+    await Assert.That(content.OfType<Post>().Select(x => x.Title)).IsEquivalentTo(["Tagged post"]);
+    await Assert.That(content.OfType<Bookmark>().Select(x => x.Title)).IsEquivalentTo(["Tagged bookmark"]);
+    await Assert.That(content.OfType<Note>().Select(x => x.Value)).IsEquivalentTo(["Tagged note"]);
+  }
+
+  [Test]
+  public async Task GetContentWithTagAsync_MatchesExactTagsOnPublishedRevision()
+  {
+    var note = await NoteAuthoringService.CreateNoteAsync("Published", TagSet.Parse("shared"));
+    await NoteAuthoringService.PublishNoteAsync(note.Id);
+    await NoteAuthoringService.UpdateNoteAsync(note.Id, "Draft", TagSet.Parse("draft"));
+    var other = await NoteAuthoringService.CreateNoteAsync("Other", TagSet.Parse("sharedness"));
+    await NoteAuthoringService.PublishNoteAsync(other.Id);
+    DbContext.ChangeTracker.Clear();
+
+    var shared = (await ContentService.GetContentWithTagAsync("shared")).ToArray();
+    var draft = (await ContentService.GetContentWithTagAsync("draft")).ToArray();
+
+    await Assert.That(shared.Select(x => x.Id)).IsEquivalentTo([note.Id]);
+    await Assert.That(((Note)shared.Single()).Value).IsEqualTo("Published");
+    await Assert.That(draft).IsEmpty();
+  }
+
+  [Test]
   public async Task OpenAttachmentAsync_RejectsAuthenticatedNonOwnerForOwnerOnlyAttachment()
   {
     var ownerId = Guid.NewGuid();

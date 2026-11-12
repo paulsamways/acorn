@@ -28,6 +28,9 @@ internal static class Routes
   public const string ContentNotesDetailsUrlTemplate = "/content/notes/{id:guid}";
   public const string ContentNotesDetailsGetRoute = nameof(ContentNotesDetailsGetRoute);
 
+  public const string ContentTagUrlTemplate = "/content/tags/{tag}";
+  public const string ContentTagGetRoute = nameof(ContentTagGetRoute);
+
   // Comments
 
   public const string ContentCommentsNewUrlTemplate = "/content/{contentId:guid}/comments/new";

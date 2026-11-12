@@ -21,14 +21,11 @@
           </span>
         </div>
 
-        @if (post.Tags.Count > 0)
-        {
-          <p class="muted">@string.Join(", ", post.Tags.OrderBy(tag => tag, StringComparer.Ordinal))</p>
-        }
-
         <div class="prose">
           @Html.Raw(post.ExcerptHtml ?? post.BodyHtml)
         </div>
+
+        @await Html.PartialAsync("_ContentTags", post.Tags)
 
         <div class="f-row g-3">
           <a asp-route="@Routes.Admin.PostsEditGetRoute" asp-route-id="@post.Id">Edit</a>

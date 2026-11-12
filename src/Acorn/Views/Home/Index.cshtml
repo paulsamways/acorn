@@ -50,15 +50,7 @@
         {
           <div class="prose">@Html.Raw(noteContent.ValueHtml)</div>
         }
-        @if (content.Tags.Count > 0)
-        {
-          <div class="f-row f-justify-end g-2">
-            @foreach (var tag in content.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
-            {
-              <a href="#" class="badge">@tag</a>
-            }
-          </div>
-        }
+        @await Html.PartialAsync("_ContentTags", content.Tags)
       </article>
     }
   </section>

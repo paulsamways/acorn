@@ -12,14 +12,6 @@
       <div class="prose">@Html.Raw(Model.DescriptionHtml)</div>
     }
 
-    @if (Model.Tags.Count > 0)
-    {
-      <div class="f-row g-2 f-justify-end">
-        @foreach (var tag in Model.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
-        {
-          <span class="badge">@tag</span>
-        }
-      </div>
-    }
+    @await Html.PartialAsync("_ContentTags", Model.Tags)
   </article>
 </main>

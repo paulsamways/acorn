@@ -37,10 +37,7 @@
           <div class="prose">@Html.Raw(bookmark.DescriptionHtml)</div>
         }
 
-        @if (bookmark.Tags.Count > 0)
-        {
-          <p class="muted">@string.Join(", ", bookmark.Tags.OrderBy(tag => tag, StringComparer.Ordinal))</p>
-        }
+        @await Html.PartialAsync("_ContentTags", bookmark.Tags)
 
         <div class="f-row g-3">
           <a asp-route="@Routes.Admin.BookmarksEditGetRoute" asp-route-id="@bookmark.Id">Edit</a>

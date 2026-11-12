@@ -1,0 +1,46 @@
+@model Acorn.Models.Tags.TaggedContentViewModel
+
+<main class="f-column f-align-center">
+  <section class="f-column w-wide g-4 p-4" aria-label="Content tagged @Model.Tag">
+    <h2># @Model.Tag</h2>
+    @foreach (var content in Model.Content)
+    {
+      <article class="f-column g-2">
+        <header class="f-column g-1">
+          <h3>
+            @if (content is Acorn.Core.ContentManagement.Models.Post post)
+            {
+              <a asp-route="@Routes.ContentPostsDetailsGetRoute" asp-route-id="@post.Id">
+                @(string.IsNullOrWhiteSpace(post.Title) ? "Untitled post" : post.Title)
+              </a>
+            }
+            else if (content is Acorn.Core.ContentManagement.Models.Bookmark bookmark)
+            {
+              <a asp-route="@Routes.ContentBookmarksDetailsGetRoute" asp-route-id="@bookmark.Id">@bookmark.Title</a>
+            }
+            else if (content is Acorn.Core.ContentManagement.Models.Note note)
+            {
+              <a asp-route="@Routes.ContentNotesDetailsGetRoute" asp-route-id="@note.Id">Note</a>
+            }
+          </h3>
+          <span class="muted">@content.GetType().Name</span>
+        </header>
+
+        @if (content is Acorn.Core.ContentManagement.Models.Post postContent)
+        {
+          <div class="prose">@Html.Raw(postContent.ExcerptHtml ?? postContent.BodyHtml)</div>
+        }
+        else if (content is Acorn.Core.ContentManagement.Models.Bookmark bookmarkContent && bookmarkContent.DescriptionHtml is not null)
+        {
+          <div class="prose">@Html.Raw(bookmarkContent.DescriptionHtml)</div>
+        }
+        else if (content is Acorn.Core.ContentManagement.Models.Note noteContent)
+        {
+          <div class="prose">@Html.Raw(noteContent.ValueHtml)</div>
+        }
+
+        @await Html.PartialAsync("_ContentTags", content.Tags)
+      </article>
+    }
+  </section>
+</main>

@@ -10,4 +10,10 @@ public interface IContentService
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The recent published content.</returns>
   Task<IEnumerable<Content>> GetRecentContentAsync(int count = 10, CancellationToken cancellationToken = default);
+
+  /// <summary>Gets all published content tagged with the specified tag, newest publication first.</summary>
+  /// <param name="tag">The normalized tag to match.</param>
+  /// <param name="cancellationToken">A token used to cancel the operation.</param>
+  /// <returns>The published content with the tag.</returns>
+  Task<IEnumerable<Content>> GetContentWithTagAsync(string tag, CancellationToken cancellationToken = default);
 }
