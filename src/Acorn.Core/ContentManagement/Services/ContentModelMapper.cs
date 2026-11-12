@@ -97,7 +97,7 @@ internal sealed class ContentModelMapper :
     if (string.IsNullOrWhiteSpace(markdown))
       return string.Empty;
 
-    var document = Markdown.Parse(markdown, _markdownPipeline);
+    var document = Markdig.Markdown.Parse(markdown, _markdownPipeline);
     var fileLinks = document.Descendants<LinkInline>()
       .Where(link => link.Url?.StartsWith("file:", StringComparison.OrdinalIgnoreCase) == true)
       .ToArray();
@@ -128,7 +128,7 @@ internal sealed class ContentModelMapper :
       }
     }
 
-    return Markdown.ToHtml(document, _markdownPipeline);
+    return Markdig.Markdown.ToHtml(document, _markdownPipeline);
   }
 
   private static bool TryParseFileReference(string? url, out Guid attachmentId)

@@ -14,6 +14,7 @@ using Acorn.Core.Security;
 using Acorn.Core.Storage;
 using Acorn.Core.Telemetry;
 using Markdig;
+using Markdown.ColorCode;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -167,6 +168,7 @@ public static class ServiceCollectionExtensions
     _ = services.AddSingleton(
       new MarkdownPipelineBuilder()
         .UseAdvancedExtensions()
+        .UseColorCode(HtmlFormatterType.Css)
         .UseEmojiAndSmiley()
         .DisableHtml()
         .Build()
@@ -177,6 +179,7 @@ public static class ServiceCollectionExtensions
       new MarkdownPipelineBuilder()
         .DisableHtml()
         .DisableHeadings()
+        .UseColorCode(HtmlFormatterType.Css)
         .Build()
     );
 

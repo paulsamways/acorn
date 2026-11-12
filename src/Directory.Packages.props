@@ -10,6 +10,8 @@
     <PackageVersion Include="AngleSharp" Version="1.10.1" />
     <PackageVersion Include="MailKit" Version="5.0.0" />
     <PackageVersion Include="Markdig" Version="1.6.0" />
+    <PackageVersion Include="Markdown.ColorCode" Version="3.0.1" />
+    <PackageVersion Include="Markdown.ColorCode.CSharpToColoredHtml" Version="3.0.1" />
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0" />

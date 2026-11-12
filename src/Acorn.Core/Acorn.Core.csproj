@@ -7,6 +7,7 @@
     <PackageReference Include="AngleSharp" />
     <PackageReference Include="MailKit" />
     <PackageReference Include="Markdig" />
+    <PackageReference Include="Markdown.ColorCode" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />

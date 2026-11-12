@@ -23,6 +23,17 @@
         "resolved": "1.6.0",
         "contentHash": "rJEpDfPM8wrfXUgkNejjg2bJN9bciy44uVyRwKUI+92CnSmbaLeJTLPYcCdvgM4RFsKrhs8d2H2hO78yZpMl3g=="
       },
+      "Markdown.ColorCode": {
+        "type": "Direct",
+        "requested": "[3.0.1, )",
+        "resolved": "3.0.1",
+        "contentHash": "ymQbFQYocAviz3F/E8TFjfOvDHBDNg5p1CSO1tlVaP2EJJNkTm20LP3isuv5HkbJi0mrliUVuYKDCq6VHilWRg==",
+        "dependencies": {
+          "ColorCode.Core": "2.0.15",
+          "ColorCode.HTML": "2.0.15",
+          "Markdig": "0.41.3"
+        }
+      },
       "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore": {
         "type": "Direct",
         "requested": "[11.0.0, )",
@@ -121,6 +132,19 @@
         "contentHash": "VzzKPgdC0ZupEg937iKpg2cEGXudnFyQRwiHfIvtCKSlFUaxVbLjW3AztDhyk06z+4NzD7IAlMf7fqU57WXyBQ==",
         "dependencies": {
           "System.IO.Hashing": "8.0.0"
+        }
+      },
+      "ColorCode.Core": {
+        "type": "Transitive",
+        "resolved": "2.0.15",
+        "contentHash": "hHU8nzyapaQJUjeGp/T2SRDPLWbNCpCS67SDwSvF2pLMbq3Xe1PUGG8MUM63C3bG9tz9WrI7Rdd/VaTfHh/7qQ=="
+      },
+      "ColorCode.HTML": {
+        "type": "Transitive",
+        "resolved": "2.0.15",
+        "contentHash": "8dZYz8q6nueMXUoDPvQqShz7mCjBa7vEBOiPKKEpZ7VhnCEb10GGFcy5eAnaI5UgXkGU06yXWJY/OJmxzbQuwQ==",
+        "dependencies": {
+          "ColorCode.Core": "2.0.15"
         }
       },
       "Microsoft.AspNetCore.Cryptography.Internal": {

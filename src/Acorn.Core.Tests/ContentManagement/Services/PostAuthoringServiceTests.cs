@@ -1,5 +1,7 @@
 using Acorn.Core.ContentManagement.Models;
+using Markdig;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Acorn.Core.Tests.ContentManagement.Services;
 
@@ -25,6 +27,19 @@ internal class PostAuthoringServiceTests : ServicesTestBase
     await Assert.That(savedPost.PublishedRevisionId).IsNull();
     await Assert.That(savedRevision.State).IsEqualTo(Acorn.Core.ContentManagement.Database.ContentRevisionState.Draft);
     await Assert.That(savedRevision.Tags).IsEquivalentTo(["testing", "foo", "bar"]);
+  }
+
+  [Test]
+  public async Task MarkdownPipeline_LeavesCodeBlockBackgroundToCss()
+  {
+    using var services = new ServiceCollection()
+      .AddContentManagement()
+      .BuildServiceProvider();
+    var pipeline = services.GetRequiredService<MarkdownPipeline>();
+    var html = Markdig.Markdown.ToHtml("```csharp\nvar answer = 42;\n```", pipeline);
+
+    await Assert.That(html).Contains("<span style=\"color:");
+    await Assert.That(html).DoesNotContain("background-color:");
   }
 
   [Test]

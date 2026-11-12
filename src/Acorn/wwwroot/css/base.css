@@ -198,3 +198,18 @@ article.replying-to {
 .reply-banner[hidden] {
     display: none;
 }
+
+code {
+  background-color: var(--background-color-z1);
+  color: var(--text-color-highlight);
+}
+pre {
+  background-color: var(--background-color-z1);
+  margin: 1em;
+  padding: 1em;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+div.csharp .string {
+  color: var(--text-color-highlight)
+}

@@ -25,7 +25,7 @@ internal sealed class ContentCommentRenderer
     if (string.IsNullOrWhiteSpace(markdown))
       return string.Empty;
 
-    var document = Markdown.Parse(markdown, _pipeline);
+    var document = Markdig.Markdown.Parse(markdown, _pipeline);
 
     foreach (var link in document.Descendants<LinkInline>().ToArray())
     {
@@ -40,7 +40,7 @@ internal sealed class ContentCommentRenderer
       }
     }
 
-    return Markdown.ToHtml(document, _pipeline);
+    return Markdig.Markdown.ToHtml(document, _pipeline);
   }
 
   private static bool IsAllowedUrl(string? url)
