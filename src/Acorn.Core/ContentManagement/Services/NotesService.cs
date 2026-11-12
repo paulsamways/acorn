@@ -1,4 +1,5 @@
 using Acorn.Core.ContentManagement.Database.Entities;
+using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.Database;
 using Acorn.Core.Mapping;
@@ -17,6 +18,18 @@ internal sealed class NotesService : INotesService
   {
     _dbContext = dbContext;
     _noteMapper = noteMapper;
+  }
+
+  public async Task<Note> GetNoteAsync(Guid id, CancellationToken cancellationToken = default)
+  {
+    var content = await _dbContext.Notes
+      .Include(x => x.PublishedRevision)
+      .FirstOrDefaultAsync(x => x.Id == id && x.PublishedRevisionId != null, cancellationToken);
+
+    if (content?.PublishedRevision is not NoteRevisionEntity revision)
+      throw new ContentNotFoundException(id);
+
+    return await _noteMapper.MapAsync(revision, cancellationToken);
   }
 
   public async Task<IEnumerable<Note>> GetNotesAsync(CancellationToken cancellationToken = default)

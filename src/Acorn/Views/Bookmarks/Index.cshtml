@@ -8,7 +8,7 @@
       <article class="f-column g-2">
         <header class="f-column g-1">
           <h3>
-            <a href="@bookmark.Url" target="_blank" rel="noopener noreferrer">@bookmark.Title</a>
+            <a asp-route="@Routes.ContentBookmarksDetailsGetRoute" asp-route-id="@bookmark.Id">@bookmark.Title</a>
           </h3>
           @if (bookmark.IsPublished)
           {

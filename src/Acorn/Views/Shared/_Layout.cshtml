@@ -51,8 +51,9 @@
     <main>
       <nav class="f-column f-align-end g-4 p-4">
         <a asp-route="@Routes.HomeIndexGetRoute">home</a>
-        <a href="#">posts</a>
+        <a asp-route="@Routes.ContentPostsIndexGetRoute">posts</a>
         <a asp-route="@Routes.ContentBookmarksIndexGetRoute">bookmarks</a>
+        <a asp-route="@Routes.ContentNotesIndexGetRoute">notes</a>
         <a href="#">contact</a>
         @if (User.Identity?.IsAuthenticated == true)
         {

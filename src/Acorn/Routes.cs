@@ -12,12 +12,21 @@ internal static class Routes
 
   public const string ContentPostsDetailsUrlTemplate = "/content/posts/{id:guid}";
   public const string ContentPostsDetailsGetRoute = nameof(ContentPostsDetailsGetRoute);
+  public const string ContentPostsIndexUrlTemplate = "/content/posts";
+  public const string ContentPostsIndexGetRoute = nameof(ContentPostsIndexGetRoute);
 
   public const string ContentAttachmentsUrlTemplate = "/content/attachments/{attachmentId:guid}/{filename}";
   public const string ContentAttachmentsGetRoute = nameof(ContentAttachmentsGetRoute);
 
   public const string ContentBookmarksIndexUrlTemplate = "/content/bookmarks";
   public const string ContentBookmarksIndexGetRoute = nameof(ContentBookmarksIndexGetRoute);
+  public const string ContentBookmarksDetailsUrlTemplate = "/content/bookmarks/{id:guid}";
+  public const string ContentBookmarksDetailsGetRoute = nameof(ContentBookmarksDetailsGetRoute);
+
+  public const string ContentNotesIndexUrlTemplate = "/content/notes";
+  public const string ContentNotesIndexGetRoute = nameof(ContentNotesIndexGetRoute);
+  public const string ContentNotesDetailsUrlTemplate = "/content/notes/{id:guid}";
+  public const string ContentNotesDetailsGetRoute = nameof(ContentNotesDetailsGetRoute);
 
   // Comments
 

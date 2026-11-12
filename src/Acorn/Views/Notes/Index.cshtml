@@ -1,0 +1,29 @@
+@model IEnumerable<Acorn.Core.ContentManagement.Models.Note>
+
+<main class="f-column f-align-center">
+  <section class="f-column w-wide g-4 p-4" aria-label="Notes">
+    <h2>Notes</h2>
+    @foreach (var note in Model)
+    {
+      <article class="f-column g-2">
+        <header class="f-column g-1">
+          <h3>
+            <a asp-route="@Routes.ContentNotesDetailsGetRoute" asp-route-id="@note.Id">Note</a>
+          </h3>
+        </header>
+
+        <div class="prose">@Html.Raw(note.ValueHtml)</div>
+
+        @if (note.Tags.Count > 0)
+        {
+          <div class="f-row f-justify-end">
+            @foreach (var tag in note.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
+            {
+              <span class="badge">@tag</span>
+            }
+          </div>
+        }
+      </article>
+    }
+  </section>
+</main>

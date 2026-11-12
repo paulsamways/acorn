@@ -74,6 +74,23 @@ internal class BookmarksServiceTests : ServicesTestBase
   }
 
   [Test]
+  public async Task GetBookmarkAsync_ReturnsPublishedBookmarkAndHidesUnavailableBookmarks()
+  {
+    var published = await BookmarkAuthoringService.CreateBookmarkAsync("https://published.example", "Published");
+    await BookmarkAuthoringService.PublishBookmarkAsync(published.Id);
+    var draft = await BookmarkAuthoringService.CreateBookmarkAsync("https://draft.example", "Draft");
+    DbContext.ChangeTracker.Clear();
+
+    var bookmark = await BookmarksService.GetBookmarkAsync(published.Id);
+
+    await Assert.That(bookmark.Title).IsEqualTo("Published");
+    await Assert.That(async () => await BookmarksService.GetBookmarkAsync(draft.Id))
+      .Throws<Acorn.Core.ContentManagement.Exceptions.ContentNotFoundException>();
+    await Assert.That(async () => await BookmarksService.GetBookmarkAsync(Guid.NewGuid()))
+      .Throws<Acorn.Core.ContentManagement.Exceptions.ContentNotFoundException>();
+  }
+
+  [Test]
   public async Task UpdateBookmarkAsync_PersistsAllFields()
   {
     var created = await BookmarkAuthoringService.CreateBookmarkAsync("https://old.example", "Old title", "Old description");

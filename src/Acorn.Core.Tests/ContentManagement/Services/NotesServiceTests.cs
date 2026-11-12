@@ -73,6 +73,23 @@ internal class NotesServiceTests : ServicesTestBase
   }
 
   [Test]
+  public async Task GetNoteAsync_ReturnsPublishedNoteAndHidesUnavailableNotes()
+  {
+    var published = await NoteAuthoringService.CreateNoteAsync("Published note");
+    await NoteAuthoringService.PublishNoteAsync(published.Id);
+    var draft = await NoteAuthoringService.CreateNoteAsync("Draft note");
+    DbContext.ChangeTracker.Clear();
+
+    var note = await NotesService.GetNoteAsync(published.Id);
+
+    await Assert.That(note.Value).IsEqualTo("Published note");
+    await Assert.That(async () => await NotesService.GetNoteAsync(draft.Id))
+      .Throws<Acorn.Core.ContentManagement.Exceptions.ContentNotFoundException>();
+    await Assert.That(async () => await NotesService.GetNoteAsync(Guid.NewGuid()))
+      .Throws<Acorn.Core.ContentManagement.Exceptions.ContentNotFoundException>();
+  }
+
+  [Test]
   public async Task UpdateNoteAsync_PersistsUpdatedValueAndTags()
   {
     var note = await NoteAuthoringService.CreateNoteAsync("Original note", TagSet.Parse("old-tag"));

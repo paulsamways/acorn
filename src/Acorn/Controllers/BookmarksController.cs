@@ -1,4 +1,5 @@
 using Acorn.Core.ContentManagement;
+using Acorn.Core.ContentManagement.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,5 +27,25 @@ public sealed class BookmarksController : Controller
   {
     var bookmarks = await _bookmarksService.GetBookmarksAsync(cancellationToken);
     return View(bookmarks);
+  }
+
+  /// <summary>Displays a published bookmark.</summary>
+  /// <param name="id">The bookmark's UUID.</param>
+  /// <param name="cancellationToken">A token used to cancel the operation.</param>
+  /// <returns>The bookmark page, or not found if it is unavailable.</returns>
+  [AllowAnonymous]
+  [HttpGet(Routes.ContentBookmarksDetailsUrlTemplate, Name = Routes.ContentBookmarksDetailsGetRoute)]
+  [HttpHead(Routes.ContentBookmarksDetailsUrlTemplate)]
+  public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
+  {
+    try
+    {
+      var bookmark = await _bookmarksService.GetBookmarkAsync(id, cancellationToken);
+      return View(bookmark);
+    }
+    catch (ContentNotFoundException)
+    {
+      return NotFound();
+    }
   }
 }

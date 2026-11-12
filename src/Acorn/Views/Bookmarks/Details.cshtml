@@ -1,0 +1,25 @@
+@model Acorn.Core.ContentManagement.Models.Bookmark
+
+<main class="f-column f-align-center">
+  <article class="f-column g-3 w-wide p-4">
+    <header class="f-column g-1">
+      <h1>@Model.Title</h1>
+      <a href="@Model.Url" target="_blank" rel="noopener noreferrer">@Model.Url</a>
+    </header>
+
+    @if (Model.DescriptionHtml is not null)
+    {
+      <div class="prose">@Html.Raw(Model.DescriptionHtml)</div>
+    }
+
+    @if (Model.Tags.Count > 0)
+    {
+      <div class="f-row g-2 f-justify-end">
+        @foreach (var tag in Model.Tags.OrderBy(tag => tag, StringComparer.Ordinal))
+        {
+          <span class="badge">@tag</span>
+        }
+      </div>
+    }
+  </article>
+</main>

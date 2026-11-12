@@ -1,4 +1,5 @@
 using Acorn.Core.ContentManagement.Database.Entities;
+using Acorn.Core.ContentManagement.Exceptions;
 using Acorn.Core.ContentManagement.Models;
 using Acorn.Core.Database;
 using Acorn.Core.Mapping;
@@ -17,6 +18,18 @@ internal sealed class BookmarksService : IBookmarksService
   {
     _dbContext = dbContext;
     _bookmarkMapper = bookmarkMapper;
+  }
+
+  public async Task<Bookmark> GetBookmarkAsync(Guid id, CancellationToken cancellationToken = default)
+  {
+    var content = await _dbContext.Bookmarks
+      .Include(x => x.PublishedRevision)
+      .FirstOrDefaultAsync(x => x.Id == id && x.PublishedRevisionId != null, cancellationToken);
+
+    if (content?.PublishedRevision is not BookmarkRevisionEntity revision)
+      throw new ContentNotFoundException(id);
+
+    return await _bookmarkMapper.MapAsync(revision, cancellationToken);
   }
 
   public async Task<IEnumerable<Bookmark>> GetBookmarksAsync(CancellationToken cancellationToken = default)

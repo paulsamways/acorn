@@ -17,6 +17,18 @@ public sealed class PostsController : Controller
     _postsService = postsService;
   }
 
+  /// <summary>Displays all published posts.</summary>
+  /// <param name="cancellationToken">A token used to cancel the operation.</param>
+  /// <returns>The published post list.</returns>
+  [AllowAnonymous]
+  [HttpGet(Routes.ContentPostsIndexUrlTemplate, Name = Routes.ContentPostsIndexGetRoute)]
+  [HttpHead(Routes.ContentPostsIndexUrlTemplate)]
+  public async Task<IActionResult> Index(CancellationToken cancellationToken)
+  {
+    var posts = await _postsService.GetPostsAsync(cancellationToken);
+    return View(posts);
+  }
+
   /// <summary>Displays a published post.</summary>
   /// <param name="id">The post's UUID.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
