@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Acorn · Trace viewer</title>
+  <style>
+    :root {
+      font: 15px/1.5 system-ui, -apple-system, sans-serif;
+      color: #e4e9e7;
+      background: #101716;
+      --panel: #182321;
+      --line: #314440;
+      --muted: #9eb1aa;
+      --accent: #a4d5b3;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { width: 100%; padding: 38px 28px 64px; }
+    header { display: flex; justify-content: space-between; gap: 20px; align-items: start; margin-bottom: 28px; }
+    .eyebrow { color: var(--accent); text-transform: uppercase; letter-spacing: .14em; font-size: .73rem; font-weight: 700; }
+    h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); margin: 4px 0; letter-spacing: -.04em; }
+    h2 { font-size: 1.05rem; margin: 0; }
+    h3 { font-size: .9rem; margin: 0 0 8px; }
+    p { margin: 4px 0; }
+    .muted { color: var(--muted); }
+    .small { font-size: .83rem; }
+    .badge { border: 1px solid var(--line); color: var(--accent); border-radius: 999px; padding: 6px 12px; white-space: nowrap; font-size: .8rem; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 300px); gap: 20px; align-items: start; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0; }
+    .logs-panel { grid-column: 1 / -1; }
+    .panel-title { display: flex; justify-content: space-between; gap: 10px; align-items: start; flex-wrap: wrap; margin-bottom: 14px; }
+    input[type=file] { display: block; width: 100%; color: var(--muted); font-size: .8rem; margin: 14px 0; }
+    input[type=file]::file-selector-button, button {
+      cursor: pointer; border: 1px solid #536e64; background: #263c34; color: #e4f2e7;
+      padding: 8px 12px; border-radius: 8px; font: inherit; font-weight: 600;
+    }
+    input[type=file]::file-selector-button { margin-right: 8px; }
+    button:hover:not(:disabled), input[type=file]::file-selector-button:hover { background: #345248; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    input[type=search] { width: min(100%, 380px); padding: 9px 11px; background: #101a18; color: #e4f2e7; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+    input:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .note { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 16px; }
+    #files-list { padding: 0; margin: 0; list-style: none; overflow-wrap: anywhere; }
+    #files-list li { border-top: 1px solid var(--line); padding: 8px 0; }
+    #files-list li:first-child { border-top: 0; }
+    #status { overflow-wrap: anywhere; }
+    .error { color: #ffb1a6; }
+    .tree { max-height: 55vh; overflow: auto; border: 1px solid var(--line); border-radius: 9px; }
+    .tree details { border-bottom: 1px solid var(--line); }
+    .tree details:last-child { border-bottom: 0; }
+    .tree summary { cursor: pointer; padding: 10px 12px; color: var(--accent); overflow-wrap: anywhere; }
+    .trace-content { padding: 0 12px 12px; }
+    .trace-button { margin: 0 0 8px; }
+    .span-tree, .span-tree ul { list-style: none; margin: 0; padding: 0; }
+    .span-tree ul { padding-left: 24px; border-left: 1px solid var(--line); margin-left: 10px; }
+    .span-button { text-align: left; width: 100%; margin: 3px 0; font-weight: 400; overflow-wrap: anywhere; }
+    button[aria-pressed=true] { border-color: var(--accent); background: #365447; }
+    .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin: 12px 0; }
+    .details-grid pre { margin: 0; padding: 10px; background: #101a18; border-radius: 8px; max-height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .table-wrap { overflow: auto; max-height: 65vh; border: 1px solid var(--line); border-radius: 9px; }
+    table, code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    table { border-collapse: collapse; width: 100%; text-align: left; font-size: .8rem; }
+    th { position: sticky; top: 0; z-index: 1; background: #24352f; color: #cce4d1; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; min-width: 90px; max-width: 520px; overflow-wrap: anywhere; white-space: pre-wrap; }
+    tbody tr:nth-child(even) { background: #1c2b27; }
+    tbody tr:hover { background: #293e35; }
+    @media (max-width: 760px) {
+      main { padding: 24px 16px 48px; }
+      .layout { grid-template-columns: 1fr; }
+      header { flex-direction: column; }
+      .span-tree ul { padding-left: 12px; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/sql-wasm.js"></script>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <div class="eyebrow">Acorn / Telemetry</div>
+      <h1>Trace viewer</h1>
+      <p class="muted">Explore traces, their spans and associated logs.</p>
+    </div>
+    <span class="badge">Local analysis · No upload</span>
+  </header>
+
+  <div class="layout">
+    <section class="panel" aria-labelledby="traces-heading">
+      <div class="panel-title">
+        <div>
+          <h2 id="traces-heading">Traces</h2>
+          <p id="trace-summary" class="small muted">Load databases to see traces.</p>
+        </div>
+        <input id="filter" type="search" placeholder="Filter by trace ID, span or source" aria-label="Filter traces" disabled>
+      </div>
+      <p class="small muted">Expand a trace, then select the whole trace or an individual span to see its logs below. Times are UTC; counts are direct child spans. Non-HTTP spans show their name instead of a path.</p>
+      <div id="trace-tree" class="tree"></div>
+    </section>
+
+    <aside class="panel">
+      <h2>Databases</h2>
+      <p class="muted small">Select one or more SQLite database snapshots.</p>
+      <input id="files" type="file" accept=".db,.sqlite,.sqlite3,application/vnd.sqlite3" multiple disabled aria-label="Select SQLite database files">
+      <ul id="files-list" class="small"><li class="muted">No databases loaded yet.</li></ul>
+      <p id="status" class="small muted" role="status" aria-live="polite">Loading SQLite…</p>
+      <div class="note small muted">
+        <p>Files are processed in memory and aren't sent to a server. SQLite loads from a public CDN; only open this page when you trust that source.</p>
+        <p>Use a SQLite backup or fully checkpointed database. Uncheckpointed <code>-wal</code> data is not included.</p>
+        <p>Select all relevant daily files to see spans and logs across UTC partition boundaries.</p>
+      </div>
+    </aside>
+
+    <section class="panel logs-panel" aria-labelledby="logs-heading">
+      <div class="panel-title">
+        <div>
+          <h2 id="logs-heading">Logs</h2>
+          <p id="selection" class="small muted">Select a trace or span above.</p>
+        </div>
+      </div>
+      <div id="trace-details"></div>
+      <div id="span-details"></div>
+      <p id="logs-summary" class="small muted" aria-live="polite"></p>
+      <div id="logs"></div>
+    </section>
+  </div>
+</main>
+<script>
+  const cdn = 'https://cdn.jsdelivr.net/npm/sql.js@1.13.0/dist/';
+  const filesInput = document.getElementById('files');
+  const filesList = document.getElementById('files-list');
+  const status = document.getElementById('status');
+  const filter = document.getElementById('filter');
+  const traceSummary = document.getElementById('trace-summary');
+  const traceTree = document.getElementById('trace-tree');
+  const selection = document.getElementById('selection');
+  const traceDetails = document.getElementById('trace-details');
+  const spanDetails = document.getElementById('span-details');
+  const logsSummary = document.getElementById('logs-summary');
+  const logsContainer = document.getElementById('logs');
+  let sqlite;
+  let databases = [];
+  let traces = [];
+  let selected = null;
+  let treeWarnings = [];
+
+  function setStatus(message, isError = false) {
+    status.textContent = message;
+    status.classList.toggle('error', isError);
+  }
+
+  function columnsFor(db, table) {
+    const result = db.exec(`PRAGMA table_info("${table}")`);
+    return new Set(result.length ? result[0].values.map(row => row[1].toLowerCase()) : []);
+  }
+
+  function requireColumns(columns, required, file, table) {
+    const missing = required.filter(column => !columns.has(column.toLowerCase()));
+    if (missing.length) throw new Error(`${file}: ${table} is missing columns: ${missing.join(', ')}.`);
+  }
+
+  function readRows(db, sql, params = []) {
+    const statement = db.prepare(sql);
+    try {
+      statement.bind(params);
+      const rows = [];
+      while (statement.step()) rows.push(statement.getAsObject());
+      return rows;
+    } finally {
+      statement.free();
+    }
+  }
+
+  function attributeValue(attributes, key) {
+    return Array.isArray(attributes)
+      ? attributes.findLast(item => item?.key === key)?.value
+      : attributes?.[key];
+  }
+
+  function rootSpan(trace) {
+    return trace.sorted.find(span => !span.ParentSpanId)
+      || trace.sorted.find(span => !trace.spans.has(span.ParentSpanId))
+      || trace.sorted[0];
+  }
+
+  function buildTraces(sources) {
+    const groups = new Map();
+    const warnings = [];
+    for (const source of sources) {
+      if (!source.hasTraces) continue;
+      const sourceName = source.traceColumns.has('sourcename') ? 'SourceName' : 'NULL AS SourceName';
+      const endTime = source.traceColumns.has('endtimeutc') ? 'EndTimeUtc' : 'NULL AS EndTimeUtc';
+      const spans = readRows(source.db, `SELECT TraceId, SpanId, ParentSpanId, Name, ${sourceName},
+        StartTimeUtc, ${endTime}, DurationMs, Status, StatusDescription, AttributesJson, EventsJson, LinksJson
+        FROM Traces`);
+      for (const span of spans) {
+        try {
+          span.attributes = JSON.parse(span.AttributesJson);
+          const path = attributeValue(span.attributes, 'url.path');
+          const method = attributeValue(span.attributes, 'http.request.method') ?? attributeValue(span.attributes, 'http.method');
+          span.path = typeof path === 'string' && path
+            ? `${typeof method === 'string' && method ? `${method} ` : ''}${path}`
+            : span.Name;
+        } catch (error) {
+          span.path = span.Name;
+          span.attributesError = error.message;
+        }
+        let group = groups.get(span.TraceId);
+        if (!group) {
+          group = { id: span.TraceId, spans: new Map() };
+          groups.set(span.TraceId, group);
+        }
+        if (group.spans.has(span.SpanId)) {
+          warnings.push(`Duplicate span ${span.TraceId}/${span.SpanId} in ${source.name}; showing the first copy.`);
+          continue;
+        }
+        group.spans.set(span.SpanId, span);
+      }
+    }
+    for (const group of groups.values()) {
+      group.sorted = [...group.spans.values()].sort((a, b) => a.StartTimeUtc.localeCompare(b.StartTimeUtc) || a.SpanId.localeCompare(b.SpanId));
+      group.start = group.sorted[0].StartTimeUtc;
+      group.search = `${group.id} ${group.sorted.map(span => `${span.Name} ${span.path} ${span.SpanId} ${span.SourceName || ''}`).join(' ')}`.toLowerCase();
+    }
+    return { groups: [...groups.values()].sort((a, b) => b.start.localeCompare(a.start)), warnings };
+  }
+
+  async function loadFiles(files) {
+    if (!files.length) return;
+    filesInput.disabled = true;
+    setStatus('Loading databases…');
+    const candidates = [];
+    try {
+      for (const file of files) {
+        if (/-wal$|-shm$/i.test(file.name)) throw new Error(`${file.name}: select database snapshots, not WAL or shared-memory files.`);
+        const db = new sqlite.Database(new Uint8Array(await file.arrayBuffer()));
+        const source = { name: file.name, db };
+        candidates.push(source);
+        source.traceColumns = columnsFor(db, 'Traces');
+        source.logColumns = columnsFor(db, 'Logs');
+        source.hasTraces = source.traceColumns.size > 0;
+        source.hasLogs = source.logColumns.size > 0;
+        if (!source.hasTraces && !source.hasLogs) throw new Error(`${file.name}: no Traces or Logs table found.`);
+        if (source.hasTraces) requireColumns(source.traceColumns,
+          ['TraceId', 'SpanId', 'ParentSpanId', 'Name', 'StartTimeUtc', 'DurationMs', 'Status', 'StatusDescription', 'AttributesJson', 'EventsJson', 'LinksJson'],
+          file.name, 'Traces');
+        if (source.hasLogs) requireColumns(source.logColumns,
+          ['TimestampUtc', 'SeverityText', 'Category', 'Message', 'Exception', 'TraceId', 'SpanId'],
+          file.name, 'Logs');
+      }
+      const built = buildTraces(candidates);
+      for (const source of databases) source.db.close();
+      databases = candidates.splice(0);
+      traces = built.groups;
+      treeWarnings = built.warnings;
+      selected = null;
+      filter.value = '';
+      filter.disabled = false;
+      filesList.replaceChildren();
+      for (const source of databases) {
+        const item = document.createElement('li');
+        item.textContent = source.name;
+        filesList.append(item);
+      }
+      selection.textContent = 'Select a trace or span above.';
+      traceDetails.replaceChildren();
+      spanDetails.replaceChildren();
+      logsSummary.textContent = '';
+      logsSummary.classList.remove('error');
+      logsContainer.replaceChildren();
+      renderTree();
+      const missingLogs = databases.filter(source => !source.hasLogs).map(source => source.name);
+      setStatus(`Loaded ${databases.length} database${databases.length === 1 ? '' : 's'}.${missingLogs.length ? ` No Logs table in: ${missingLogs.join(', ')}.` : ''}${treeWarnings.length ? ` ${treeWarnings.length} duplicate span(s) skipped: ${treeWarnings.join(' ')}` : ''}`);
+    } catch (error) {
+      setStatus(`Could not load databases: ${error.message || String(error)}`, true);
+    } finally {
+      for (const source of candidates) source.db.close();
+      filesInput.disabled = false;
+      filesInput.value = '';
+    }
+  }
+
+  function makeButton(text, onClick, active, className) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = className;
+    button.textContent = text;
+    button.setAttribute('aria-pressed', String(active));
+    button.addEventListener('click', onClick);
+    return button;
+  }
+
+  function spanLabel(span, childCount, missingParent = false) {
+    const notes = [
+      span.Status === 2 ? 'ERROR' : '',
+      missingParent ? `parent ${span.ParentSpanId} not in loaded files` : '',
+      span.attributesError ? `invalid attributes JSON: ${span.attributesError}` : ''
+    ].filter(Boolean);
+    return `${span.StartTimeUtc}  ·  ${span.SpanId}  ·  ${span.path}${notes.length ? `  ·  ${notes.join(' · ')}` : ''} (${childCount})`;
+  }
+
+  function renderTree() {
+    const search = filter.value.trim().toLowerCase();
+    const shown = traces.filter(trace => trace.search.includes(search));
+    traceSummary.textContent = `${shown.length.toLocaleString()} of ${traces.length.toLocaleString()} traces`;
+    traceTree.replaceChildren();
+    if (!shown.length) {
+      const empty = document.createElement('p');
+      empty.className = 'muted small';
+      empty.textContent = traces.length ? 'No matching traces.' : 'No spans found in the selected databases. Logs without recorded spans cannot be displayed as a trace tree.';
+      traceTree.append(empty);
+      return;
+    }
+    const fragment = document.createDocumentFragment();
+    for (const trace of shown) {
+      const children = new Map();
+      for (const span of trace.sorted) {
+        const parent = trace.spans.has(span.ParentSpanId) ? span.ParentSpanId : null;
+        if (!children.has(parent)) children.set(parent, []);
+        children.get(parent).push(span);
+      }
+      const details = document.createElement('details');
+      details.open = selected?.traceId === trace.id;
+      const summary = document.createElement('summary');
+      const root = rootSpan(trace);
+      summary.textContent = spanLabel(root, (children.get(root.SpanId) || []).length, !!root.ParentSpanId && !trace.spans.has(root.ParentSpanId));
+      summary.title = `Trace ID: ${trace.id}`;
+      details.append(summary);
+      const content = document.createElement('div');
+      content.className = 'trace-content';
+      content.append(makeButton('All logs in this trace', () => selectTrace(trace, null),
+        selected?.traceId === trace.id && selected.spanId === null, 'trace-button small'));
+      const list = document.createElement('ul');
+      list.className = 'span-tree';
+      const visited = new Set();
+      function appendBranch(span, parentList) {
+        if (visited.has(span.SpanId)) return;
+        visited.add(span.SpanId);
+        const item = document.createElement('li');
+        const descendants = children.get(span.SpanId) || [];
+        const button = makeButton(spanLabel(span, descendants.length, !!span.ParentSpanId && !trace.spans.has(span.ParentSpanId)), () => selectTrace(trace, span),
+          selected?.traceId === trace.id && selected.spanId === span.SpanId, 'span-button');
+        button.title = `${span.Name}${span.SourceName ? ` · ${span.SourceName}` : ''} · ${span.DurationMs} ms`;
+        item.append(button);
+        if (descendants.length) {
+          const nested = document.createElement('ul');
+          for (const child of descendants) appendBranch(child, nested);
+          if (nested.childElementCount) item.append(nested);
+        }
+        parentList.append(item);
+      }
+      for (const span of children.get(null) || []) appendBranch(span, list);
+      for (const span of trace.sorted) {
+        if (!visited.has(span.SpanId)) {
+          const note = document.createElement('li');
+          note.className = 'small error';
+          note.textContent = 'Invalid parent cycle; showing remaining spans below.';
+          list.append(note);
+          appendBranch(span, list);
+        }
+      }
+      content.append(list);
+      details.append(content);
+      fragment.append(details);
+    }
+    traceTree.append(fragment);
+  }
+
+  function selectTrace(trace, span) {
+    selected = { traceId: trace.id, spanId: span?.SpanId ?? null };
+    selection.textContent = span
+      ? `Span ${span.Name} · ${span.SpanId} · trace ${trace.id} (logs for this span only)`
+      : `All logs for trace ${trace.id}`;
+    traceDetails.replaceChildren();
+    spanDetails.replaceChildren();
+    logsContainer.replaceChildren();
+    logsSummary.textContent = '';
+    renderTree();
+    try {
+      renderTraceDetails(trace);
+      if (span) renderSpanDetails(span);
+      const logs = [];
+      for (const source of databases) {
+        if (!source.hasLogs) continue;
+        const query = `SELECT TimestampUtc, SeverityText, Category, Message, Exception, SpanId
+          FROM Logs WHERE TraceId = ?${span ? ' AND SpanId = ?' : ''} ORDER BY TimestampUtc`;
+        for (const log of readRows(source.db, query, span ? [trace.id, span.SpanId] : [trace.id])) {
+          logs.push({ ...log, database: source.name });
+        }
+      }
+      logs.sort((a, b) => a.TimestampUtc.localeCompare(b.TimestampUtc));
+      logsSummary.textContent = `${logs.length.toLocaleString()} log${logs.length === 1 ? '' : 's'}${span ? ' for this span (not its children)' : ' in this trace'}.`;
+      if (logs.length) renderLogs(logs);
+    } catch (error) {
+      logsSummary.textContent = `Could not display selection: ${error.message || String(error)}`;
+      logsSummary.classList.add('error');
+      return;
+    }
+    logsSummary.classList.remove('error');
+  }
+
+  function renderTraceDetails(trace) {
+    const root = rootSpan(trace);
+    const attribute = key => attributeValue(root.attributes, key);
+    const starts = trace.sorted.map(span => ({ text: span.StartTimeUtc, time: Date.parse(span.StartTimeUtc) }));
+    const ends = trace.sorted.map(span => ({ text: span.EndTimeUtc, time: Date.parse(span.EndTimeUtc) }));
+    const validStarts = starts.filter(value => Number.isFinite(value.time));
+    const validEnds = ends.filter(value => Number.isFinite(value.time));
+    const start = validStarts.reduce((earliest, value) => !earliest || value.time < earliest.time ? value : earliest, null);
+    const end = validEnds.reduce((latest, value) => !latest || value.time > latest.time ? value : latest, null);
+    const elapsed = start && end && end.time >= start.time ? `~${end.time - start.time} ms` : 'Unavailable';
+    const timingWarning = validStarts.length !== starts.length || validEnds.length !== ends.length
+      ? 'Some span timestamps are missing or invalid; observed timing may be incomplete.'
+      : end && start && end.time < start.time ? 'Span end precedes trace start; observed timing is invalid.' : '';
+    const format = value => value == null || value === '' ? 'Unavailable'
+      : typeof value === 'object' ? JSON.stringify(value) : String(value);
+    const client = [
+      ['Client address', attribute('client.address') ?? attribute('net.peer.ip')],
+      ['User agent', attribute('user_agent.original') ?? attribute('http.user_agent')],
+      ['HTTP method', attribute('http.request.method') ?? attribute('http.method')],
+      ['URL path', attribute('url.path')],
+      ['HTTP status', attribute('http.response.status_code') ?? attribute('http.status_code')]
+    ];
+    const timings = [
+      ['First recorded span start (UTC)', start?.text],
+      ['Last recorded span end (UTC)', end?.text],
+      ['Observed elapsed time (millisecond precision)', elapsed],
+      [root.ParentSpanId ? 'Displayed span duration' : 'Root span duration', Number.isFinite(root.DurationMs) ? `${root.DurationMs} ms` : null],
+      ['Recorded spans', trace.sorted.length]
+    ];
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = 'Trace details';
+    details.append(summary);
+    const note = document.createElement('p');
+    note.className = 'small muted';
+    note.textContent = `Client information is from ${root.ParentSpanId ? 'a span whose parent is not available (or is cyclic)' : 'the root span'} (${root.SpanId}). Timings cover only recorded spans in the loaded files.`;
+    details.append(note);
+    if (root.attributesError || timingWarning) {
+      const warning = document.createElement('p');
+      warning.className = 'small error';
+      warning.textContent = [root.attributesError ? `Invalid root span attributes JSON: ${root.attributesError}` : '', timingWarning].filter(Boolean).join(' ');
+      details.append(warning);
+    }
+    const grid = document.createElement('div');
+    grid.className = 'details-grid';
+    for (const [title, fields] of [['Client information', client], ['Timings', timings]]) {
+      const section = document.createElement('div');
+      const heading = document.createElement('h3');
+      heading.textContent = title;
+      const content = document.createElement('pre');
+      content.textContent = fields.map(([label, value]) => `${label}: ${format(value)}`).join('\n');
+      section.append(heading, content);
+      grid.append(section);
+    }
+    details.append(grid);
+    traceDetails.append(details);
+  }
+
+  function renderSpanDetails(span) {
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = 'Span details';
+    details.append(summary);
+    const grid = document.createElement('div');
+    grid.className = 'details-grid';
+    for (const [label, value] of [
+      ['Attributes', span.AttributesJson],
+      ['Events', span.EventsJson],
+      ['Links', span.LinksJson]
+    ]) {
+      const section = document.createElement('div');
+      const heading = document.createElement('h3');
+      heading.textContent = label;
+      const content = document.createElement('pre');
+      try {
+        content.textContent = JSON.stringify(JSON.parse(value), null, 2);
+      } catch (error) {
+        content.textContent = `Invalid JSON: ${error.message}\n${value}`;
+      }
+      section.append(heading, content);
+      grid.append(section);
+    }
+    details.append(grid);
+    spanDetails.append(details);
+  }
+
+  function renderLogs(logs) {
+    const table = document.createElement('table');
+    const header = table.createTHead().insertRow();
+    for (const title of ['Timestamp UTC', 'Severity', 'Category', 'Message / exception', 'Span ID', 'Database']) {
+      const cell = document.createElement('th');
+      cell.scope = 'col';
+      cell.textContent = title;
+      header.append(cell);
+    }
+    const body = table.createTBody();
+    for (const log of logs) {
+      const row = body.insertRow();
+      const message = [log.Message, log.Exception].filter(value => value != null && value !== '').join('\n');
+      for (const value of [log.TimestampUtc, log.SeverityText, log.Category, message, log.SpanId, log.database]) {
+        row.insertCell().textContent = value == null ? '—' : String(value);
+      }
+    }
+    const wrap = document.createElement('div');
+    wrap.className = 'table-wrap';
+    wrap.append(table);
+    logsContainer.append(wrap);
+  }
+
+  filesInput.addEventListener('change', () => loadFiles([...filesInput.files]));
+  filter.addEventListener('input', renderTree);
+  if (typeof initSqlJs !== 'function') {
+    setStatus('Could not load SQLite from the CDN. Check your connection and reload.', true);
+  } else {
+    initSqlJs({ locateFile: file => cdn + file }).then(module => {
+      sqlite = module;
+      filesInput.disabled = false;
+      setStatus('Select database files to begin.');
+    }).catch(error => setStatus(`Could not initialize SQLite: ${error.message || String(error)}`, true));
+  }
+</script>
+</body>
+</html>
