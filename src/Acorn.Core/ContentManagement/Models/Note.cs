@@ -3,6 +3,7 @@ namespace Acorn.Core.ContentManagement.Models;
 /// <summary>Represents a note prepared for display.</summary>
 /// <param name="Id">The note identifier.</param>
 /// <param name="ConcurrencyToken">The token identifying the note version.</param>
+/// <param name="Title">The note title.</param>
 /// <param name="Value">The Markdown source content.</param>
 /// <param name="ValueHtml">The rendered HTML content.</param>
 /// <param name="Tags">The note's tags.</param>
@@ -13,6 +14,7 @@ namespace Acorn.Core.ContentManagement.Models;
 public record Note(
     Guid Id,
     Guid ConcurrencyToken,
+    string Title,
     string Value,
     string ValueHtml,
     IReadOnlyList<string> Tags,

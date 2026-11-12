@@ -62,6 +62,7 @@ internal sealed class ContentModelMapper :
     return new Note(
       revision.ContentId,
       revision.ConcurrencyToken,
+      revision.Title,
       revision.Value,
       await RenderMarkdownAsync(revision.Value, DerivationName.Images.Inline, cancellationToken),
       metadata.Tags,

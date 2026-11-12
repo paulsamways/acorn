@@ -15,14 +15,20 @@ public interface INoteAuthoringService
   Task<IEnumerable<Note>> GetNotesAsync(CancellationToken cancellationToken = default);
 
   /// <summary>Creates a note for the current user.</summary>
+  /// <param name="title">The note title.</param>
   /// <param name="note">The Markdown note content.</param>
   /// <param name="tags">Optional tags to associate with the note.</param>
   /// <param name="cancellationToken">A token used to cancel the operation.</param>
   /// <returns>The created note.</returns>
-  Task<Note> CreateNoteAsync(string note, TagSet? tags = null, CancellationToken cancellationToken = default);
+  Task<Note> CreateNoteAsync(
+    string title,
+    string note,
+    TagSet? tags = null,
+    CancellationToken cancellationToken = default);
 
   /// <summary>Updates an existing note draft.</summary>
   /// <param name="id">The note identifier.</param>
+  /// <param name="title">The replacement note title.</param>
   /// <param name="note">The replacement Markdown content.</param>
   /// <param name="tags">Optional replacement tags.</param>
   /// <param name="concurrencyToken">The expected note revision token.</param>
@@ -30,6 +36,7 @@ public interface INoteAuthoringService
   /// <returns>The updated note.</returns>
   Task<Note> UpdateNoteAsync(
     Guid id,
+    string title,
     string note,
     TagSet? tags = null,
     Guid? concurrencyToken = null,

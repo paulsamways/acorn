@@ -20,6 +20,7 @@ public sealed class EditViewModel : EditInputModel, IContentViewModel<Note>
 
     Id = input.Id;
     ConcurrencyToken = input.ConcurrencyToken;
+    Title = input.Title;
     Value = input.Value;
     Tags = input.Tags;
     Publish = input.Publish;

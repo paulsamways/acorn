@@ -13,6 +13,7 @@ internal sealed class NoteContentManager : ContentManager<NoteContentEntity, Not
   protected override NoteRevisionEntity CloneRevision(NoteRevisionEntity source)
     => new()
     {
+      Title = source.Title,
       Value = source.Value
     };
 }

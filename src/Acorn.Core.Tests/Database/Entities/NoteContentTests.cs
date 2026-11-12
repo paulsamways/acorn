@@ -84,6 +84,7 @@ internal class NoteContentTests : EntitiesTestBase
       ContentId = content.Id,
       RevisionNumber = 1,
       State = ContentRevisionState.Draft,
+      Title = string.Empty,
       Value = value
     };
 }

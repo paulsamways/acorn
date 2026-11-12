@@ -15,12 +15,12 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     // If you encounter a merge conflict in the line below, it means you need to
     // discard one of the migration branches and recreate its migrations on top of
     // the other branch. See https://aka.ms/efcore-docs-migrations-conflicts for more info.
-    public override string LastMigrationId => "20261024194916_AddContentComments";
+    public override string LastMigrationId => "20261112195642_AddNoteTitle";
 
     protected override void BuildModel(ModelBuilder modelBuilder)
     {
 #pragma warning disable 612, 618
-        modelBuilder.HasAnnotation("ProductVersion", "11.0.0-rc.2.26504.105");
+        modelBuilder.HasAnnotation("ProductVersion", "11.0.0");
 
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.ContentAttachmentEntity", b =>
             {
@@ -267,7 +267,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("TEXT")
                     .HasColumnName("revision_state");
 
-                b.Property<string>("Tags")
+                b.PrimitiveCollection<string>("Tags")
                     .IsRequired()
                     .HasColumnType("TEXT")
                     .HasColumnName("tags");
@@ -294,7 +294,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     {
                         t.HasCheckConstraint("ck_content_revision_publication_state", "(revision_state = 'Draft' AND published_at IS NULL) OR (revision_state = 'Published' AND published_at IS NOT NULL)");
 
-                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_value IS NOT NULL)");
+                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_title IS NOT NULL AND note_value IS NOT NULL)");
                     });
 
                 b.HasDiscriminator<string>("revision_type").HasValue("ContentRevisionEntity");
@@ -682,7 +682,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     {
                         t.HasCheckConstraint("ck_content_revision_publication_state", "(revision_state = 'Draft' AND published_at IS NULL) OR (revision_state = 'Published' AND published_at IS NOT NULL)");
 
-                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_value IS NOT NULL)");
+                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_title IS NOT NULL AND note_value IS NOT NULL)");
                     });
 
                 b.HasDiscriminator().HasValue("bookmark");
@@ -691,6 +691,13 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
         modelBuilder.Entity("Acorn.Core.ContentManagement.Database.Entities.NoteRevisionEntity", b =>
             {
                 b.HasBaseType("Acorn.Core.ContentManagement.Database.Entities.ContentRevisionEntity");
+
+                b.Property<string>("Title")
+                    .IsRequired()
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("TEXT")
+                    .HasDefaultValue("")
+                    .HasColumnName("note_title");
 
                 b.Property<string>("Value")
                     .IsRequired()
@@ -701,7 +708,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     {
                         t.HasCheckConstraint("ck_content_revision_publication_state", "(revision_state = 'Draft' AND published_at IS NULL) OR (revision_state = 'Published' AND published_at IS NOT NULL)");
 
-                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_value IS NOT NULL)");
+                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_title IS NOT NULL AND note_value IS NOT NULL)");
                     });
 
                 b.HasDiscriminator().HasValue("note");
@@ -729,7 +736,7 @@ partial class ApplicationDbContextModelSnapshot : ModelSnapshot
                     {
                         t.HasCheckConstraint("ck_content_revision_publication_state", "(revision_state = 'Draft' AND published_at IS NULL) OR (revision_state = 'Published' AND published_at IS NOT NULL)");
 
-                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_value IS NOT NULL)");
+                        t.HasCheckConstraint("ck_content_revision_required_type_fields", "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR (revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR (revision_type = 'note' AND note_title IS NOT NULL AND note_value IS NOT NULL)");
                     });
 
                 b.HasDiscriminator().HasValue("post");

@@ -10,9 +10,10 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task CreateNoteAsync_CreatesForCurrentUserAndRendersMarkdownAndLocalTime()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("# Hello", TagSet.Parse("Testing Notes, foo"));
+    var note = await NoteAuthoringService.CreateNoteAsync("Test note", "# Hello", TagSet.Parse("Testing Notes, foo"));
 
     await Assert.That(note.Value).IsEqualTo("# Hello");
+    await Assert.That(note.Title).IsEqualTo("Test note");
     await Assert.That(note.ValueHtml).IsEqualTo("<h1>Hello</h1>\n");
     await Assert.That(note.Tags).IsEquivalentTo(["testing", "notes", "foo"]);
     await Assert.That(note.CreatedAt).IsEqualTo(ConvertToUserTime(DbContext.Notes.Local.Single(x => x.Id == note.Id).CreatedAt));
@@ -30,7 +31,7 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task GetNoteAsync_ReturnsNote()
   {
-    var createdNote = await NoteAuthoringService.CreateNoteAsync("A note");
+    var createdNote = await NoteAuthoringService.CreateNoteAsync("A note", "A note");
     DbContext.ChangeTracker.Clear();
 
     var note = await NoteAuthoringService.GetNoteAsync(createdNote.Id);
@@ -50,8 +51,8 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task GetNotesAsync_ReturnsAllNotes()
   {
-    await NoteAuthoringService.CreateNoteAsync("First note");
-    await NoteAuthoringService.CreateNoteAsync("Second note");
+    await NoteAuthoringService.CreateNoteAsync("First note", "First note");
+    await NoteAuthoringService.CreateNoteAsync("Second note", "Second note");
     DbContext.ChangeTracker.Clear();
 
     var notes = await NoteAuthoringService.GetNotesAsync();
@@ -62,9 +63,9 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task GetNotesAsync_ReturnsOnlyPublishedNotes()
   {
-    var publishedNote = await NoteAuthoringService.CreateNoteAsync("Published note");
+    var publishedNote = await NoteAuthoringService.CreateNoteAsync("Published note", "Published note");
     await NoteAuthoringService.PublishNoteAsync(publishedNote.Id);
-    await NoteAuthoringService.CreateNoteAsync("Draft note");
+    await NoteAuthoringService.CreateNoteAsync("Draft note", "Draft note");
     DbContext.ChangeTracker.Clear();
 
     var notes = await NotesService.GetNotesAsync();
@@ -75,9 +76,9 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task GetNoteAsync_ReturnsPublishedNoteAndHidesUnavailableNotes()
   {
-    var published = await NoteAuthoringService.CreateNoteAsync("Published note");
+    var published = await NoteAuthoringService.CreateNoteAsync("Published note", "Published note");
     await NoteAuthoringService.PublishNoteAsync(published.Id);
-    var draft = await NoteAuthoringService.CreateNoteAsync("Draft note");
+    var draft = await NoteAuthoringService.CreateNoteAsync("Draft note", "Draft note");
     DbContext.ChangeTracker.Clear();
 
     var note = await NotesService.GetNoteAsync(published.Id);
@@ -92,15 +93,17 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task UpdateNoteAsync_PersistsUpdatedValueAndTags()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("Original note", TagSet.Parse("old-tag"));
+    var note = await NoteAuthoringService.CreateNoteAsync("Original title", "Original note", TagSet.Parse("old-tag"));
     DbContext.ChangeTracker.Clear();
 
     var updatedNote = await NoteAuthoringService.UpdateNoteAsync(
       note.Id,
+      "Updated title",
       "Updated note",
       TagSet.Parse("New Note"),
       concurrencyToken: note.ConcurrencyToken);
 
+    await Assert.That(updatedNote.Title).IsEqualTo("Updated title");
     await Assert.That(updatedNote.Value).IsEqualTo("Updated note");
     await Assert.That(updatedNote.Tags).IsEquivalentTo(["new", "note"]);
     DbContext.ChangeTracker.Clear();
@@ -112,22 +115,22 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task UpdateNoteAsync_RejectsStaleVersion()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("Original note");
-    _ = await NoteAuthoringService.UpdateNoteAsync(note.Id, "First update", concurrencyToken: note.ConcurrencyToken);
+    var note = await NoteAuthoringService.CreateNoteAsync("Original title", "Original note");
+    _ = await NoteAuthoringService.UpdateNoteAsync(note.Id, "First title", "First update", concurrencyToken: note.ConcurrencyToken);
 
     await Assert.That(async () =>
-      await NoteAuthoringService.UpdateNoteAsync(note.Id, "Stale update", concurrencyToken: note.ConcurrencyToken))
+      await NoteAuthoringService.UpdateNoteAsync(note.Id, "Stale title", "Stale update", concurrencyToken: note.ConcurrencyToken))
       .Throws<Acorn.Core.ContentManagement.Exceptions.ContentConcurrencyException>();
   }
 
   [Test]
   public async Task UpdateNoteAsync_UsesLatestVersionWhenConcurrencyTokenIsOmitted()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("Original note");
-    _ = await NoteAuthoringService.UpdateNoteAsync(note.Id, "First update", concurrencyToken: note.ConcurrencyToken);
+    var note = await NoteAuthoringService.CreateNoteAsync("Original title", "Original note");
+    _ = await NoteAuthoringService.UpdateNoteAsync(note.Id, "First title", "First update", concurrencyToken: note.ConcurrencyToken);
     DbContext.ChangeTracker.Clear();
 
-    var updatedNote = await NoteAuthoringService.UpdateNoteAsync(note.Id, "Client wins update");
+    var updatedNote = await NoteAuthoringService.UpdateNoteAsync(note.Id, "Client wins title", "Client wins update");
 
     await Assert.That(updatedNote.Value).IsEqualTo("Client wins update");
   }
@@ -135,7 +138,7 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task UpdateNoteAsync_RejectsConcurrentUpdate()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("Original note");
+    var note = await NoteAuthoringService.CreateNoteAsync("Original title", "Original note");
     var competingOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
       .UseSqlite(DbContext.Database.GetDbConnection())
       .Options;
@@ -154,7 +157,7 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task DeleteNoteAsync_SoftDeletesNote()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("To delete");
+    var note = await NoteAuthoringService.CreateNoteAsync("To delete", "To delete");
     DbContext.ChangeTracker.Clear();
 
     await NoteAuthoringService.DeleteNoteAsync(note.Id);
@@ -167,7 +170,7 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task PublishNoteAsync_MarksNoteAsPublishedAndPersistsPublicationTime()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("To publish");
+    var note = await NoteAuthoringService.CreateNoteAsync("To publish", "To publish");
     DbContext.ChangeTracker.Clear();
 
     var publishedNote = await NoteAuthoringService.PublishNoteAsync(note.Id);
@@ -184,7 +187,7 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task GetNoteAsync_CreatesDraftFromPublishedRevisionWhenMissing()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("Published note");
+    var note = await NoteAuthoringService.CreateNoteAsync("Published title", "Published note");
     await NoteAuthoringService.PublishNoteAsync(note.Id);
     DbContext.ChangeTracker.Clear();
 
@@ -199,7 +202,7 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task PublishNoteAsync_ThrowsWhenThereIsNoDraft()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("Published note");
+    var note = await NoteAuthoringService.CreateNoteAsync("Published title", "Published note");
     await NoteAuthoringService.PublishNoteAsync(note.Id);
 
     await Assert.That(async () => await NoteAuthoringService.PublishNoteAsync(note.Id))
@@ -209,19 +212,25 @@ internal class NotesServiceTests : ServicesTestBase
   [Test]
   public async Task UpdatingPublishedNoteKeepsLiveRevisionUntilDraftIsPublished()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("Original note", TagSet.Parse("old"));
+    var note = await NoteAuthoringService.CreateNoteAsync("Original title", "Original note", TagSet.Parse("old"));
     await NoteAuthoringService.PublishNoteAsync(note.Id);
-    var draft = await NoteAuthoringService.UpdateNoteAsync(note.Id, "Draft note", TagSet.Parse("new"));
+    var draft = await NoteAuthoringService.UpdateNoteAsync(
+      note.Id,
+      "Draft title",
+      "Draft note",
+      TagSet.Parse("new"));
 
     var publishedBeforeRepublish = (await NotesService.GetNotesAsync()).Single();
     await Assert.That(draft.IsDraft).IsTrue();
     await Assert.That(draft.IsPublished).IsTrue();
     await Assert.That(publishedBeforeRepublish.Value).IsEqualTo("Original note");
+    await Assert.That(publishedBeforeRepublish.Title).IsEqualTo("Original title");
     await Assert.That(publishedBeforeRepublish.Tags).IsEquivalentTo(["old"]);
 
     await NoteAuthoringService.PublishNoteAsync(note.Id);
     var publishedAfterRepublish = (await NotesService.GetNotesAsync()).Single();
     await Assert.That(publishedAfterRepublish.Value).IsEqualTo("Draft note");
+    await Assert.That(publishedAfterRepublish.Title).IsEqualTo("Draft title");
     await Assert.That(publishedAfterRepublish.Tags).IsEquivalentTo(["new"]);
     var revisions = await DbContext.NoteRevisions
       .Where(x => x.ContentId == note.Id)
@@ -229,6 +238,7 @@ internal class NotesServiceTests : ServicesTestBase
       .ToArrayAsync();
     await Assert.That(revisions.Length).IsEqualTo(2);
     await Assert.That(revisions[1].State).IsEqualTo(ContentRevisionState.Published);
+    await Assert.That(revisions[1].Title).IsEqualTo("Draft title");
     await Assert.That(revisions[1].Value).IsEqualTo("Draft note");
   }
 }

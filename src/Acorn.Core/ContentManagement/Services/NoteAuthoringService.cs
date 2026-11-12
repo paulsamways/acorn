@@ -27,10 +27,15 @@ internal sealed class NoteAuthoringService : INoteAuthoringService
     _contentManager = new NoteContentManager(dbContext);
   }
 
-  public async Task<Note> CreateNoteAsync(string value, TagSet? tags = null, CancellationToken cancellationToken = default)
+  public async Task<Note> CreateNoteAsync(
+    string title,
+    string value,
+    TagSet? tags = null,
+    CancellationToken cancellationToken = default)
   {
     var revision = new NoteRevisionEntity
     {
+      Title = title,
       Value = value,
       Tags = tags?.ToList() ?? []
     };
@@ -72,6 +77,7 @@ internal sealed class NoteAuthoringService : INoteAuthoringService
 
   public async Task<Note> UpdateNoteAsync(
     Guid id,
+    string title,
     string value,
     TagSet? tags = null,
     Guid? concurrencyToken = null,
@@ -79,6 +85,7 @@ internal sealed class NoteAuthoringService : INoteAuthoringService
   {
     var content = await GetNoteContentAsync(id, cancellationToken);
     var revision = await _contentManager.GetOrCreateDraftAsync(content, cancellationToken);
+    revision.Title = title;
     revision.Value = value;
     revision.Tags = tags?.ToList() ?? [];
 

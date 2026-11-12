@@ -6,7 +6,7 @@ This guide describes how to add a new content type to Acorn. It is written for b
 
 `Content` is the stable identity and ownership root for a post, bookmark, or note. Its revision history is stored separately in `ContentRevision`; authored fields, tags, and revision-specific attachment visibility belong to revisions. A content item has zero or one draft revision, and `PublishedRevisionId` selects the currently public revision.
 
-The content roots and revisions each use EF Core table-per-hierarchy (TPH) mapping. The `content` table stores the stable root and its `content_type`; the `content_revision` table stores versioned fields and its `revision_type`. Both use shared primary keys and type-specific lower-snake-case revision columns, such as `note_value`, `post_title`, and `bookmark_url`.
+The content roots and revisions each use EF Core table-per-hierarchy (TPH) mapping. The `content` table stores the stable root and its `content_type`; the `content_revision` table stores versioned fields and its `revision_type`. Both use shared primary keys and type-specific lower-snake-case revision columns, such as `note_title`, `note_value`, `post_title`, and `bookmark_url`.
 
 Content IDs remain stable across revisions and are used by routes and relationships. They are identifiers, not authorization tokens; access checks remain mandatory.
 

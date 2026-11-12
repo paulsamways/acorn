@@ -18,7 +18,7 @@ internal sealed class ContentRevisionEntityConfiguration : IEntityTypeConfigurat
         "ck_content_revision_required_type_fields",
         "(revision_type = 'post' AND post_title IS NOT NULL AND post_body IS NOT NULL) OR " +
         "(revision_type = 'bookmark' AND bookmark_url IS NOT NULL AND bookmark_title IS NOT NULL) OR " +
-        "(revision_type = 'note' AND note_value IS NOT NULL)");
+        "(revision_type = 'note' AND note_title IS NOT NULL AND note_value IS NOT NULL)");
     });
 
     builder

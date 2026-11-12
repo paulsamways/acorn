@@ -38,7 +38,7 @@ public sealed class NotesController : Controller
   [HttpPost(Routes.Admin.NotesIndexUrlTemplate, Name = Routes.Admin.NotesIndexPostRoute)]
   public async Task<IActionResult> IndexPostAsync(CancellationToken cancellationToken = default)
   {
-    var note = await _notesService.CreateNoteAsync(string.Empty, cancellationToken: cancellationToken);
+    var note = await _notesService.CreateNoteAsync(string.Empty, string.Empty, cancellationToken: cancellationToken);
 
     return RedirectToRoute(Routes.Admin.NotesEditGetRoute, new { id = note.Id });
   }
@@ -72,6 +72,7 @@ public sealed class NotesController : Controller
     {
       _ = await _notesService.UpdateNoteAsync(
         model.Id,
+        model.Title,
         model.Value,
         tags,
         concurrencyToken: model.ConcurrencyToken,
@@ -117,6 +118,7 @@ public sealed class NotesController : Controller
     {
       Id = note.Id,
       ConcurrencyToken = note.ConcurrencyToken,
+      Title = note.Title,
       Value = note.Value,
       Tags = string.Join(", ", note.Tags.OrderBy(tag => tag, StringComparer.Ordinal)),
       Publish = false

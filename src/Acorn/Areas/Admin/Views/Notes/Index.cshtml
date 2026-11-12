@@ -8,6 +8,7 @@
       @foreach (var note in Model)
       {
         <div class="f-column w-wide p-4 g-1">
+          <h2>@note.Title</h2>
           <div class="prose">
             @Html.Raw(note.ValueHtml)
           </div>

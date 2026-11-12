@@ -15,5 +15,11 @@ internal sealed class NoteRevisionEntityConfiguration : IEntityTypeConfiguration
       .Property(x => x.Value)
       .HasColumnName("note_value")
       .IsRequired();
+
+    builder
+      .Property(x => x.Title)
+      .HasColumnName("note_title")
+      .HasDefaultValue(string.Empty)
+      .IsRequired();
   }
 }

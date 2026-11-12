@@ -5,6 +5,10 @@ namespace Acorn.Areas.Admin.Models.Notes;
 /// <summary>Contains fields submitted to update an administrative note.</summary>
 public class EditInputModel : ContentInputModel
 {
+  /// <summary>Gets or sets the note title.</summary>
+  [Required]
+  public string Title { get; set; } = string.Empty;
+
   /// <summary>Gets or sets the note's Markdown value.</summary>
   [DisplayFormat(ConvertEmptyStringToNull = true)]
   public string Value { get; set; } = string.Empty;

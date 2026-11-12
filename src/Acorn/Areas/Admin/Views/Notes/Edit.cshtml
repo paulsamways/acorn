@@ -14,6 +14,10 @@
       @await Component.InvokeAsync("ConcurrencyError", new { model = Model, latestVersionRoute = Routes.Admin.NotesEditGetRoute })
       <input asp-for="ConcurrencyToken" type="hidden" />
 
+      <label asp-for="Title">Title</label>
+      <input asp-for="Title" />
+      <span asp-validation-for="Title" class="danger"></span>
+
       <markdown-editor id="Value" name="Value" rows="24" image-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))" file-upload-url="@(Url.RouteUrl(Routes.Admin.AttachFilePostRoute, new { id = Model.Id }))">@Model.Value</markdown-editor>
 
       <details>

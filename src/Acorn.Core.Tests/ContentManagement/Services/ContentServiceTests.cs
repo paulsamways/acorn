@@ -18,9 +18,9 @@ internal class ContentServiceTests : ServicesTestBase
   public async Task GetRecentContentAsync_ReturnsPublishedContentAcrossTypesInPublicationOrder()
   {
     var post = await PostAuthoringService.CreatePostAsync("A post", "Body");
-    var note = await NoteAuthoringService.CreateNoteAsync("A note\nMore detail");
+    var note = await NoteAuthoringService.CreateNoteAsync("A note", "A note\nMore detail");
     var bookmark = await BookmarkAuthoringService.CreateBookmarkAsync("https://example.com", "A bookmark");
-    await NoteAuthoringService.CreateNoteAsync("A draft");
+    await NoteAuthoringService.CreateNoteAsync("A draft", "A draft");
     var deleted = await PostAuthoringService.CreatePostAsync("A deleted post", "Body");
     await PostAuthoringService.PublishPostAsync(post.Id);
     await NoteAuthoringService.PublishNoteAsync(note.Id);
@@ -65,8 +65,8 @@ internal class ContentServiceTests : ServicesTestBase
       "https://example.com",
       "Tagged bookmark",
       tags: TagSet.Parse("shared"));
-    var note = await NoteAuthoringService.CreateNoteAsync("Tagged note", TagSet.Parse("shared"));
-    var draft = await NoteAuthoringService.CreateNoteAsync("Draft note", TagSet.Parse("shared"));
+    var note = await NoteAuthoringService.CreateNoteAsync("Tagged note", "Tagged note", TagSet.Parse("shared"));
+    var draft = await NoteAuthoringService.CreateNoteAsync("Draft note", "Draft note", TagSet.Parse("shared"));
     var deleted = await PostAuthoringService.CreatePostAsync("Deleted post", "Body", TagSet.Parse("shared"));
     await PostAuthoringService.PublishPostAsync(post.Id);
     await BookmarkAuthoringService.PublishBookmarkAsync(bookmark.Id);
@@ -85,10 +85,10 @@ internal class ContentServiceTests : ServicesTestBase
   [Test]
   public async Task GetContentWithTagAsync_MatchesExactTagsOnPublishedRevision()
   {
-    var note = await NoteAuthoringService.CreateNoteAsync("Published", TagSet.Parse("shared"));
+    var note = await NoteAuthoringService.CreateNoteAsync("Published", "Published", TagSet.Parse("shared"));
     await NoteAuthoringService.PublishNoteAsync(note.Id);
-    await NoteAuthoringService.UpdateNoteAsync(note.Id, "Draft", TagSet.Parse("draft"));
-    var other = await NoteAuthoringService.CreateNoteAsync("Other", TagSet.Parse("sharedness"));
+    await NoteAuthoringService.UpdateNoteAsync(note.Id, "Draft", "Draft", TagSet.Parse("draft"));
+    var other = await NoteAuthoringService.CreateNoteAsync("Other", "Other", TagSet.Parse("sharedness"));
     await NoteAuthoringService.PublishNoteAsync(other.Id);
     DbContext.ChangeTracker.Clear();
 
