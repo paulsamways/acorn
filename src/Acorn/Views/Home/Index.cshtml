@@ -2,11 +2,11 @@
 
 <main class="f-grow-1 f-column f-align-center">
 
-  <section class="f-column w-wide g-4 p-4" aria-label="Recent activity">
-    <h3>Recent activity</h3>
+  <section class="f-column w-wide g-5" aria-label="Recent activity">
+    <h2>Recent activity</h2>
     @foreach (var content in Model)
     {
-      <article class="f-column g-2">
+      <article class="f-column g-4">
         <header class="f-column g-1">
           <h3>
             @if (content is Acorn.Core.ContentManagement.Models.Post post)
@@ -40,15 +40,15 @@
         </header>
         @if (content is Acorn.Core.ContentManagement.Models.Post postContent)
         {
-          <div class="prose">@Html.Raw(postContent.ExcerptHtml ?? postContent.BodyHtml)</div>
+          <div class="prose ml-2">@Html.Raw(postContent.ExcerptHtml ?? postContent.BodyHtml)</div>
         }
         else if (content is Acorn.Core.ContentManagement.Models.Bookmark bookmarkContent && bookmarkContent.DescriptionHtml is not null)
         {
-          <div class="prose">@Html.Raw(bookmarkContent.DescriptionHtml)</div>
+          <div class="prose ml-2">@Html.Raw(bookmarkContent.DescriptionHtml)</div>
         }
         else if (content is Acorn.Core.ContentManagement.Models.Note noteContent)
         {
-          <div class="prose">@Html.Raw(noteContent.ValueHtml)</div>
+          <div class="prose ml-2">@Html.Raw(noteContent.ValueHtml)</div>
         }
         @await Html.PartialAsync("_ContentTags", content.Tags)
       </article>

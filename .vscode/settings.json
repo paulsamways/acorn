@@ -10,5 +10,8 @@
     "dotnet build": true,
     "./bin/test.sh": true,
     "dotnet format": true
+  },
+  "terminal.integrated.env.linux": {
+    "PROJECT_BIN_PATH": "${workspaceFolder}/bin:${env:PATH}"
   }
 }
